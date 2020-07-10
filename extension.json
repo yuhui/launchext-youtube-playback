@@ -1,0 +1,157 @@
+{
+  "displayName": "YouTube Playback",
+  "name": "youtube-playback",
+  "platform": "web",
+  "version": "1.0.0",
+  "description": "Track the playback of YouTube videos",
+  "author": {
+    "name": "Yuhui",
+    "url": "https://yuhui.sg",
+    "email": "dev@yuhui.sg"
+  },
+  "exchangeUrl": "https://www.adobeexchange.com/experiencecloud.details.104160.youtube-playback-tracking.html",
+  "iconPath": "youtube-playback-icon.svg",
+  "viewBasePath": "src/view/",
+  "configuration": {
+    "viewPath": "configuration/configuration.html",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "events": [
+    {
+      "displayName": "Player Ready",
+      "name": "player-ready",
+      "categoryName": "Player",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/playerReady.js",
+      "viewPath": "events/playerReady.html"
+    },
+    {
+      "displayName": "Player Error",
+      "name": "player-error",
+      "categoryName": "Player",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/playerError.js",
+      "viewPath": "events/playerError.html"
+    },
+    {
+      "displayName": "API Changed",
+      "name": "api-changed",
+      "categoryName": "Player",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/apiChanged.js",
+      "viewPath": "events/apiChanged.html"
+    },
+    {
+      "displayName": "Video Unstarted",
+      "name": "video-unstarted",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoUnstarted.js",
+      "viewPath": "events/videoUnstarted.html"
+    },
+    {
+      "displayName": "Video Buffering",
+      "name": "video-buffering",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoBuffering.js",
+      "viewPath": "events/videoBuffering.html"
+    },
+    {
+      "displayName": "Video Cued",
+      "name": "video-cued",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoCued.js",
+      "viewPath": "events/videoCued.html"
+    },
+    {
+      "displayName": "Video Playing",
+      "name": "video-playing",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoPlaying.js",
+      "viewPath": "events/videoPlaying.html"
+    },
+    {
+      "displayName": "Video Paused",
+      "name": "video-paused",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoPaused.js",
+      "viewPath": "events/videoPaused.html"
+    },
+    {
+      "displayName": "Video Ended",
+      "name": "video-ended",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoEnded.js",
+      "viewPath": "events/videoEnded.html"
+    },
+    {
+      "displayName": "Playback Quality Changed",
+      "name": "playback-quality-changed",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/playbackQualityChanged.js",
+      "viewPath": "events/playbackQualityChanged.html"
+    },
+    {
+      "displayName": "Playback Rate Changed",
+      "name": "playback-rate-changed",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/playbackRateChanged.js",
+      "viewPath": "events/playbackRateChanged.html"
+    }
+  ]
+}

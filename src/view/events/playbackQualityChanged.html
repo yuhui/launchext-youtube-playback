@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>YouTube Playback Quality Changed Event</title>
+    <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="//assets.adobedtm.com/6c27c1e662c8/609b9fc08c83/launch-54e6abf50de0.min.js" async></script>
+  </head>
+  <body class="spectrum spectrum--light spectrum-Body">
+    <h4 class="spectrum-Heading4">No configuration necessary</h4>
+
+    <div class="content-separator">
+      &nbsp;
+    </div>
+
+    <section>
+      <h5 class="spectrum-Heading5">How this Event works</h5>
+      <p>
+        This Event is triggered when the video playback quality changes.
+      </p>
+      <p>
+        The following properties are available in the <code>event</code> data
+        element. You can use any of them with your Rule's Conditions and
+        Actions.
+      </p>
+      <table class="spectrum-Table">
+        <tr class="spectrum-Table-row">
+          <th class="spectrum-Table-headCell"><code>event</code> field</th>
+          <th class="spectrum-Table-headCell">Data type</th>
+          <th class="spectrum-Table-headCell">Value</th>
+        </tr>
+        <tbody class="spectrum-Table-body">
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.player</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              JavaScript object
+            </td>
+            <td class="spectrum-Table-cell">
+              The YouTube player object.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.currentTime</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              Floating point number
+            </td>
+            <td class="spectrum-Table-cell">
+              Elapsed time in seconds since the video started playing.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.duration</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              Integer
+            </td>
+            <td class="spectrum-Table-cell">
+              Duration in seconds of the currently playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.muted</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              Boolean
+            </td>
+            <td class="spectrum-Table-cell">
+              Whether the video is muted (<code>true</code>) or unmuted
+              (<code>false</code>).
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.playbackQuality</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              String
+            </td>
+            <td class="spectrum-Table-cell">
+              New playback quality of the currently playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.playbackRate</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              Floating point number
+            </td>
+            <td class="spectrum-Table-cell">
+              Playback rate of the currently playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.videoLoadedFraction</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              Floating point number
+            </td>
+            <td class="spectrum-Table-cell">
+              Percentage of the video that the player shows as buffered.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.videoUrl</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              String
+            </td>
+            <td class="spectrum-Table-cell">
+              YouTube.com URL for the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              <code>event.youtube.volume</code>
+            </td>
+            <td class="spectrum-Table-cell">
+              Integer
+            </td>
+            <td class="spectrum-Table-cell">
+              The player's current volume.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
+    <script src="../scripts/common.js"></script>
+    <script>
+      window.extensionBridge.register({
+        init: function(info) {
+          if (info.settings) {}
+        },
+
+        getSettings: function() {
+          return {};
+        },
+
+        validate: function() {
+          return true;
+        }
+      });
+    </script>
+  </body>
+</html>
