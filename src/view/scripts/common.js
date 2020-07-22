@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+'use strict';
+
 var FORM_ID = 'event-configuration';
 
 /** Get the Event configuration form */
@@ -23,15 +25,15 @@ function getForm() {
 }
 
 /** Get the values from the Event configuration form */
-function getFormValues() {
+function getFormValues() { // eslint-disable-line no-unused-vars
   var eventConfigurationForm = getForm();
-  var elementSpecificityValue = eventConfigurationForm.
-    elementSpecificity.value;
-  var elementsSelectorValue = eventConfigurationForm.
-    elementsSelector.value;
+  var elementSpecificityValue = eventConfigurationForm
+    .elementSpecificity.value;
+  var elementsSelectorValue = eventConfigurationForm
+    .elementsSelector.value;
 
   return {
     elementSpecificity: elementSpecificityValue,
     elementsSelector: elementsSelectorValue
-  }
+  };
 }

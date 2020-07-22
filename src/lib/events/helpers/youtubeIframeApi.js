@@ -21,7 +21,6 @@ var document = require('@adobe/reactor-document');
 var loadScript = require('@adobe/reactor-load-script');
 
 var log = require('../../helpers/log');
-var matchesSelector = require('./matchesSelector');
 
 var EXTENSION_NAME = 'launchextYoutubePlayback';
 
@@ -54,11 +53,13 @@ var YOUTUBE_EVENT_STATES = [
 
 // constants related to YouTube error codes
 var ERROR_CODES = {
-  '2': 'Request contains an invalid parameter value (error 2)',
-  '5': 'Requested content cannot be played in an HTML5 player (error 5)',
-  '100': 'Requested video was not found (error 100)',
-  '101': 'Owner of the requested video does not allow it to be played in embedded players (error 101)',
-  '150': 'Owner of the requested video does not allow it to be played in embedded players (error 150)'
+  2: 'Request contains an invalid parameter value (error 2)',
+  5: 'Requested content cannot be played in an HTML5 player (error 5)',
+  100: 'Requested video was not found (error 100)',
+  101: 'Owner of the requested video does not allow it to be played in ' +
+    'embedded players (error 101)',
+  150: 'Owner of the requested video does not allow it to be played in ' +
+    'embedded players (error 150)'
 };
 
 // constants related to setting up the YouTube IFrame API
@@ -83,10 +84,10 @@ var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
  * state.
  */
 var createGetYoutubeEvent = function(
-    element,
-    eventState,
-    nativeEvent,
-    eventData
+  element,
+  eventState,
+  nativeEvent,
+  eventData
 ) {
   return {
     element: element,
@@ -126,7 +127,7 @@ var getYoutubeEventData = function(player) {
     playbackRate: player.getPlaybackRate(),
     videoLoadedFraction: player.getVideoLoadedFraction(),
     videoUrl: videoUrl,
-    volume: player.getVolume(),
+    volume: player.getVolume()
   };
 
   return eventData;
@@ -309,14 +310,15 @@ window.onYouTubeIframeAPIReady = function() {
 
     if (elementIsInitialised && elementIsNotSetup) {
       var elementId = element.id;
+      // eslint-disable-next-line no-unused-vars
       var player = new YT.Player(elementId, {
         events: {
-          'onApiChange': onApiChange,
-          'onError': onPlayerError,
-          'onPlaybackQualityChange': onPlaybackQualityChange,
-          'onPlaybackRateChange': onPlaybackRateChange,
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange,
+          onApiChange: window.onApiChange,
+          onError: window.onPlayerError,
+          onPlaybackQualityChange: window.onPlaybackQualityChange,
+          onPlaybackRateChange: window.onPlaybackRateChange,
+          onReady: window.onPlayerReady,
+          onStateChange: window.onPlayerStateChange
         }
       });
 
@@ -407,7 +409,7 @@ window.onPlayerStateChange = function(event) {
     //log('log', 'Player state changed: ' + state, event.target.getIframe());
     processTriggers(state, event);
   }
-}
+};
 
 module.exports = {
   registerApiChangedTrigger: function(settings, trigger) {

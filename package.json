@@ -1,0 +1,19 @@
+{
+  "name": "launchext-youtube-playback",
+  "version": "1.0.1",
+  "description": "Track the playback of YouTube videos",
+  "author": "Yuhui",
+  "license": "GPL-3.0-only",
+  "main": "main.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@adobe/reactor-packager": "^4.0.1",
+    "@adobe/reactor-sandbox": "^10.8.1",
+    "@adobe/reactor-scaffold": "^2.1.3",
+    "@adobe/reactor-uploader": "^5.0.0",
+    "eslint": "^7.5.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

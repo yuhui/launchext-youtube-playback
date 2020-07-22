@@ -1,3 +1,9 @@
+1.0.1
+-----
+
+- Fixed issues found with `eslint`.
+- Documented `event.state` in each Event's view.
+
 1.0.0
 -----
 
