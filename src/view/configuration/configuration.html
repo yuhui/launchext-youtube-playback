@@ -35,6 +35,26 @@
         </label>
         <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
       </div>
+      <p>&nbsp;</p>
+      <p>
+        Specify when the YouTube players should be enabled to use the IFrame
+        API.
+      </p>
+      <div id="window-event" class="spectrum-FieldGroup" role="radiogroup" value="window-event">
+        <label class="spectrum-Radio">
+          <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="immediately">
+          <span class="spectrum-Radio-label">immediately when the page loads</span>
+        </label>
+        <label class="spectrum-Radio">
+          <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="window-loaded" checked="true">
+          <span class="spectrum-Radio-label">at Window Loaded</span>
+        </label>
+      </div>
+      <p>
+        It is safer to enable the YouTube players at Window Loaded. This allows
+        the browser to load all of the page's contents, including the YouTube
+        players, before this extension attempts to enable the players.
+      </p>
     </form>
 
     <footer class="spectrum-Body--small text footer">
@@ -55,6 +75,7 @@
           if (info.settings) {
             var elementSpecificity = info.settings.elementSpecificity;
             var elementsSelector = info.settings.elementsSelector;
+            var windowEvent = info.settings.windowEvent || 'window-loaded';
 
             var eventConfigurationForm = getForm();
             eventConfigurationForm.elementSpecificity.value =
@@ -63,6 +84,7 @@
               elementSpecificity === 'any' ?
               '' :
               elementsSelector;
+            eventConfigurationForm.windowEvent.value = windowEvent;
           }
         },
 
@@ -70,13 +92,16 @@
           var formValues = getFormValues();
           var elementSpecificityValue = formValues.elementSpecificity;
           var elementsSelectorValue = formValues.elementsSelector;
+          var windowEventValue = formValues.windowEvent;
+
           if (elementSpecificityValue === 'any') {
             elementsSelectorValue = '';
           }
 
           var settings = {
             elementSpecificity: elementSpecificityValue,
-            elementsSelector: elementsSelectorValue
+            elementsSelector: elementsSelectorValue,
+            windowEvent: windowEventValue
           };
 
           return settings;
@@ -86,6 +111,7 @@
           var formValues = getFormValues();
           var elementSpecificityValue = formValues.elementSpecificity;
           var elementsSelectorValue = formValues.elementsSelector;
+          var windowEventValue = formValues.windowEvent;
 
           var elementSpecificityValueHasValue =
             elementSpecificityValue.length > 0;
@@ -93,9 +119,11 @@
             elementSpecificityValue === 'any' ?
             true :
             elementsSelectorValue.length > 0;
+          var windowEventValueHasValue = ['window-loaded', 'immediately']
+            .indexOf(windowEventValue) > -1;
 
           return elementSpecificityValueHasValue &&
-            elementsSelectorValueHasValue;
+            elementsSelectorValueHasValue && windowEventValueHasValue;
         }
       });
     </script>

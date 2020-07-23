@@ -23,6 +23,7 @@ var loadScript = require('@adobe/reactor-load-script');
 var log = require('../../helpers/log');
 
 var EXTENSION_NAME = 'launchextYoutubePlayback';
+var EXTENSION_SETTINGS = turbine.getExtensionSettings();
 
 // constants related to YouTube event names
 var API_CHANGED = 'module with exposed API changed';
@@ -206,11 +207,13 @@ var processTriggers = function(eventState, nativeEvent) {
 
     // use a for loop instead of forEach for efficiency
     var eventStateRegistry = registry[eventState];
+    /*
     log(
       'log',
       eventState + ', has ' + eventStateRegistry.length + ' triggers',
       element
     );
+    */
 
     for (var i = 0, j = eventStateRegistry.length; i < j; i++) {
       var triggerData = eventStateRegistry[i];
@@ -228,73 +231,76 @@ var processTriggers = function(eventState, nativeEvent) {
 /**
  * Setup the YouTube IFrame API here!
  */
+function setupYoutubeIframeAPI() {
+  //log('log', 'setupYoutubeIframeAPI');
+  /**
+   * Ensure that every YouTube IFrame has an "id" attribute and its "src"
+   * attribute contains the "enablejsapi" and "origin" parameters.
+   *
+   * If a selector has been specified, then use that to select the YouTube
+   * IFrame elements. Otherwise, select all YouTube IFrame elements.
+   */
+  var elementSpecificity = EXTENSION_SETTINGS.elementSpecificity || 'any';
+  var elementsSelector = EXTENSION_SETTINGS.elementsSelector || '';
 
-/**
-  * Ensure that every YouTube IFrame has an "id" attribute and its "src"
-  * attribute contains the "enablejsapi" and "origin" parameters.
-  *
-  * If a selector has been specified, then use that to select the YouTube
-  * IFrame elements. Otherwise, select all YouTube IFrame elements.
+  var iframeSelector = YOUTUBE_IFRAME_SELECTOR;
+  if (elementSpecificity === 'specific' && elementsSelector) {
+    iframeSelector = elementsSelector;
+  }
+
+  var elements = document.querySelectorAll(iframeSelector);
+  elements.forEach(function(element, i) {
+    var attributeNames = element.getAttributeNames();
+
+    // ensure that the IFrame has an "id" attribute
+    if (attributeNames.indexOf('id') < 0) {
+      // add an "id" attribute
+      element.setAttribute('id', DEFAULT_YOUTUBE_PLAYER_ID_PREFIX + i);
+    }
+
+    // ensure that the IFrame's "src" attribute contains the "enablejsapi"
+    // and "origin" parameters
+    var src = element.src;
+    var requiredParametersToAdd = [];
+    if (src.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
+      // "enablejsapi" is absent in the IFrame's src URL, add it
+      requiredParametersToAdd.push(
+        ENABLE_JSAPI_PARAMETER + ENABLE_JSAPI_VALUE
+      );
+    }
+    if (src.indexOf(ORIGIN_PARAMETER) < 0) {
+      // "origin" is absent in the IFrame's src URL, add it
+      var originProtocol = document.location.protocol;
+      var originHostname = document.location.hostname;
+      var originValue = originProtocol + '//' + originHostname;
+      requiredParametersToAdd.push(ORIGIN_PARAMETER + originValue);
+    }
+    if (requiredParametersToAdd.length > 0) {
+      requiredParametersToAdd = requiredParametersToAdd.join('&');
+      var separator = src.indexOf('?') < 0 ? '?' : '&';
+      element.src = src + separator + requiredParametersToAdd;
+    }
+
+    // finally, set a data attribute to indicate that this player has been
+    // initialised
+    element.dataset.launchextInitialised = 'true';
+  });
+
+  /**
+  * Load the YouTube IFrame Player API code asynchronously.
   */
-var extensionSettings = turbine.getExtensionSettings();
-var elementSpecificity = extensionSettings.elementSpecificity || 'any';
-var elementsSelector = extensionSettings.elementsSelector || '';
-
-var iframeSelector = YOUTUBE_IFRAME_SELECTOR;
-if (elementSpecificity === 'specific' && elementsSelector) {
-  iframeSelector = elementsSelector;
+  loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
+    log('log', 'YouTube IFrame API was successfully loaded');
+  }, function() {
+    log('error', 'YouTube IFrame API could not be loaded');
+  });
 }
-
-var elements = document.querySelectorAll(iframeSelector);
-elements.forEach(function(element, i) {
-  var attributeNames = element.getAttributeNames();
-
-  // ensure that the IFrame has an "id" attribute
-  if (attributeNames.indexOf('id') < 0) {
-    // add an "id" attribute
-    element.setAttribute('id', DEFAULT_YOUTUBE_PLAYER_ID_PREFIX + i);
-  }
-
-  // ensure that the IFrame's "src" attribute contains the "enablejsapi"
-  // and "origin" parameters
-  var src = element.src;
-  var requiredParametersToAdd = [];
-  if (src.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
-    // "enablejsapi" is absent in the IFrame's src URL, add it
-    requiredParametersToAdd.push(ENABLE_JSAPI_PARAMETER + ENABLE_JSAPI_VALUE);
-  }
-  if (src.indexOf(ORIGIN_PARAMETER) < 0) {
-    // "origin" is absent in the IFrame's src URL, add it
-    var originProtocol = document.location.protocol;
-    var originHostname = document.location.hostname;
-    var originValue = originProtocol + '//' + originHostname;
-    requiredParametersToAdd.push(ORIGIN_PARAMETER + originValue);
-  }
-  if (requiredParametersToAdd.length > 0) {
-    requiredParametersToAdd = requiredParametersToAdd.join('&');
-    var separator = src.indexOf('?') < 0 ? '?' : '&';
-    element.src = src + separator + requiredParametersToAdd;
-  }
-
-  // finally, set a data attribute to indicate that this player has been
-  // initialised
-  element.dataset.launchextInitialised = 'true';
-});
-
-/**
- * Load the YouTube IFrame Player API code asynchronously.
- */
-loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
-  log('log', 'YouTube IFrame API was successfully loaded');
-}, function() {
-  log('error', 'YouTube IFrame API could not be loaded');
-});
 
 /**
 * Callback function when the YouTube IFrame API is ready.
 */
 window.onYouTubeIframeAPIReady = function() {
-  log('log', 'YouTube IFrame API is ready');
+  //log('log', 'YouTube IFrame API is ready');
 
   /**
    * Loop through the YouTube IFrame elements to set them up to receive
@@ -410,6 +416,17 @@ window.onPlayerStateChange = function(event) {
     processTriggers(state, event);
   }
 };
+
+var windowEvent = EXTENSION_SETTINGS.windowEvent;
+if (windowEvent && windowEvent === 'immediately') {
+  setupYoutubeIframeAPI();
+} else {
+  window.addEventListener(
+    'load',
+    setupYoutubeIframeAPI,
+    true
+  );
+}
 
 module.exports = {
   registerApiChangedTrigger: function(settings, trigger) {

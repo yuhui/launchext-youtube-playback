@@ -1,3 +1,8 @@
+1.1.0
+-----
+
+- Prepares YouTube IFrame elements at Window Loaded by default. This ensures that the browser loads all of the page's content, including the YouTube players, before enabling the YouTube IFrame API.
+
 1.0.1
 -----
 

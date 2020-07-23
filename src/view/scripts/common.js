@@ -31,9 +31,11 @@ function getFormValues() { // eslint-disable-line no-unused-vars
     .elementSpecificity.value;
   var elementsSelectorValue = eventConfigurationForm
     .elementsSelector.value;
+  var windowEventValue = eventConfigurationForm.windowEvent.value;
 
   return {
     elementSpecificity: elementSpecificityValue,
-    elementsSelector: elementsSelectorValue
+    elementsSelector: elementsSelectorValue,
+    windowEvent: windowEventValue
   };
 }
