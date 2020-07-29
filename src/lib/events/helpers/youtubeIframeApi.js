@@ -300,7 +300,7 @@ function setupYoutubeIframeAPI() {
 * Callback function when the YouTube IFrame API is ready.
 */
 window.onYouTubeIframeAPIReady = function() {
-  //log('log', 'YouTube IFrame API is ready');
+  log('log', 'YouTube IFrame API is ready');
 
   /**
    * Loop through the YouTube IFrame elements to set them up to receive
@@ -340,7 +340,7 @@ window.onYouTubeIframeAPIReady = function() {
  * exposed API methods.
  */
 window.onApiChange = function(event) {
-  //log('log', 'Module with API methods changed', event.target.getIframe());
+  log('log', 'Module with API methods changed', event.target.getIframe());
   processTriggers(API_CHANGED, event);
 };
 
@@ -348,7 +348,7 @@ window.onApiChange = function(event) {
  * Callback function when the video playback quality changes.
  */
 window.onPlaybackQualityChange = function(event) {
-  //log('log', 'Playback quality changed', event.target.getIframe());
+  log('log', 'Playback quality changed', event.target.getIframe());
   processTriggers(PLAYBACK_QUALITY_CHANGED, event);
 };
 
@@ -356,7 +356,7 @@ window.onPlaybackQualityChange = function(event) {
  * Callback function when the video playback rate changes.
  */
 window.onPlaybackRateChange = function(event) {
-  //log('log', 'Playback rate changed', event.target.getIframe());
+  log('log', 'Playback rate changed', event.target.getIframe());
   processTriggers(PLAYBACK_RATE_CHANGED, event);
 };
 
@@ -364,7 +364,7 @@ window.onPlaybackRateChange = function(event) {
  * Callback function when an error occurs in the player.
  */
 window.onPlayerError = function(event) {
-  //log('log', 'Player error', event.target.getIframe());
+  log('log', 'Player error', event.target.getIframe());
   processTriggers(PLAYER_ERROR, event);
 };
 
@@ -373,7 +373,7 @@ window.onPlayerError = function(event) {
  * begin receiving API calls.
  */
 window.onPlayerReady = function(event) {
-  //log('log', 'Player ready', event.target.getIframe());
+  log('log', 'Player ready', event.target.getIframe());
   processTriggers(PLAYER_READY, event);
 };
 
@@ -412,7 +412,7 @@ window.onPlayerStateChange = function(event) {
   }
 
   if (state) {
-    //log('log', 'Player state changed: ' + state, event.target.getIframe());
+    log('log', 'Player state changed: ' + state, event.target.getIframe());
     processTriggers(state, event);
   }
 };

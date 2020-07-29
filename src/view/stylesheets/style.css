@@ -29,6 +29,14 @@
   padding-bottom: 0.5rem;
 }
 
+.hide-content {
+  visibility: hidden;
+}
+
+.show-content {
+  visibility: visible;
+}
+
 #elements-selector {
   display: flex !important;
 }

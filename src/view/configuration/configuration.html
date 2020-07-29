@@ -28,12 +28,14 @@
           <span class="spectrum-Radio-label">specific players</span>
         </label>
       </div>
-      <div id="elements-selector">
-        <span>Players matching the CSS selector</span>
-        <label>
-          <input type="text" name="elementsSelector" value="">
-        </label>
-        <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
+      <div id="elements-selector-container" class="hide-content">
+        <div id="elements-selector">
+          <span>Players matching the CSS selector</span>
+          <label>
+            <input type="text" name="elementsSelector" value="">
+          </label>
+          <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
+        </div>
       </div>
       <p>&nbsp;</p>
       <p>
@@ -85,6 +87,8 @@
               '' :
               elementsSelector;
             eventConfigurationForm.windowEvent.value = windowEvent;
+
+            toggleSelectorField();
           }
         },
 
@@ -125,6 +129,28 @@
           return elementSpecificityValueHasValue &&
             elementsSelectorValueHasValue && windowEventValueHasValue;
         }
+      });
+
+      function toggleSelectorField() {
+        var formValues = getFormValues();
+        var elementSpecificityValue = formValues.elementSpecificity;
+
+        var elementsSelectorContainer = document.querySelector(
+          '#elements-selector-container'
+        );
+        if (elementSpecificityValue === 'any') {
+          elementsSelectorContainer.classList.remove('show-content');
+          elementsSelectorContainer.classList.add('hide-content');
+        } else {
+          elementsSelectorContainer.classList.remove('hide-content');
+          elementsSelectorContainer.classList.add('show-content');
+        }
+      }
+
+      var elementSpecificityInputs = document.querySelectorAll(
+        '#element-specificity input'
+      ).forEach(function (input) {
+        input.addEventListener('click', toggleSelectorField);
       });
     </script>
   </body>

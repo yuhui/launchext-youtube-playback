@@ -1,3 +1,8 @@
+1.1.1
+-----
+
+- Hide CSS selector when choosing "any player" in extension configuration.
+
 1.1.0
 -----
 

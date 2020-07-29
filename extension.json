@@ -2,7 +2,7 @@
   "displayName": "YouTube Playback",
   "name": "youtube-playback",
   "platform": "web",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Track the playback of YouTube videos",
   "author": {
     "name": "Yuhui",
