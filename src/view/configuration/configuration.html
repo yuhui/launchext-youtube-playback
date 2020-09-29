@@ -6,57 +6,97 @@
     <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
     <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="../scripts/analytics.js"></script>
     <script src="//assets.adobedtm.com/6c27c1e662c8/609b9fc08c83/launch-54e6abf50de0.min.js" async></script>
   </head>
   <body class="spectrum spectrum--light spectrum-Body">
-    <form id="event-configuration" class="spectrum-Form">
+    <form id="extension-configuration" class="spectrum-Form">
       <h4 class="spectrum-Heading4">Extension Configuration</h4>
-      <p>
-        Specify the YouTube players to be used with this extension.
-      </p>
-      <p>
-        <b>Important!</b> Only the players that you specify here will be able
-        to work with the YouTube playback events provided by this extension.
-      </p>
-      <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup" value="players">
-        <label class="spectrum-Radio">
-          <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
-          <span class="spectrum-Radio-label">any player</span>
-        </label>
-        <label class="spectrum-Radio">
-          <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="specific">
-          <span class="spectrum-Radio-label">specific players</span>
-        </label>
-      </div>
-      <div id="elements-selector-container" class="hide-content">
-        <div id="elements-selector">
-          <span>Players matching the CSS selector</span>
-          <label>
-            <input type="text" name="elementsSelector" value="">
+
+      <div id="extension-settings-container">
+        <p>When the extension is loaded:</p>
+        <div id="extension-settings" class="spectrum-FieldGroup" role="radiogroup">
+          <label class="spectrum-Radio">
+            <input class="spectrum-Radio-button" type="radio" name="useLegacySettings" value="no" checked="true">
+            <span class="spectrum-Radio-label">do not setup YouTube video playback tracking (preferred)</span>
           </label>
-          <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
+          <label class="spectrum-Radio">
+            <input class="spectrum-Radio-button" type="radio" name="useLegacySettings" value="yes">
+            <span class="spectrum-Radio-label">setup YouTube video playback tracking <em>(warning: deprecated!)</em></span>
+          </label>
         </div>
       </div>
-      <p>&nbsp;</p>
-      <p>
-        Specify when the YouTube players should be enabled to use the IFrame
-        API.
-      </p>
-      <div id="window-event" class="spectrum-FieldGroup" role="radiogroup" value="window-event">
-        <label class="spectrum-Radio">
-          <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="immediately">
-          <span class="spectrum-Radio-label">immediately when the page loads</span>
-        </label>
-        <label class="spectrum-Radio">
-          <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="window-loaded" checked="true">
-          <span class="spectrum-Radio-label">at Window Loaded</span>
-        </label>
+
+      <div id="legacy-extension-settings-container" class="hide">
+        <div class="spectrum-Toast spectrum-Toast--warning" role="alert">
+          <svg class="spectrum-UIIcon-AlertMedium spectrum-Icon spectrum-Toast-typeIcon" focusable="false" aria-label="Warning" role="img">
+            <path d="M8.564 1.289L.2 16.256A.5.5 0 0 0 .636 17h16.728a.5.5 0 0 0 .5-.5.494.494 0 0 0-.064-.244L9.436 1.289a.5.5 0 0 0-.872 0zM10 14.75a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25zm0-3a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25z" class="spectrum-UIIcon--medium"></path>
+          </svg>
+          <div class="spectrum-Toast-body">
+            <div class="spectrum-Toast-content">
+              <span class="spectrum-Heading5" style="color: white;">
+                <strong>These settings have been deprecated!</strong>
+              </span><br />
+              &nbsp;<br />
+              You should add an Action in an appropriate Rule to enable video playback tracking
+              with your YouTube players.<br />
+              <ol>
+                <li>
+                  Create a new Rule or open an existing Rule, e.g. one with a "Window Loaded" Event
+                  Type.
+                </li>
+                <li>
+                  <b>Add the <span class="text-underline">"Enable video playback tracking"</span>
+                  Action Type from the <span class="text-underline">"YouTube Playback"</span>
+                  Extension.</b>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <p>Specify the YouTube players to be used with this extension.</p>
+        <p>
+          <b>Important!</b> Only the players that you specify here will be able
+          to work with the YouTube playback events provided by this extension.
+        </p>
+        <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup" value="players">
+          <label class="spectrum-Radio">
+            <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
+            <span class="spectrum-Radio-label">any player</span>
+          </label>
+          <label class="spectrum-Radio">
+            <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="specific">
+            <span class="spectrum-Radio-label">specific players</span>
+          </label>
+        </div>
+        <div id="elements-selector-container" class="hide">
+          <div id="elements-selector">
+            <span>Players matching the CSS selector</span>
+            <label>
+              <input type="text" name="elementsSelector" value="">
+            </label>
+            <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
+          </div>
+        </div>
+
+        <div class="content-separator">
+          &nbsp;
+        </div>
+
+        <p>Specify when the YouTube players should be enabled to use the IFrame API.</p>
+        <div id="window-event" class="spectrum-FieldGroup" role="radiogroup" value="window-event">
+          <label class="spectrum-Radio">
+            <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="immediately">
+            <span class="spectrum-Radio-label">immediately when the page loads</span>
+          </label>
+          <label class="spectrum-Radio">
+            <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="window-loaded" checked="true">
+            <span class="spectrum-Radio-label">at Window Loaded</span>
+          </label>
+        </div>
+
       </div>
-      <p>
-        It is safer to enable the YouTube players at Window Loaded. This allows
-        the browser to load all of the page's contents, including the YouTube
-        players, before this extension attempts to enable the players.
-      </p>
     </form>
 
     <footer class="spectrum-Body--small text footer">
@@ -72,85 +112,91 @@
     <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
     <script src="../scripts/common.js"></script>
     <script>
+      var FORM_ID = 'extension-configuration';
+
       window.extensionBridge.register({
         init: function(info) {
           if (info.settings) {
-            var elementSpecificity = info.settings.elementSpecificity;
-            var elementsSelector = info.settings.elementsSelector;
-            var windowEvent = info.settings.windowEvent || 'window-loaded';
+            if (!info.settings.useLegacySettings) {
+              // an older version of this extension had been used
+              info.settings.useLegacySettings = 'yes';
+            }
 
-            var eventConfigurationForm = getForm();
-            eventConfigurationForm.elementSpecificity.value =
-              elementSpecificity;
-            eventConfigurationForm.elementsSelector.value =
-              elementSpecificity === 'any' ?
-              '' :
-              elementsSelector;
-            eventConfigurationForm.windowEvent.value = windowEvent;
+            setFormValues(FORM_ID, info.settings);
 
-            toggleSelectorField();
+            toggleElement(
+              FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container'
+            );
+            toggleElement(
+              FORM_ID, 'useLegacySettings', 'yes', '#legacy-extension-settings-container'
+            );
           }
         },
 
         getSettings: function() {
-          var formValues = getFormValues();
-          var elementSpecificityValue = formValues.elementSpecificity;
-          var elementsSelectorValue = formValues.elementsSelector;
-          var windowEventValue = formValues.windowEvent;
+          var formValues = getFormValues(FORM_ID);
 
-          if (elementSpecificityValue === 'any') {
-            elementsSelectorValue = '';
+          if (formValues.useLegacySettings === 'no') {
+            // reset all legacy settings to their defaults
+            formValues.elementSpecificity = 'any';
+            formValues.elementsSelector = '';
+            formValues.windowEvent = 'window-loaded';
           }
 
-          var settings = {
-            elementSpecificity: elementSpecificityValue,
-            elementsSelector: elementsSelectorValue,
-            windowEvent: windowEventValue
-          };
+          if (formValues.elementSpecificity === 'any') {
+            formValues.elementsSelector = '';
+          }
 
-          return settings;
+          // analytics
+          var analyticsEventDetail = {
+            category: 'extension configuration',
+            label: JSON.stringify(formValues)
+          };
+          dispatchAnalyticsEvent(
+            'configuration.getSettings',
+            analyticsEventDetail
+          );
+
+          return formValues;
         },
 
         validate: function() {
-          var formValues = getFormValues();
+          var formValues = getFormValues(FORM_ID);
+
+          var useLegacySettings = formValues.useLegacySettings;
           var elementSpecificityValue = formValues.elementSpecificity;
           var elementsSelectorValue = formValues.elementsSelector;
           var windowEventValue = formValues.windowEvent;
 
-          var elementSpecificityValueHasValue =
-            elementSpecificityValue.length > 0;
-          var elementsSelectorValueHasValue =
-            elementSpecificityValue === 'any' ?
+          var useLegacySettingsIsValid = ['no', 'yes'].indexOf(useLegacySettings) > -1;
+
+          var elementSpecificityValueIsValid =
+            ['any', 'specific'].indexOf(elementSpecificityValue) > -1;
+
+          var elementsSelectorValueHasValue = elementSpecificityValue === 'any' ?
             true :
             elementsSelectorValue.length > 0;
-          var windowEventValueHasValue = ['window-loaded', 'immediately']
-            .indexOf(windowEventValue) > -1;
 
-          return elementSpecificityValueHasValue &&
-            elementsSelectorValueHasValue && windowEventValueHasValue;
+          var windowEventValueIsValid =
+            ['immediately', 'window-loaded'].indexOf(windowEventValue) > -1;
+
+          return useLegacySettingsIsValid &&
+            elementSpecificityValueIsValid &&
+            elementsSelectorValueHasValue &&
+            windowEventValueIsValid;
         }
       });
 
-      function toggleSelectorField() {
-        var formValues = getFormValues();
-        var elementSpecificityValue = formValues.elementSpecificity;
+      document.querySelectorAll('#extension-settings label').forEach(function(label) {
+        label.addEventListener('click', function(event) {
+          toggleElement(FORM_ID, 'useLegacySettings', 'yes', '#legacy-extension-settings-container');
+        });
+      });
 
-        var elementsSelectorContainer = document.querySelector(
-          '#elements-selector-container'
-        );
-        if (elementSpecificityValue === 'any') {
-          elementsSelectorContainer.classList.remove('show-content');
-          elementsSelectorContainer.classList.add('hide-content');
-        } else {
-          elementsSelectorContainer.classList.remove('hide-content');
-          elementsSelectorContainer.classList.add('show-content');
-        }
-      }
-
-      var elementSpecificityInputs = document.querySelectorAll(
-        '#element-specificity input'
-      ).forEach(function (input) {
-        input.addEventListener('click', toggleSelectorField);
+      document.querySelectorAll('#element-specificity label').forEach(function(label) {
+        label.addEventListener('click', function(event) {
+          toggleElement(FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container');
+        });
       });
     </script>
   </body>

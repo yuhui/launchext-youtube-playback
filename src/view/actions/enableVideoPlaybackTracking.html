@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Enable YouTube Video Playback Tracking</title>
+    <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="//assets.adobedtm.com/6c27c1e662c8/609b9fc08c83/launch-54e6abf50de0.min.js" async></script>
+  </head>
+  <body class="spectrum spectrum--light spectrum-Body">
+    <form id="action-configuration" class="spectrum-Form">
+      <h4 class="spectrum-Heading4">Enable Video Playback Tracking</h4>
+
+      <div class="spectrum-Toast spectrum-Toast--warning" role="alert">
+        <svg class="spectrum-UIIcon-AlertMedium spectrum-Icon spectrum-Toast-typeIcon" focusable="false" aria-label="Warning" role="img">
+          <path d="M8.564 1.289L.2 16.256A.5.5 0 0 0 .636 17h16.728a.5.5 0 0 0 .5-.5.494.494 0 0 0-.064-.244L9.436 1.289a.5.5 0 0 0-.872 0zM10 14.75a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25zm0-3a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25z" class="spectrum-UIIcon--medium"></path>
+        </svg>
+        <div class="spectrum-Toast-body">
+          <div class="spectrum-Toast-content">
+            Ensure that the YouTube video player is loaded in your users' browsers <em>before</em>
+            this action runs.
+          </div>
+        </div>
+      </div>
+
+      <p>Enable video tracking for:</p>
+      <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup" value="players">
+        <label class="spectrum-Radio">
+          <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
+          <span class="spectrum-Radio-label">any player</span>
+        </label>
+        <label class="spectrum-Radio">
+          <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="specific">
+          <span class="spectrum-Radio-label">specific players</span>
+        </label>
+      </div>
+      <div id="elements-selector-container" class="hide">
+        <div id="elements-selector" class="max-width">
+          <span>Players matching the CSS selector</span>
+          <label>
+            <input type="text" name="elementsSelector" value="">
+          </label>
+          <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
+        </div>
+      </div>
+      <p>
+        <b>Important!</b> Only the players that you specify here will be able
+        to work with the YouTube playback events provided by this extension.
+      </p>
+    </form>
+
+    <footer class="spectrum-Body--small text footer">
+      <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
+      <p>
+        <a href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
+        <a href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
+        <a href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
+        <a href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+      </p>
+    </footer>
+
+    <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
+    <script src="../scripts/common.js"></script>
+    <script>
+      var FORM_ID = 'action-configuration';
+
+      window.extensionBridge.register({
+        init: function(info) {
+          if (info.settings) {
+            setFormValues(FORM_ID, info.settings);
+
+            toggleElement(
+              FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container'
+            );
+          }
+        },
+
+        getSettings: function() {
+          var formValues = getFormValues(FORM_ID);
+
+          if (formValues.elementSpecificity === 'any') {
+            formValues.elementsSelector = '';
+          }
+
+          return formValues;
+        },
+
+        validate: function() {
+          var formValues = getFormValues(FORM_ID);
+
+          var elementSpecificityValue = formValues.elementSpecificity;
+          var elementsSelectorValue = formValues.elementsSelector;
+
+          var elementSpecificityValueIsValid =
+            ['any', 'specific'].indexOf(elementSpecificityValue) > -1;
+
+          var elementsSelectorValueHasValue = elementSpecificityValue === 'any' ?
+            true :
+            elementsSelectorValue.length > 0;
+
+          return elementSpecificityValueIsValid && elementsSelectorValueHasValue;
+        }
+      });
+
+      document.querySelectorAll('#element-specificity label').forEach(function(label) {
+        label.addEventListener('click', function(event) {
+          toggleElement(FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container');
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -16,7 +16,7 @@
 
 'use strict';
 
-var youtubeIframeApi = require('./helpers/youtubeIframeApi');
+var youtubeIframeApi = require('../helpers/youtubeIframeApi');
 
 /**
  * YouTube Player Error event.
@@ -26,5 +26,9 @@ var youtubeIframeApi = require('./helpers/youtubeIframeApi');
  * @param {ruleTrigger} trigger The trigger callback.
  */
 module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerErrorTrigger(settings, trigger);
+  youtubeIframeApi.registerEventStateTrigger(
+    youtubeIframeApi.playerError,
+    settings,
+    trigger
+  );
 };

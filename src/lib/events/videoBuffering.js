@@ -16,7 +16,7 @@
 
 'use strict';
 
-var youtubeIframeApi = require('./helpers/youtubeIframeApi');
+var youtubeIframeApi = require('../helpers/youtubeIframeApi');
 
 /**
  * YouTube IFrame API Video Buffering event.
@@ -26,5 +26,9 @@ var youtubeIframeApi = require('./helpers/youtubeIframeApi');
  * @param {ruleTrigger} trigger The trigger callback.
  */
 module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerVideoBufferingTrigger(settings, trigger);
+  youtubeIframeApi.registerEventStateTrigger(
+    youtubeIframeApi.videoBuffering,
+    settings,
+    trigger
+  );
 };

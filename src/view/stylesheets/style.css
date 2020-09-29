@@ -25,8 +25,16 @@
 }
 
 .content-separator {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
 }
 
 .hide-content {
@@ -37,20 +45,29 @@
   visibility: visible;
 }
 
-#elements-selector {
+.error-message {
+  color: #ff0000;
+  font-weight: bold;
+}
+
+.max-width {
   display: flex !important;
 }
-  #elements-selector label {
+  .max-width label {
     margin-left: 0.5rem;
     margin-right: 0.5rem;
     flex: 1 !important;
   }
-    #elements-selector label input {
+    .max-width label input[type="text"] {
       width: 100% !important;
     }
-  #elements-selector a {
+  .max-width a {
     margin-left: 0.5rem;
   }
+
+path.a {
+  fill: #6E6E6E;
+}
 
 footer.footer {
   color: dimgray;
