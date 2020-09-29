@@ -16,7 +16,7 @@
 
 'use strict';
 
-var youtubeIframeApi = require('./helpers/youtubeIframeApi');
+var youtubeIframeApi = require('../helpers/youtubeIframeApi');
 
 /**
  * YouTube Playback Quality Changed event.
@@ -26,5 +26,9 @@ var youtubeIframeApi = require('./helpers/youtubeIframeApi');
  * @param {ruleTrigger} trigger The trigger callback.
  */
 module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerPlaybackQualityChangedTrigger(settings, trigger);
+  youtubeIframeApi.registerEventStateTrigger(
+    youtubeIframeApi.playbackRateChanged,
+    settings,
+    trigger
+  );
 };

@@ -16,19 +16,17 @@
 
 'use strict';
 
+var log = require('../helpers/log');
 var youtubeIframeApi = require('../helpers/youtubeIframeApi');
 
 /**
- * YouTube IFrame API Video Paused event.
- * This event occurs when a video is paused in the YouTube player.
+ * Enable Video Playback Tracking action.
+ * This action enables the selected YouTube players to work with the YouTube IFrame API.
  *
- * @param {Object} settings The event settings object.
- * @param {ruleTrigger} trigger The trigger callback.
+ * @param {Object} settings The settings object.
+ * @param {Object} event Information regarding the event that fired the action's rule.
  */
-module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerEventStateTrigger(
-    youtubeIframeApi.videoPaused,
-    settings,
-    trigger
-  );
+module.exports = function(settings, event) {
+  log('debug', 'Enabling YouTube playback tracking on ' + event.$type);
+  youtubeIframeApi.enableYoutubeIframeAPI(settings);
 };

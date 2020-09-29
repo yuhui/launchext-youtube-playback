@@ -16,16 +16,19 @@
 
 'use strict';
 
-var youtubeIframeApi = require('./helpers/youtubeIframeApi');
+var youtubeIframeApi = require('../helpers/youtubeIframeApi');
 
 /**
  * YouTube API Changed event.
- * This event fires whenever the player has loaded (or unloaded) a module with
- * exposed API methods.
+ * This event fires whenever the player has loaded (or unloaded) a module with exposed API methods.
  *
  * @param {Object} settings The event settings object.
  * @param {ruleTrigger} trigger The trigger callback.
  */
 module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerApiChangedTrigger(settings, trigger);
+  youtubeIframeApi.registerEventStateTrigger(
+    youtubeIframeApi.apiChanged,
+    settings,
+    trigger
+  );
 };
