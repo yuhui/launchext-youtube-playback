@@ -1,3 +1,8 @@
+1.2.0
+-----
+
+- Allows YouTube IFrame elements to be prepared with a Rule action. With this ability, the settings in the extension configuration are deprecated.
+
 1.1.1
 -----
 
