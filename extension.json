@@ -2,14 +2,14 @@
   "displayName": "YouTube Playback",
   "name": "youtube-playback",
   "platform": "web",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Track the playback of YouTube videos",
   "author": {
     "name": "Yuhui",
     "url": "https://yuhui.sg",
     "email": "dev@yuhui.sg"
   },
-  "exchangeUrl": "https://www.adobeexchange.com/experiencecloud.details.104160.youtube-playback-tracking.html",
+  "exchangeUrl": "https://exchange.adobe.com/experiencecloud.details.104160.youtube-playback-tracking.html",
   "iconPath": "youtube-playback-icon.svg",
   "viewBasePath": "src/view/",
   "configuration": {
@@ -152,6 +152,19 @@
       },
       "libPath": "src/lib/events/playbackRateChanged.js",
       "viewPath": "events/playbackRateChanged.html"
+    }
+  ],
+  "actions": [
+    {
+      "displayName": "Enable video playback tracking",
+      "name": "enable-video-playback-tracking",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/actions/enableVideoPlaybackTracking.js",
+      "viewPath": "actions/enableVideoPlaybackTracking.html"
     }
   ]
 }
