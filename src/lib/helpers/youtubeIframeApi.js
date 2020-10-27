@@ -314,7 +314,7 @@ var setupYoutubePlayers = function(settings) {
   }
 
   log('debug', 'Setting up YouTube players with the selector "' + youtubeIframeSelector + '"');
-  elements.forEach(function(element) {
+  [].forEach.call(elements, function(element) {
     // setup only those players that have NOT been setup by this extension
     var elementIsNotSetup = element.dataset.launchextSetup !== 'true';
 
