@@ -33,5 +33,5 @@ module.exports = function(level, message, element) {
     message = message + '.';
   }
 
-  turbine.logger[level]('📺 ' + elementId + message);
+  turbine.logger[level](elementId + message);
 };

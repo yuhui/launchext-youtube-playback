@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Load YouTube IFrame API Script</title>
+    <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="//assets.adobedtm.com/6c27c1e662c8/609b9fc08c83/launch-54e6abf50de0.min.js" async></script>
+  </head>
+  <body class="spectrum spectrum--light spectrum-Body">
+    <h4 class="spectrum-Heading4">No configuration necessary</h4>
+
+    <div class="content-separator">
+      &nbsp;
+    </div>
+
+    <section>
+      <h5 class="spectrum-Heading5">How this Action works</h5>
+      <p>
+        When this Action runs, it loads the YouTube IFrame API script into the web page, if it has
+        not been loaded yet.
+      </p>
+      <p>
+        This Action needs to be run only once on a web page, for example, with the Core extension's
+        "Library Loaded" Event. Another use-case is to run it after the user has granted consent to
+        be tracked.
+      </p>
+      <p>
+        If you have selected the "Load YouTube IFrame API script if it hasn't been loaded yet"
+        checkbox in the "Enable YouTube Video Playback Tracking" Action, then you don't need to
+        include this Action. (You <i>can</i> still include it, but nothing will happen.)
+      </p>
+    </section>
+
+    <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
+    <script src="../scripts/common.js"></script>
+    <script>
+      window.extensionBridge.register({
+        init: function(info) {
+          if (info.settings) {}
+        },
+
+        getSettings: function() {
+          return {};
+        },
+
+        validate: function() {
+          return true;
+        }
+      });
+    </script>
+  </body>
+</html>

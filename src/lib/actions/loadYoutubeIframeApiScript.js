@@ -20,13 +20,11 @@ var log = require('../helpers/log');
 var youtubeIframeApi = require('../helpers/youtubeIframeApi');
 
 /**
- * Enable Video Playback Tracking action.
- * This action enables the selected YouTube players to work with the YouTube IFrame API.
+ * Load the YouTube IFrame API script.
  *
  * @param {Object} settings The settings object.
- * @param {Object} event Information regarding the event that fired the action's rule.
  */
 module.exports = function(settings, event) {
-  log('debug', 'Enabling YouTube playback tracking on ' + event.$type);
-  youtubeIframeApi.enableVideoPlaybackTracking(settings);
+  log('debug', 'Loading YouTube IFrame API script on ' + event.$type);
+  youtubeIframeApi.loadYoutubeIframeApiScript(settings);
 };

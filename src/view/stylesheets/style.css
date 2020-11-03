@@ -24,6 +24,11 @@
   font-style: normal;
 }
 
+h4 {
+  text-align: center;
+  margin: 25px 0;
+}
+
 .content-separator {
   padding-top: 0rem;
   padding-bottom: 0rem;
