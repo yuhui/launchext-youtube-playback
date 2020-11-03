@@ -1,3 +1,8 @@
+1.3.1
+-----
+
+- Fixed instructions in extension configuration view.
+
 1.3.0
 -----
 
