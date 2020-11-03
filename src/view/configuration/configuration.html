@@ -6,98 +6,138 @@
     <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
     <script src="//use.typekit.net/buj6cmr.js"></script>
-    <script src="../scripts/analytics.js"></script>
     <script src="//assets.adobedtm.com/6c27c1e662c8/609b9fc08c83/launch-54e6abf50de0.min.js" async></script>
   </head>
   <body class="spectrum spectrum--light spectrum-Body">
-    <form id="extension-configuration" class="spectrum-Form">
-      <h4 class="spectrum-Heading4">Extension Configuration</h4>
+    <div id="no-extension-configuration-needed">
+      <h4 class="spectrum-Heading4">No configuration necessary</h4>
 
-      <div id="extension-settings-container">
-        <p>When the extension is loaded:</p>
-        <div id="extension-settings" class="spectrum-FieldGroup" role="radiogroup">
-          <label class="spectrum-Radio">
-            <input class="spectrum-Radio-button" type="radio" name="useLegacySettings" value="no" checked="true">
-            <span class="spectrum-Radio-label">do not setup YouTube video playback tracking (preferred)</span>
-          </label>
-          <label class="spectrum-Radio">
-            <input class="spectrum-Radio-button" type="radio" name="useLegacySettings" value="yes">
-            <span class="spectrum-Radio-label">setup YouTube video playback tracking <em>(warning: deprecated!)</em></span>
-          </label>
-        </div>
+      <div class="content-separator">
+        &nbsp;
       </div>
+    </div>
 
-      <div id="legacy-extension-settings-container" class="hide">
-        <div class="spectrum-Toast spectrum-Toast--warning" role="alert">
-          <svg class="spectrum-UIIcon-AlertMedium spectrum-Icon spectrum-Toast-typeIcon" focusable="false" aria-label="Warning" role="img">
-            <path d="M8.564 1.289L.2 16.256A.5.5 0 0 0 .636 17h16.728a.5.5 0 0 0 .5-.5.494.494 0 0 0-.064-.244L9.436 1.289a.5.5 0 0 0-.872 0zM10 14.75a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25zm0-3a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25z" class="spectrum-UIIcon--medium"></path>
-          </svg>
-          <div class="spectrum-Toast-body">
-            <div class="spectrum-Toast-content">
-              <span class="spectrum-Heading5" style="color: white;">
-                <strong>These settings have been deprecated!</strong>
-              </span><br />
-              &nbsp;<br />
-              You should add an Action in an appropriate Rule to enable video playback tracking
-              with your YouTube players.<br />
-              <ol>
-                <li>
-                  Create a new Rule or open an existing Rule, e.g. one with a "Window Loaded" Event
-                  Type.
-                </li>
-                <li>
-                  <b>Add the <span class="text-underline">"Enable video playback tracking"</span>
-                  Action Type from the <span class="text-underline">"YouTube Playback"</span>
-                  Extension.</b>
-                </li>
-              </ol>
+    <div>
+      <section>
+        <h5 class="spectrum-Heading5">How this Extension works</h5>
+        <ol>
+          <li>
+            Create a new Rule or open an existing Rule, for example, one with a "Window Loaded"
+            Event.
+          </li>
+          <li>
+            <i>(optional)</i> Add the <span class="text-underline">"Load YouTube IFrame API
+            script"</span> Action.
+          </li>
+          <li>
+            <b>Add the <span class="text-underline">"Enable video playback tracking"</span>
+            Action.</b><br />
+            If the "Load YouTube IFrame API script" Action was not used, then this Action will
+            ensure that the YouTube IFrame API script is loaded.
+          </li>
+        </ol>
+      </section>
+    </div>
+
+    <div id="extension-configuration-container" class="hide">
+      <form id="extension-configuration" class="spectrum-Form">
+        <h4 class="spectrum-Heading4">Extension Configuration</h4>
+
+        <div id="extension-settings-container">
+          <p>When the extension is loaded:</p>
+          <div id="extension-settings" class="spectrum-FieldGroup" role="radiogroup">
+            <label class="spectrum-Radio">
+              <input class="spectrum-Radio-button" type="radio" name="useLegacySettings" value="no" checked="true">
+              <span class="spectrum-Radio-label">do not setup YouTube video playback tracking (preferred)</span>
+            </label>
+            <label class="spectrum-Radio">
+              <input class="spectrum-Radio-button" type="radio" name="useLegacySettings" value="yes">
+              <span class="spectrum-Radio-label">setup YouTube video playback tracking <em>(warning: deprecated!)</em></span>
+            </label>
+          </div>
+        </div>
+
+        <div id="legacy-extension-settings-container">
+          <div class="spectrum-Toast spectrum-Toast--warning max-width" role="alert">
+            <svg class="spectrum-UIIcon-AlertMedium spectrum-Icon spectrum-Toast-typeIcon" focusable="false" aria-label="Warning" role="img">
+              <path d="M8.564 1.289L.2 16.256A.5.5 0 0 0 .636 17h16.728a.5.5 0 0 0 .5-.5.494.494 0 0 0-.064-.244L9.436 1.289a.5.5 0 0 0-.872 0zM10 14.75a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25zm0-3a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25z" class="spectrum-UIIcon--medium"></path>
+            </svg>
+            <div class="spectrum-Toast-body">
+              <div class="spectrum-Toast-content">
+                <span class="spectrum-Heading5" style="color: white;">
+                  <strong>These settings have been deprecated!</strong>
+                </span><br />
+                &nbsp;<br />
+                You should add an Action in an appropriate Rule to enable video playback tracking
+                with your YouTube players.<br />
+                Refer to the "How this Extension works" description above.
+              </div>
             </div>
           </div>
-        </div>
 
-        <p>Specify the YouTube players to be used with this extension.</p>
-        <p>
-          <b>Important!</b> Only the players that you specify here will be able
-          to work with the YouTube playback events provided by this extension.
-        </p>
-        <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup" value="players">
-          <label class="spectrum-Radio">
-            <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
-            <span class="spectrum-Radio-label">any player</span>
-          </label>
-          <label class="spectrum-Radio">
-            <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="specific">
-            <span class="spectrum-Radio-label">specific players</span>
-          </label>
-        </div>
-        <div id="elements-selector-container" class="hide">
-          <div id="elements-selector">
-            <span>Players matching the CSS selector</span>
-            <label>
-              <input type="text" name="elementsSelector" value="">
+          <p>Specify the YouTube players to be used with this extension.</p>
+          <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup" value="players">
+            <label class="spectrum-Radio">
+              <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
+              <span class="spectrum-Radio-label">any player</span>
             </label>
-            <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
+            <label class="spectrum-Radio">
+              <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="specific">
+              <span class="spectrum-Radio-label">specific players</span>
+            </label>
           </div>
+          <div id="elements-selector-container" class="hide">
+            <div id="elements-selector" class="max-width">
+              <span>Players matching the CSS selector</span>
+              <label>
+                <input type="text" name="elementsSelector" value="">
+              </label>
+              <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
+            </div>
+            <div>
+              <b>Important!</b> Only the players that you specify here will be able
+              to work with the YouTube playback events provided by this extension.
+            </div>
+          </div>
+
+          <div class="content-separator">
+            &nbsp;
+          </div>
+    
+          <div id="load-youtube-iframe-api-container">
+            <div id="load-youtube-iframe-api" class="max-width">
+              <label class="spectrum-Checkbox">
+                <input class="spectrum-Checkbox-box" type="checkbox" name="loadYoutubeIframeApi" value="yes" checked="true">
+                <span>Load YouTube IFrame API script if it hasn't been loaded yet.</span>
+              </label>
+            </div>
+            <div>
+              Uncheck this box if you want to control when the YouTube IFrame API script is loaded,
+              for example, after the user has given consent. (In that case, use the "Load YouTube
+              IFrame API script" Action.) If you are not sure, leave this checkbox as checked.
+            </div>
+          </div>
+
+          <div class="content-separator">
+            &nbsp;
+          </div>
+
+          <p>Specify when the YouTube players should be enabled to use the IFrame API.</p>
+          <div id="window-event" class="spectrum-FieldGroup" role="radiogroup" value="window-event">
+            <label class="spectrum-Radio">
+              <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="immediately">
+              <span class="spectrum-Radio-label">immediately when the page loads</span>
+            </label>
+            <label class="spectrum-Radio">
+              <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="window-loaded" checked="true">
+              <span class="spectrum-Radio-label">at Window Loaded</span>
+            </label>
+          </div>
+
         </div>
 
-        <div class="content-separator">
-          &nbsp;
-        </div>
-
-        <p>Specify when the YouTube players should be enabled to use the IFrame API.</p>
-        <div id="window-event" class="spectrum-FieldGroup" role="radiogroup" value="window-event">
-          <label class="spectrum-Radio">
-            <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="immediately">
-            <span class="spectrum-Radio-label">immediately when the page loads</span>
-          </label>
-          <label class="spectrum-Radio">
-            <input class="spectrum-Radio-button" type="radio" name="windowEvent" value="window-loaded" checked="true">
-            <span class="spectrum-Radio-label">at Window Loaded</span>
-          </label>
-        </div>
-
-      </div>
-    </form>
+      </form>
+    </div>
 
     <footer class="spectrum-Body--small text footer">
       <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
@@ -117,9 +157,17 @@
       window.extensionBridge.register({
         init: function(info) {
           if (info.settings) {
-            if (!info.settings.useLegacySettings) {
-              // an older version of this extension had been used
+            // this setting was added in v1.2.0
+            if (!info.settings.hasOwnProperty('useLegacySettings')) {
               info.settings.useLegacySettings = 'yes';
+            }
+            // this setting was added in v1.3.0
+            if (!info.settings.hasOwnProperty('loadYoutubeIframeApi')) {
+              info.settings.loadYoutubeIframeApi = 'yes';
+            }
+            if (info.settings.loadYoutubeIframeApi === 'no') {
+              // rewrite this value to be a valid checkbox input value for "false" checked state
+              info.settings.loadYoutubeIframeApi = '';
             }
 
             setFormValues(FORM_ID, info.settings);
@@ -128,7 +176,13 @@
               FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container'
             );
             toggleElement(
+              FORM_ID, 'useLegacySettings', 'yes', '#extension-configuration-container'
+            );
+            toggleElement(
               FORM_ID, 'useLegacySettings', 'yes', '#legacy-extension-settings-container'
+            );
+            toggleElement(
+              FORM_ID, 'useLegacySettings', 'no', '#no-extension-configuration-needed'
             );
           }
         },
@@ -141,21 +195,17 @@
             formValues.elementSpecificity = 'any';
             formValues.elementsSelector = '';
             formValues.windowEvent = 'window-loaded';
+            formValues.loadYoutubeIframeApi = 'yes';
+          }
+
+          if (formValues.loadYoutubeIframeApi === '') {
+            // rewrite this value so as not to deal with empty strings
+            formValues.loadYoutubeIframeApi = 'no';
           }
 
           if (formValues.elementSpecificity === 'any') {
             formValues.elementsSelector = '';
           }
-
-          // analytics
-          var analyticsEventDetail = {
-            category: 'extension configuration',
-            label: JSON.stringify(formValues)
-          };
-          dispatchAnalyticsEvent(
-            'configuration.getSettings',
-            analyticsEventDetail
-          );
 
           return formValues;
         },
@@ -166,6 +216,7 @@
           var useLegacySettings = formValues.useLegacySettings;
           var elementSpecificityValue = formValues.elementSpecificity;
           var elementsSelectorValue = formValues.elementsSelector;
+          var loadYoutubeIframeApi = formValues.loadYoutubeIframeApi;
           var windowEventValue = formValues.windowEvent;
 
           var useLegacySettingsIsValid = ['no', 'yes'].indexOf(useLegacySettings) > -1;
@@ -177,12 +228,15 @@
             true :
             elementsSelectorValue.length > 0;
 
+          var loadYoutubeIframeApiIsValid = ['', 'yes'].indexOf(loadYoutubeIframeApi) > -1;
+
           var windowEventValueIsValid =
             ['immediately', 'window-loaded'].indexOf(windowEventValue) > -1;
 
           return useLegacySettingsIsValid &&
             elementSpecificityValueIsValid &&
             elementsSelectorValueHasValue &&
+            loadYoutubeIframeApiIsValid &&
             windowEventValueIsValid;
         }
       });

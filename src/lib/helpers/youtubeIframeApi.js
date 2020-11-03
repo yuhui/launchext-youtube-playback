@@ -61,14 +61,17 @@ var ERROR_CODES = {
 };
 
 // constants related to setting up the YouTube IFrame API
+var YOUTUBE_NAME_PREFIX = 'youTubePlayback';
 var YOUTUBE_IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
 var ENABLE_JSAPI_PARAMETER = 'enablejsapi';
 var ENABLE_JSAPI_VALUE = '1';
 var ORIGIN_PARAMETER = 'origin';
 var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
+var YOUTUBE_PLAYER_SETUP_STARTED_STATUS = 'started';
+var YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS = 'completed';
 
 var EXTENSION_SETTINGS = turbine.getExtensionSettings();
-var USE_LEGACY_SETTINGS = EXTENSION_SETTINGS.useLegacySettings || 'no';
+var USE_LEGACY_SETTINGS = EXTENSION_SETTINGS.useLegacySettings || 'yes';
 var WINDOW_EVENT = EXTENSION_SETTINGS.windowEvent || 'window-loaded';
 
 /**
@@ -76,9 +79,11 @@ var WINDOW_EVENT = EXTENSION_SETTINGS.windowEvent || 'window-loaded';
  * Every registered event has a list of triggers, where one trigger corresponds to one Launch Rule.
  */
 var registry = {};
-YOUTUBE_EVENT_STATES.forEach(function(eventState) {
+// use a for loop instead of forEach for efficiency
+for (var i = 0, j = YOUTUBE_EVENT_STATES.length; i < j; i++) {
+  var eventState = YOUTUBE_EVENT_STATES[i];
   registry[eventState] = [];
-});
+}
 
 /**
  * Synthetic YouTube playback event to send to the trigger callback.
@@ -110,7 +115,7 @@ var createGetYoutubeEvent = function(element, eventState, nativeEvent, eventData
  * @return {Object} Data about the current playback in the YouTube player.
  */
 var getYoutubeEventData = function(player) {
-  // remove the "t" parameter from the YouTube video URL
+  // remove the `t` parameter from the YouTube video URL
   var videoUrl = player.getVideoUrl().replace(/&?t=[0-9]+&?/, '');
 
   var eventData = {
@@ -164,13 +169,9 @@ var processTriggers = function(eventState, nativeEvent) {
   var player = nativeEvent.target;
   var element = player.getIframe();
 
-  // trigger only with those players that had been initialised by this extension
-  //var elementIsInitialised = element.dataset.launchextInitialised === 'true';
-
   // trigger only with those players that have been setup by this extension
-  var elementIsSetup = element.dataset.launchextSetup === 'true';
-
-  if (/*elementIsInitialised && */ elementIsSetup) {
+  var elementIsSetup = element.dataset.launchextSetup === YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+  if (elementIsSetup) {
     var eventData = getYoutubeEventData(player);
 
     // add additional information based on the event's state
@@ -189,12 +190,8 @@ var processTriggers = function(eventState, nativeEvent) {
         break;
     }
 
-    // use a for loop instead of forEach for efficiency
     var eventStateRegistry = registry[eventState];
-    /*
-    log('debug', eventState + ', has ' + eventStateRegistry.length + ' triggers', element);
-    */
-
+    // use a for loop instead of forEach for efficiency
     for (var i = 0, j = eventStateRegistry.length; i < j; i++) {
       var triggerData = eventStateRegistry[i];
       processTrigger(
@@ -289,48 +286,151 @@ var playerStateChanged = function(event) {
 };
 
 /**
- * Setup YouTube IFrame API.
- *
- * @param {Object} settings The (configuration or action) settings object.
+ * Create the registry of YouTube player elements.
+ * When the YouTube IFrame API is ready, the players that are in here will be processed to allow
+ * for video playback tracking.
  */
-var setupYoutubePlayers = function(settings) {
-  var elementSpecificity = settings.elementSpecificity || 'any';
-  var elementsSelector = settings.elementsSelector || '';
-  var youtubeIframeSelector = elementSpecificity === 'specific' && elementsSelector ?
-    elementsSelector :
-    YOUTUBE_IFRAME_SELECTOR;
+var playersRegistry = [];
+/**
+ * Save a YouTube player element for processing later.
+ *
+ * @param {DOMElement} playerElement A YouTube IFrame DOM element.
+ */
+var registerPlayer = function(playerElement) {
+  playersRegistry.push(playerElement);
+};
+/**
+ * Determine if any YouTube player elements have been registered for processing.
+ *
+ * @return {boolean} true if there are elements in playersRegistry, false otherwise.
+ */
+var playersRegistryHasPlayers = function() {
+  return playersRegistry.length > 0;
+};
 
-  var elements = document.querySelectorAll(youtubeIframeSelector);
-  if (elements.length === 0) {
-    // don't continue if there are no YouTube players
-    // since there's no point tracking what is not available
-    log('info', 'No YouTube players found for the selector "' + youtubeIframeSelector + '"');
+/**
+ * Prepare YouTube IFrame players to work with the YouTube IFrame API.
+ *
+ * @param {DOMElement} element A YouTube IFrame DOM element.
+ */
+var setupYoutubePlayer = function(element) {
+  // eslint-disable-next-line no-unused-vars
+  var player = new YT.Player(element.id, {
+    events: {
+      onApiChange: apiChanged,
+      onError: playerError,
+      onPlaybackQualityChange: playbackQualityChanged,
+      onPlaybackRateChange: onPlaybackRateChanged,
+      onReady: playerReady,
+      onStateChange: playerStateChanged
+    }
+  });
+
+  // finally, set a data attribute to indicate that this player has been setup
+  element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+};
+
+/**
+ * Process a YouTube player element to work with the YouTube IFrame API.
+ * Returns with an error log if YouTube's YT object is unavailable.
+ */
+var processPlayers = function() {
+  if (!playersRegistryHasPlayers()) {
     return;
   }
 
-  if (!window.YT || !window.YT.Player) {
+  if (!youtubeIframeAPIIsReady()) {
     log('error', 'Unexpected error! YouTube IFrame API has not been initialised');
     return;
   }
 
-  log('debug', 'Setting up YouTube players with the selector "' + youtubeIframeSelector + '"');
-  elements.forEach(function(element) {
+  while (playersRegistry.length > 0) {
+    var playerElement = playersRegistry.shift();
+    setupYoutubePlayer(playerElement);
+  }
+};
+
+/**
+ * Check if the YouTube IFrame Player API has been loaded and is ready.
+ */
+var youtubeIframeAPIIsReady = function() {
+  return window.YT && window.YT.Player;
+};
+
+/**
+ * Load the YouTube IFrame Player API script asynchronously.
+ */
+var loadYoutubeIframeAPI = function() {
+  // if the YouTube IFrame API has NOT been loaded, then when it does finish loading,
+  // the YouTube players will be setup when the API runs onYouTubeIframeAPIReady on its own
+  loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
+    log('info', 'YouTube IFrame API was loaded successfully');
+    // the YouTube players will be setup when the YouTube IFrame API script finishes loading
+    // and runs onYouTubeIframeAPIReady on its own
+  }, function() {
+    log('error', 'YouTube IFrame API could not be loaded');
+  });
+};
+
+/**
+ * Prepare YouTube IFrame players to work with the YouTube IFrame API later, then load the API
+ * script itself.
+ * Returns with a debug log if no players are found with the specified selector.
+ *
+ * @param {Object} settings The (configuration or action) settings object.
+ */
+var prepareYoutubePlayers = function(settings) {
+  var elementSpecificitySetting = settings.elementSpecificity || 'any';
+  var elementsSelectorSetting = settings.elementsSelector || '';
+  var iframeSelector = elementSpecificitySetting === 'specific' && elementsSelectorSetting ?
+    elementsSelectorSetting :
+    YOUTUBE_IFRAME_SELECTOR;
+  var loadYoutubeIframeApiSetting = settings.loadYoutubeIframeApi || 'yes';
+
+  var elements = document.querySelectorAll(iframeSelector);
+  var numElements = elements.length;
+  if (numElements === 0) {
+    // don't continue if there are no YouTube players
+    // since there's no point tracking what is not available
+    log('debug', 'No YouTube players found for the selector "' + iframeSelector + '"');
+    return;
+  }
+
+  // use a for loop because it is faster than Array.prototype.forEach()
+  for (var i = 0; i < numElements; i++) {
+    var element = elements[i];
+
     // setup only those players that have NOT been setup by this extension
-    var elementIsNotSetup = element.dataset.launchextSetup !== 'true';
+    var elementIsNotSetup = [
+      YOUTUBE_PLAYER_SETUP_STARTED_STATUS,
+      YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS
+    ].indexOf(element.dataset.launchextSetup) === -1;
 
     if (elementIsNotSetup) {
-      // ensure that the IFrame's "src" attribute contains the "enablejsapi" and "origin"
-      // parameters
+      // set a data attribute to indicate that this player is being setup
+      element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_STARTED_STATUS;
+
+      // ensure that the IFrame has an `id` attribute
+      var elementId = element.id;
+      if (!elementId) {
+        // set the `id` attribute to the current timestamp and index
+        elementId = YOUTUBE_NAME_PREFIX + '_' + new Date().valueOf() + '_' + i;
+        element.id = elementId;
+      }
+
       var elementSrc = element.src;
+
+      // ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
+      // parameters
       var requiredParametersToAdd = [];
       if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
-        // "enablejsapi" is absent in the IFrame's src URL, add it
+        // `enablejsapi` is absent in the IFrame's src URL, add it
         requiredParametersToAdd.push(
           ENABLE_JSAPI_PARAMETER + '=' + ENABLE_JSAPI_VALUE
         );
       }
       if (elementSrc.indexOf(ORIGIN_PARAMETER) < 0) {
-        // "origin" is absent in the IFrame's src URL, add it
+        // `origin` is absent in the IFrame's src URL, add it
         var originProtocol = document.location.protocol;
         var originHostname = document.location.hostname;
         var originValue = originProtocol + '//' + originHostname;
@@ -342,70 +442,24 @@ var setupYoutubePlayers = function(settings) {
         element.src = elementSrc + separator + requiredParametersToAdd;
       }
 
-      // eslint-disable-next-line no-unused-vars
-      var player = new YT.Player(element, {
-        events: {
-          onApiChange: apiChanged,
-          onError: playerError,
-          onPlaybackQualityChange: playbackQualityChanged,
-          onPlaybackRateChange: onPlaybackRateChanged,
-          onReady: playerReady,
-          onStateChange: playerStateChanged
-        }
-      });
-
-      // finally, set a data attribute to indicate that this player's events
-      // have been setup
-      element.dataset.launchextSetup = 'true';
+      registerPlayer(element);
     }
-  });
-};
-
-/**
- * Create the registry of the extension's configuration or action settings.
- * When the YouTube IFrame API is ready, the settings that are in here will be processed to allow
- * for video playback tracking.
- */
-var settingsRegistry = [];
-var registerSettings = function(settings) {
-  settingsRegistry.push(settings);
-};
-var runRegisteredSettings = function() {
-  while (settingsRegistry.length > 0) {
-    var settings = settingsRegistry.shift();
-    setupYoutubePlayers(settings);
   }
-};
 
-/**
- * Load the YouTube IFrame Player API code asynchronously.
- */
-var loadYoutubeIframeAPI = function() {
-  var youtubeScriptElement = document.querySelector('script[src="' + YOUTUBE_IFRAME_API_URL + '"]');
-  if (youtubeScriptElement && window.YT) {
-    // YouTube IFrame API script has already been included
-    if (window.YT.Player) {
-      // the YouTube IFrame API has finished loading
-      // so the YouTube players can be setup immediately
-      log('debug', 'YouTube IFrame API has already been loaded');
-      runRegisteredSettings();
+  if (playersRegistryHasPlayers()) {
+    if (youtubeIframeAPIIsReady()) {
+      processPlayers();
+    } else if (loadYoutubeIframeApiSetting === 'yes') {
+      loadYoutubeIframeAPI();
+      // the players will be processed when onYouTubeIframeAPIReady() runs
     }
-    // the YouTube IFrame API is most likely still being loaded
-    // when it finishes, the YouTube players will be setup when the script runs
-    // onYouTubeIframeAPIReady on its own
-  } else {
-    loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
-      log('info', 'YouTube IFrame API was loaded successfully');
-      // the YouTube players will be setup when the YouTube IFrame API script finishes loading
-      // and runs onYouTubeIframeAPIReady on its own
-    }, function() {
-      log('error', 'YouTube IFrame API could not be loaded');
-    });
   }
 };
 
 /**
  * Required callback function when the YouTube IFrame API is ready.
+ * If this callback function had been defined already, then run that old function before running
+ * this one.
  */
 window.onYouTubeIframeAPIReady = (function(oldYouTubeIframeAPIReady) {
   return function() {
@@ -414,7 +468,7 @@ window.onYouTubeIframeAPIReady = (function(oldYouTubeIframeAPIReady) {
     // preserve any existing function declaration
     oldYouTubeIframeAPIReady && oldYouTubeIframeAPIReady();
 
-    runRegisteredSettings();
+    processPlayers();
   };
 })(window.onYouTubeIframeAPIReady);
 
@@ -428,18 +482,14 @@ if (USE_LEGACY_SETTINGS === 'yes') {
 
   switch (WINDOW_EVENT) {
     case 'immediately':
-      registerSettings(EXTENSION_SETTINGS);
+      prepareYoutubePlayers(EXTENSION_SETTINGS);
       break;
     case 'window-loaded':
       window.addEventListener('load', function() {
-        setupYoutubePlayers(EXTENSION_SETTINGS);
+        prepareYoutubePlayers(EXTENSION_SETTINGS);
       }, true);
       break;
   }
-
-  // legacy settings require YouTube IFrame API to be enabled immediately or at window loaded
-  // so ensure that the YouTube IFrame API is loaded
-  loadYoutubeIframeAPI();
 }
 
 module.exports = {
@@ -459,13 +509,21 @@ module.exports = {
   videoUnstarted: VIDEO_UNSTARTED,
 
   /**
-   * Enable YouTube IFrame API based on the user's settings.
+   * Load the YouTube IFrame API script based on the user's settings.
    *
    * @param {Object} settings The (configuration or action) settings object.
    */
-  enableYoutubeIframeAPI: function(settings) {
-    registerSettings(settings);
-    loadYoutubeIframeAPI();
+  loadYoutubeIframeApiScript: function(settings) {
+    loadYoutubeIframeAPI(settings); // `settings` argument is actually not needed
+  },
+
+  /**
+   * Enable YouTube video playback tracking based on the user's settings.
+   *
+   * @param {Object} settings The (configuration or action) settings object.
+   */
+  enableVideoPlaybackTracking: function(settings) {
+    prepareYoutubePlayers(settings);
   },
 
   /**

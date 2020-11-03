@@ -51,6 +51,8 @@ function getFormValues(formId) {
           case 'radio':
             if (formElement.checked) {
               formValues[formElement.name] = formElement.value;
+            } else if (formElement.type === 'checkbox') {
+              formValues[formElement.name] = '';
             }
             break;
         }
@@ -97,7 +99,11 @@ function setFormValues(formId, formValues) {
   for (var i = 0, j = formFields.length; i < j; i++) {
     var field = formFields[i];
     if (field in formValues) {
-      form[field].value = formValues[field];
+      if (form[field].type === 'checkbox') {
+        form[field].checked = formValues[field] === form[field].value ? true : false;
+      } else {
+        form[field].value = formValues[field];
+      }
     }
   }
 }

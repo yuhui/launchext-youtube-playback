@@ -12,14 +12,14 @@
     <form id="action-configuration" class="spectrum-Form">
       <h4 class="spectrum-Heading4">Enable Video Playback Tracking</h4>
 
-      <div class="spectrum-Toast spectrum-Toast--warning" role="alert">
+      <div class="spectrum-Toast spectrum-Toast--warning max-width" role="alert">
         <svg class="spectrum-UIIcon-AlertMedium spectrum-Icon spectrum-Toast-typeIcon" focusable="false" aria-label="Warning" role="img">
           <path d="M8.564 1.289L.2 16.256A.5.5 0 0 0 .636 17h16.728a.5.5 0 0 0 .5-.5.494.494 0 0 0-.064-.244L9.436 1.289a.5.5 0 0 0-.872 0zM10 14.75a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25zm0-3a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25z" class="spectrum-UIIcon--medium"></path>
         </svg>
         <div class="spectrum-Toast-body">
           <div class="spectrum-Toast-content">
-            Ensure that the YouTube video player is loaded in your users' browsers <em>before</em>
-            this action runs.
+            Ensure that the YouTube video player is loaded in your users' browsers <i>before</i>
+            this Action runs.
           </div>
         </div>
       </div>
@@ -43,22 +43,51 @@
           </label>
           <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
         </div>
+        <div>
+          <b>Important!</b> Only the players that you specify here will be able
+          to work with the YouTube playback events provided by this extension.
+        </div>
       </div>
-      <p>
-        <b>Important!</b> Only the players that you specify here will be able
-        to work with the YouTube playback events provided by this extension.
-      </p>
+
+      <div class="content-separator">
+        &nbsp;
+      </div>
+
+      <div id="load-youtube-iframe-api-container">
+        <div id="load-youtube-iframe-api" class="max-width">
+          <label class="spectrum-Checkbox">
+            <input class="spectrum-Checkbox-box" type="checkbox" name="loadYoutubeIframeApi" value="yes" checked="true">
+            <span>Load YouTube IFrame API script if it hasn't been loaded yet.</span>
+          </label>
+        </div>
+        <div>
+          Uncheck this box if you want to control when the YouTube IFrame API script is loaded,
+          for example, after the user has given consent. (In that case, use the "Load YouTube
+          IFrame API script" Action.) If you are not sure, leave this checkbox as checked.
+        </div>
+      </div>
     </form>
 
-    <footer class="spectrum-Body--small text footer">
-      <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
+    <div class="content-separator">
+      &nbsp;
+    </div>
+
+    <section>
+      <h5 class="spectrum-Heading5">How this Action works</h5>
       <p>
-        <a href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
-        <a href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
-        <a href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
-        <a href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+        When this Action runs, it sets up the YouTube players to work with the YouTube IFrame API.
+        This detects the video playback interactions so that they can be tracked.
       </p>
-    </footer>
+      <p>
+        This Action should be run every time YouTube players are loaded into the web page. For
+        example:
+      </p>
+      <ul>
+        <li>with the Core extension's "Window Loaded" Event</li>
+        <li>when a button is clicked to load the YouTube player(s)</li>
+        <li>etc.</li>
+      </ul>
+    </section>
 
     <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
     <script src="../scripts/common.js"></script>
@@ -68,6 +97,15 @@
       window.extensionBridge.register({
         init: function(info) {
           if (info.settings) {
+            // this setting was added in v1.3.0
+            if (!info.settings.hasOwnProperty('loadYoutubeIframeApi')) {
+              info.settings.loadYoutubeIframeApi = 'yes';
+            }
+            if (info.settings.loadYoutubeIframeApi === 'no') {
+              // rewrite this value to be a valid checkbox input value for "false" checked state
+              info.settings.loadYoutubeIframeApi = '';
+            }
+
             setFormValues(FORM_ID, info.settings);
 
             toggleElement(
@@ -83,6 +121,11 @@
             formValues.elementsSelector = '';
           }
 
+          if (formValues.loadYoutubeIframeApi === '') {
+            // rewrite this value so as not to deal with empty strings
+            formValues.loadYoutubeIframeApi = 'no';
+          }
+
           return formValues;
         },
 
@@ -91,6 +134,7 @@
 
           var elementSpecificityValue = formValues.elementSpecificity;
           var elementsSelectorValue = formValues.elementsSelector;
+          var loadYoutubeIframeApi = formValues.loadYoutubeIframeApi;
 
           var elementSpecificityValueIsValid =
             ['any', 'specific'].indexOf(elementSpecificityValue) > -1;
@@ -99,7 +143,11 @@
             true :
             elementsSelectorValue.length > 0;
 
-          return elementSpecificityValueIsValid && elementsSelectorValueHasValue;
+          var loadYoutubeIframeApiIsValid = ['', 'yes'].indexOf(loadYoutubeIframeApi) > -1;
+
+          return elementSpecificityValueIsValid &&
+            elementsSelectorValueHasValue &&
+            loadYoutubeIframeApiIsValid;
         }
       });
 

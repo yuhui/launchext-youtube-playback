@@ -1,3 +1,11 @@
+1.3.0
+-----
+
+- Improves playback tracking on slow network connections.
+- Allows YouTube IFrame API script to be loaded with a Rule action. With this ability, loading the script when preparing the YouTube IFrame elements is optional.
+- Hide legacy extension configuration settings  if they are not being used.
+- Bug fixes for Internet Explorer.
+
 1.2.0
 -----
 
