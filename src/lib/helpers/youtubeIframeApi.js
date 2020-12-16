@@ -434,7 +434,11 @@ var prepareYoutubePlayers = function(settings) {
         // `origin` is absent in the IFrame's src URL, add it
         var originProtocol = document.location.protocol;
         var originHostname = document.location.hostname;
+        var originPort = document.location.port;
         var originValue = originProtocol + '//' + originHostname;
+        if (originPort) {
+          originValue += ':' + originPort;
+        }
         requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
       }
       if (requiredParametersToAdd.length > 0) {
