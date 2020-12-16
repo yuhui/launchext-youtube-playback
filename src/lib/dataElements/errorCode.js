@@ -16,16 +16,16 @@
 
 'use strict';
 
-var log = require('../helpers/log');
-var youtubeIframeApi = require('../helpers/youtubeIframeApi');
-
 /**
- * Load the YouTube IFrame API script.
+ * Error Code data element.
+ * This data element returns the numeric code that identifies the type of error that occurred.
  *
- * @param {Object} settings The settings object.
- * @param {Object} event The underlying event object that triggered the rule.
+ * @param {Object} settings The data element settings object.
+ * @param {Object} event The event that triggered the evaluation of the data element.
+ * @returns {string}
  */
 module.exports = function(settings, event) {
-  log('debug', 'Loading YouTube IFrame API script on ' + event.$type);
-  youtubeIframeApi.loadYoutubeIframeApiScript(settings);
+  if (event && event.youtube && event.state === 'player error') {
+    return event.youtube.errorCode;
+  }
 };

@@ -1,3 +1,11 @@
+1.4.0
+-----
+
+- Adds data element types to retrieve video playback data using Adobe Launch's familiar interface, instead of via the clunky `event` code.
+- Allows YouTube IFrame elements to be prepared properly when the web page's URL includes a port in the host.
+- Fixed "Playback Quality Changed" and "Playback Rate Changed" events.
+- Add support-related links in all views' footers.
+
 1.3.1
 -----
 

@@ -27,7 +27,7 @@ var youtubeIframeApi = require('../helpers/youtubeIframeApi');
  */
 module.exports = function(settings, trigger) {
   youtubeIframeApi.registerEventStateTrigger(
-    youtubeIframeApi.playbackQualityChanged,
+    youtubeIframeApi.playbackRateChanged,
     settings,
     trigger
   );

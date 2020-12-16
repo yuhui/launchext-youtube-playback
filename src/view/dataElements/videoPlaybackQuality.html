@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Load YouTube IFrame API Script</title>
+    <title>Video Playback Quality Data Element</title>
     <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
     <script src="//use.typekit.net/buj6cmr.js"></script>
@@ -11,21 +11,35 @@
     <h4 class="spectrum-Heading4">No configuration necessary</h4>
 
     <section>
-      <h5 class="spectrum-Heading5">How this Action works</h5>
+      <h5 class="spectrum-Heading5">How this Data Element works</h5>
       <p>
-        When this Action runs, it loads the YouTube IFrame API script into the web page, if it has
-        not been loaded yet.
+        This Data Element returns the playback quality of the currently playing video whenever it
+        changes.
+      </p>
+
+      <p>
+        <b>This data element <span class="text-underline">can only</span> be used with the "Playback
+          Quality Changed" Event from this YouTube Playback extension.</b>
       </p>
       <p>
-        This Action needs to be run only once on a web page, for example, with the Core extension's
-        "Library Loaded" Event. Another use-case is to run it after the user has granted consent to
-        be tracked.
+        How to use:
       </p>
+      <ul>
+        <li><code>%data element name%</code></li>
+        <li><code>_satellite.getVar('data element name', event)</code></li>
+      </ul>
+
       <p>
-        If you have selected the "Load YouTube IFrame API script if it hasn't been loaded yet"
-        checkbox in the "Enable YouTube Video Playback Tracking" Action, then you don't need to
-        include this Action. (You <i>can</i> still include it, but nothing will happen.)
+        Possible values are:
       </p>
+      <ul>
+        <li><code>small</code></li>
+        <li><code>medium</code></li>
+        <li><code>large</code></li>
+        <li><code>hd720</code></li>
+        <li><code>hd1080</code></li>
+        <li><code>highres</code></li>
+      </ul>
     </section>
 
     <footer class="spectrum-Body--small text footer">

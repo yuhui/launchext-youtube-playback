@@ -2,8 +2,8 @@
   "displayName": "YouTube Playback",
   "name": "youtube-playback",
   "platform": "web",
-  "version": "1.3.1",
-  "description": "Track the playback of YouTube videos",
+  "version": "1.4.0",
+  "description": "The most full-featured extension for tracking playback of all of your YouTube videos",
   "author": {
     "name": "Yuhui",
     "url": "https://yuhui.sg",
@@ -176,6 +176,152 @@
       },
       "libPath": "src/lib/actions/loadYoutubeIframeApiScript.js",
       "viewPath": "actions/loadYoutubeIframeApiScript.html"
+    }
+  ],
+  "dataElements": [
+    {
+      "displayName": "Player state",
+      "name": "player-state",
+      "categoryName": "Player",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/playerState.js",
+      "viewPath": "dataElements/playerState.html"
+    },
+    {
+      "displayName": "Video Current Time",
+      "name": "video-current-time",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoCurrentTime.js",
+      "viewPath": "dataElements/videoCurrentTime.html"
+    },
+    {
+      "displayName": "Video Duration",
+      "name": "video-duration",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoDuration.js",
+      "viewPath": "dataElements/videoDuration.html"
+    },
+    {
+      "displayName": "Video Loaded Fraction",
+      "name": "video-loaded-fraction",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoLoadedFraction.js",
+      "viewPath": "dataElements/videoLoadedFraction.html"
+    },
+    {
+      "displayName": "Video Muted",
+      "name": "video-muted",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoMuted.js",
+      "viewPath": "dataElements/videoMuted.html"
+    },
+    {
+      "displayName": "Video Playback Quality",
+      "name": "video-playback-quality",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoPlaybackQuality.js",
+      "viewPath": "dataElements/videoPlaybackQuality.html"
+    },
+    {
+      "displayName": "Video Playback Rate",
+      "name": "video-playback-rate",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoPlaybackRate.js",
+      "viewPath": "dataElements/videoPlaybackRate.html"
+    },
+    {
+      "displayName": "Video URL",
+      "name": "video-url",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoUrl.js",
+      "viewPath": "dataElements/videoUrl.html"
+    },
+    {
+      "displayName": "Video Volume",
+      "name": "video-volume",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoVolume.js",
+      "viewPath": "dataElements/videoVolume.html"
+    },
+    {
+      "displayName": "Module Names",
+      "name": "module-names",
+      "categoryName": "Player Modules",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/moduleNames.js",
+      "viewPath": "dataElements/moduleNames.html"
+    },
+    {
+      "displayName": "Error Code",
+      "name": "error-code",
+      "categoryName": "Player Error",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/errorCode.js",
+      "viewPath": "dataElements/errorCode.html"
+    },
+    {
+      "displayName": "Error Message",
+      "name": "error-message",
+      "categoryName": "Player Error",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/errorMessage.js",
+      "viewPath": "dataElements/errorMessage.html"
     }
   ]
 }

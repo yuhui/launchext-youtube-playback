@@ -16,16 +16,16 @@
 
 'use strict';
 
-var log = require('../helpers/log');
-var youtubeIframeApi = require('../helpers/youtubeIframeApi');
-
 /**
- * Load the YouTube IFrame API script.
+ * Video Playback Rate data element.
+ * This data element returns the playback rate of the currently playing video.
  *
- * @param {Object} settings The settings object.
- * @param {Object} event The underlying event object that triggered the rule.
+ * @param {Object} settings The data element settings object.
+ * @param {Object} event The event that triggered the evaluation of the data element.
+ * @returns {float}
  */
 module.exports = function(settings, event) {
-  log('debug', 'Loading YouTube IFrame API script on ' + event.$type);
-  youtubeIframeApi.loadYoutubeIframeApiScript(settings);
+  if (event && event.youtube) {
+    return event.youtube.playbackRate;
+  }
 };

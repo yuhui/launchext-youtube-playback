@@ -186,6 +186,7 @@ var processTriggers = function(eventState, nativeEvent) {
         eventData.playbackQuality = nativeEvent.data;
         break;
       case PLAYER_ERROR:
+        eventData.errorCode = nativeEvent.data;
         eventData.errorMessage = ERROR_CODES[nativeEvent.data];
         break;
     }
@@ -225,7 +226,7 @@ var playbackQualityChanged = function(event) {
 /**
  * Callback function when the video playback rate changes.
  */
-var onPlaybackRateChanged = function(event) {
+var playbackRateChanged = function(event) {
   log('info', 'Playback rate changed', event.target.getIframe());
   processTriggers(PLAYBACK_RATE_CHANGED, event);
 };
@@ -320,7 +321,7 @@ var setupYoutubePlayer = function(element) {
       onApiChange: apiChanged,
       onError: playerError,
       onPlaybackQualityChange: playbackQualityChanged,
-      onPlaybackRateChange: onPlaybackRateChanged,
+      onPlaybackRateChange: playbackRateChanged,
       onReady: playerReady,
       onStateChange: playerStateChanged
     }
@@ -433,7 +434,11 @@ var prepareYoutubePlayers = function(settings) {
         // `origin` is absent in the IFrame's src URL, add it
         var originProtocol = document.location.protocol;
         var originHostname = document.location.hostname;
+        var originPort = document.location.port;
         var originValue = originProtocol + '//' + originHostname;
+        if (originPort) {
+          originValue += ':' + originPort;
+        }
         requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
       }
       if (requiredParametersToAdd.length > 0) {
