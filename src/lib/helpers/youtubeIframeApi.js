@@ -186,6 +186,7 @@ var processTriggers = function(eventState, nativeEvent) {
         eventData.playbackQuality = nativeEvent.data;
         break;
       case PLAYER_ERROR:
+        eventData.errorCode = nativeEvent.data;
         eventData.errorMessage = ERROR_CODES[nativeEvent.data];
         break;
     }
