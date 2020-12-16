@@ -23,6 +23,7 @@ var youtubeIframeApi = require('../helpers/youtubeIframeApi');
  * Load the YouTube IFrame API script.
  *
  * @param {Object} settings The settings object.
+ * @param {Object} event The underlying event object that triggered the rule.
  */
 module.exports = function(settings, event) {
   log('debug', 'Loading YouTube IFrame API script on ' + event.$type);

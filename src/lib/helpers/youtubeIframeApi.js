@@ -226,7 +226,7 @@ var playbackQualityChanged = function(event) {
 /**
  * Callback function when the video playback rate changes.
  */
-var onPlaybackRateChanged = function(event) {
+var playbackRateChanged = function(event) {
   log('info', 'Playback rate changed', event.target.getIframe());
   processTriggers(PLAYBACK_RATE_CHANGED, event);
 };
@@ -321,7 +321,7 @@ var setupYoutubePlayer = function(element) {
       onApiChange: apiChanged,
       onError: playerError,
       onPlaybackQualityChange: playbackQualityChanged,
-      onPlaybackRateChange: onPlaybackRateChanged,
+      onPlaybackRateChange: playbackRateChanged,
       onReady: playerReady,
       onStateChange: playerStateChanged
     }
