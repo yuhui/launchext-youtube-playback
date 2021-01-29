@@ -51,16 +51,38 @@ module.exports = {
     }]
   }, {
     "id": "RL1608090868708",
-    "name": "YouTube Player Ready, YouTube Video Playing, YouTube Video Paused",
+    "name": "YouTube Player Ready, YouTube Video Playing, YouTube Video Paused, Video Ended",
     "events": [{
       "modulePath": "youtube-playback/src/lib/events/playerReady.js",
       "settings": {}
     }, {
       "modulePath": "youtube-playback/src/lib/events/videoPlaying.js",
-      "settings": {}
+      "settings": {
+        "trackStarted": "yes",
+        "trackResumed": "yes",
+        "trackReplayed": "yes",
+        "doNotTrack": ""
+      }
     }, {
       "modulePath": "youtube-playback/src/lib/events/videoPaused.js",
       "settings": {}
+    }, {
+      "modulePath": "youtube-playback/src/lib/events/videoEnded.js",
+      "settings": {}
+    }],
+    "actions": [{
+      "modulePath": "sandbox/logEventInfo.js",
+      "settings": {}
+    }]
+  }, {
+    "id": "RL1611236793890",
+    "name": "YouTube Milestone 25%, 50%, 75%, 90%",
+    "events": [{
+      "modulePath": "youtube-playback/src/lib/events/videoMilestone.js",
+      "settings": {
+        "fixedMilestoneAmounts": [25, 50, 75, 90],
+        "fixedMilestoneUnit": "percent"
+      }
     }],
     "actions": [{
       "modulePath": "sandbox/logEventInfo.js",
@@ -81,8 +103,8 @@ module.exports = {
   },
   "buildInfo": {
     "turbineVersion": "26.0.2",
-    "turbineBuildDate": "2020-12-16T03:56:06.609Z",
-    "buildDate": "2020-12-16T03:56:06.609Z",
+    "turbineBuildDate": "2021-01-23T16:46:41.941Z",
+    "buildDate": "2021-01-23T16:46:41.941Z",
     "environment": "development"
   }
 }
