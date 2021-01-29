@@ -243,7 +243,11 @@ var playerError = function(event) {
  * Callback function when the player has finished loading and is ready to begin receiving API calls.
  */
 var playerReady = function(event) {
-  log('info', 'Player ready', event.target.getIframe());
+  // set a data attribute to indicate that this player has been setup
+  var element = event.target.getIframe();
+  element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+
+  log('info', 'Player ready', element);
   processTriggers(PLAYER_READY, event);
 };
 
@@ -287,56 +291,119 @@ var playerStateChanged = function(event) {
 };
 
 /**
- * Create the registry of YouTube player elements.
+ * Create the registry of YouTube player elements that need processing.
  * When the YouTube IFrame API is ready, the players that are in here will be processed to allow
  * for video playback tracking.
  */
-var playersRegistry = [];
+var pendingPlayersRegistry = [];
 /**
  * Save a YouTube player element for processing later.
  *
  * @param {DOMElement} playerElement A YouTube IFrame DOM element.
  */
-var registerPlayer = function(playerElement) {
-  playersRegistry.push(playerElement);
+var registerPendingPlayer = function(playerElement) {
+  pendingPlayersRegistry.push(playerElement);
 };
 /**
- * Determine if any YouTube player elements have been registered for processing.
+ * Determine if any YouTube player elements have been registered for setup.
  *
- * @return {boolean} true if there are elements in playersRegistry, false otherwise.
+ * @return {boolean} true if there are elements in pendingPlayersRegistry, false otherwise.
  */
-var playersRegistryHasPlayers = function() {
-  return playersRegistry.length > 0;
+var pendingPlayersRegistryHasPlayers = function() {
+  return pendingPlayersRegistry.length > 0;
 };
 
 /**
- * Prepare YouTube IFrame players to work with the YouTube IFrame API.
+ * Setup a YouTube IFrame player to work with the YouTube IFrame API.
  *
  * @param {DOMElement} element A YouTube IFrame DOM element.
  */
-var setupYoutubePlayer = function(element) {
-  // eslint-disable-next-line no-unused-vars
-  var player = new YT.Player(element.id, {
-    events: {
-      onApiChange: apiChanged,
-      onError: playerError,
-      onPlaybackQualityChange: playbackQualityChanged,
-      onPlaybackRateChange: playbackRateChanged,
-      onReady: playerReady,
-      onStateChange: playerStateChanged
-    }
-  });
+var setupPendingPlayer = function(element) {
+  // setup only those players that have NOT been setup by this extension
+  if (
+    element.dataset.launchextSetup &&
+    element.dataset.launchextSetup === YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS
+  ) {
+    return;
+  }
 
-  // finally, set a data attribute to indicate that this player has been setup
-  element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+  var elementSrc = element.src;
+  if (!elementSrc) {
+    return;
+  }
+
+  // ensure that the IFrame has an `id` attribute
+  var elementId = element.id;
+  if (!elementId) {
+    // set the `id` attribute to the current timestamp and a random number
+    var randomNumber = Math.floor(Math.random() * 1000);
+    elementId = YOUTUBE_NAME_PREFIX + '_' + new Date().valueOf() + '_' + randomNumber;
+    element.id = elementId;
+  }
+
+  // ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
+  // parameters
+  var requiredParametersToAdd = [];
+  if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
+    // `enablejsapi` is absent in the IFrame's src URL, add it
+    requiredParametersToAdd.push(
+      ENABLE_JSAPI_PARAMETER + '=' + ENABLE_JSAPI_VALUE
+    );
+  }
+  if (elementSrc.indexOf(ORIGIN_PARAMETER) < 0) {
+    // `origin` is absent in the IFrame's src URL, add it
+    var originProtocol = document.location.protocol;
+    var originHostname = document.location.hostname;
+    var originPort = document.location.port;
+    var originValue = originProtocol + '//' + originHostname;
+    if (originPort) {
+      originValue += ':' + originPort;
+    }
+    requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
+  }
+  if (requiredParametersToAdd.length > 0) {
+    requiredParametersToAdd = requiredParametersToAdd.join('&');
+    var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
+    elementSrc = elementSrc + separator + requiredParametersToAdd;
+    element.src = elementSrc;
+  }
+
+  element.addEventListener('load', function() {
+    var loadedElement = this;
+    var loadedElementId = loadedElement.id;
+
+    // eslint-disable-next-line no-unused-vars
+    var player = new YT.Player(loadedElementId, {
+      events: {
+        onApiChange: apiChanged,
+        onError: playerError,
+        onPlaybackQualityChange: playbackQualityChanged,
+        onPlaybackRateChange: playbackRateChanged,
+        onReady: playerReady,
+        onStateChange: playerStateChanged
+      }
+    });
+
+    // add additional properties for this player
+    player.launchExt = {
+    };
+
+    // if player has not loaded properly (e.g. network failed),
+    // try reloading by settings its `src` again after 2s.
+    setTimeout(function() {
+      if (loadedElement.dataset.launchextSetup !== YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS) {
+        loadedElement.src = elementSrc;
+      }
+    }, 2000);
+  });
 };
 
 /**
- * Process a YouTube player element to work with the YouTube IFrame API.
+ * Setup YouTube player elements to work with the YouTube IFrame API.
  * Returns with an error log if YouTube's YT object is unavailable.
  */
-var processPlayers = function() {
-  if (!playersRegistryHasPlayers()) {
+var setupPendingPlayers = function() {
+  if (!pendingPlayersRegistryHasPlayers()) {
     return;
   }
 
@@ -345,9 +412,9 @@ var processPlayers = function() {
     return;
   }
 
-  while (playersRegistry.length > 0) {
-    var playerElement = playersRegistry.shift();
-    setupYoutubePlayer(playerElement);
+  while (pendingPlayersRegistry.length > 0) {
+    var playerElement = pendingPlayersRegistry.shift();
+    setupPendingPlayer(playerElement);
   }
 };
 
@@ -360,8 +427,9 @@ var youtubeIframeAPIIsReady = function() {
 
 /**
  * Load the YouTube IFrame Player API script asynchronously.
+ * Returns with an error log if the API script could not be loaded.
  */
-var loadYoutubeIframeAPI = function() {
+var loadYoutubeIframeApi = function() {
   // if the YouTube IFrame API has NOT been loaded, then when it does finish loading,
   // the YouTube players will be setup when the API runs onYouTubeIframeAPIReady on its own
   loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
@@ -374,13 +442,13 @@ var loadYoutubeIframeAPI = function() {
 };
 
 /**
- * Prepare YouTube IFrame players to work with the YouTube IFrame API later, then load the API
+ * Register YouTube IFrame players to work with the YouTube IFrame API later, then load the API
  * script itself.
  * Returns with a debug log if no players are found with the specified selector.
  *
  * @param {Object} settings The (configuration or action) settings object.
  */
-var prepareYoutubePlayers = function(settings) {
+var registerYoutubePlayers = function(settings) {
   var elementSpecificitySetting = settings.elementSpecificity || 'any';
   var elementsSelectorSetting = settings.elementsSelector || '';
   var iframeSelector = elementSpecificitySetting === 'specific' && elementsSelectorSetting ?
@@ -401,62 +469,18 @@ var prepareYoutubePlayers = function(settings) {
   for (var i = 0; i < numElements; i++) {
     var element = elements[i];
 
-    // setup only those players that have NOT been setup by this extension
-    var elementIsNotSetup = [
-      YOUTUBE_PLAYER_SETUP_STARTED_STATUS,
-      YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS
-    ].indexOf(element.dataset.launchextSetup) === -1;
+    // set a data attribute to indicate that this player is being setup
+    element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_STARTED_STATUS;
 
-    if (elementIsNotSetup) {
-      // set a data attribute to indicate that this player is being setup
-      element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_STARTED_STATUS;
-
-      // ensure that the IFrame has an `id` attribute
-      var elementId = element.id;
-      if (!elementId) {
-        // set the `id` attribute to the current timestamp and index
-        elementId = YOUTUBE_NAME_PREFIX + '_' + new Date().valueOf() + '_' + i;
-        element.id = elementId;
-      }
-
-      var elementSrc = element.src;
-
-      // ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
-      // parameters
-      var requiredParametersToAdd = [];
-      if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
-        // `enablejsapi` is absent in the IFrame's src URL, add it
-        requiredParametersToAdd.push(
-          ENABLE_JSAPI_PARAMETER + '=' + ENABLE_JSAPI_VALUE
-        );
-      }
-      if (elementSrc.indexOf(ORIGIN_PARAMETER) < 0) {
-        // `origin` is absent in the IFrame's src URL, add it
-        var originProtocol = document.location.protocol;
-        var originHostname = document.location.hostname;
-        var originPort = document.location.port;
-        var originValue = originProtocol + '//' + originHostname;
-        if (originPort) {
-          originValue += ':' + originPort;
-        }
-        requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
-      }
-      if (requiredParametersToAdd.length > 0) {
-        requiredParametersToAdd = requiredParametersToAdd.join('&');
-        var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
-        element.src = elementSrc + separator + requiredParametersToAdd;
-      }
-
-      registerPlayer(element);
-    }
+    registerPendingPlayer(element);
   }
 
-  if (playersRegistryHasPlayers()) {
-    if (youtubeIframeAPIIsReady()) {
-      processPlayers();
-    } else if (loadYoutubeIframeApiSetting === 'yes') {
-      loadYoutubeIframeAPI();
+  if (pendingPlayersRegistryHasPlayers()) {
+    if (loadYoutubeIframeApiSetting === 'yes') {
+      loadYoutubeIframeApi();
       // the players will be processed when onYouTubeIframeAPIReady() runs
+    } else {
+      setupPendingPlayers();
     }
   }
 };
@@ -473,7 +497,7 @@ window.onYouTubeIframeAPIReady = (function(oldYouTubeIframeAPIReady) {
     // preserve any existing function declaration
     oldYouTubeIframeAPIReady && oldYouTubeIframeAPIReady();
 
-    processPlayers();
+    setupPendingPlayers();
   };
 })(window.onYouTubeIframeAPIReady);
 
@@ -487,11 +511,11 @@ if (USE_LEGACY_SETTINGS === 'yes') {
 
   switch (WINDOW_EVENT) {
     case 'immediately':
-      prepareYoutubePlayers(EXTENSION_SETTINGS);
+      registerYoutubePlayers(EXTENSION_SETTINGS);
       break;
     case 'window-loaded':
       window.addEventListener('load', function() {
-        prepareYoutubePlayers(EXTENSION_SETTINGS);
+        registerYoutubePlayers(EXTENSION_SETTINGS);
       }, true);
       break;
   }
@@ -519,7 +543,7 @@ module.exports = {
    * @param {Object} settings The (configuration or action) settings object.
    */
   loadYoutubeIframeApiScript: function(settings) {
-    loadYoutubeIframeAPI(settings); // `settings` argument is actually not needed
+    loadYoutubeIframeApi(settings); // `settings` argument is actually not needed
   },
 
   /**
@@ -528,7 +552,7 @@ module.exports = {
    * @param {Object} settings The (configuration or action) settings object.
    */
   enableVideoPlaybackTracking: function(settings) {
-    prepareYoutubePlayers(settings);
+    registerYoutubePlayers(settings);
   },
 
   /**
