@@ -1,3 +1,13 @@
+1.5.0
+-----
+- Added "Video Milestone" event type to track video playback at fixed thresholds.
+- Added "Video Milestone" data element type to retrieve the video milestone with the "Video Milestone" event type.
+- Updated "Video Playing" event type to track specific events for video started, video resumed, and video replayed events.
+- Added "Video ID" and "Video Title" data element types.
+- Improves enabling video playback tracking when there is a network delay / timeout.
+- Added donation-related links in all views' footers.
+- Added unit tests.
+
 1.4.0
 -----
 
