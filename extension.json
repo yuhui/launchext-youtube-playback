@@ -106,6 +106,18 @@
       "viewPath": "events/videoPlaying.html"
     },
     {
+      "displayName": "Video Milestone",
+      "name": "video-milestone",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoMilestone.js",
+      "viewPath": "events/videoMilestone.html"
+    },
+    {
       "displayName": "Video Paused",
       "name": "video-paused",
       "categoryName": "Video status",
@@ -226,6 +238,18 @@
       },
       "libPath": "src/lib/dataElements/videoLoadedFraction.js",
       "viewPath": "dataElements/videoLoadedFraction.html"
+    },
+    {
+      "displayName": "Video Milestone",
+      "name": "video-milestone",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoMilestone.js",
+      "viewPath": "dataElements/videoMilestone.html"
     },
     {
       "displayName": "Video Muted",

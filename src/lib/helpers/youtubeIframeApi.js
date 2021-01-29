@@ -35,6 +35,8 @@ var VIDEO_PAUSED = 'video paused';
 var VIDEO_PLAYING = 'video playing';
 var VIDEO_UNSTARTED = 'video unstarted';
 
+var VIDEO_MILESTONE = 'video milestone';
+
 var YOUTUBE_EVENT_STATES = [
   API_CHANGED,
   PLAYBACK_QUALITY_CHANGED,
@@ -44,6 +46,7 @@ var YOUTUBE_EVENT_STATES = [
   VIDEO_BUFFERING,
   VIDEO_CUED,
   VIDEO_ENDED,
+  VIDEO_MILESTONE,
   VIDEO_PAUSED,
   VIDEO_PLAYING,
   VIDEO_UNSTARTED
@@ -63,12 +66,20 @@ var ERROR_CODES = {
 // constants related to setting up the YouTube IFrame API
 var YOUTUBE_NAME_PREFIX = 'youTubePlayback';
 var YOUTUBE_IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
+var YOUTUBE_PLAYING_STATE = 1;
 var ENABLE_JSAPI_PARAMETER = 'enablejsapi';
 var ENABLE_JSAPI_VALUE = '1';
 var ORIGIN_PARAMETER = 'origin';
 var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
 var YOUTUBE_PLAYER_SETUP_STARTED_STATUS = 'started';
 var YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS = 'completed';
+
+// constants related to video milestone tracking
+var VIDEO_MILESTONE_PERCENT_UNIT = 'percent';
+var VIDEO_MILESTONE_SECONDS_UNIT = 'seconds';
+var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {};
+VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_PERCENT_UNIT] = '%';
+VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_SECONDS_UNIT] = 's';
 
 var EXTENSION_SETTINGS = turbine.getExtensionSettings();
 var USE_LEGACY_SETTINGS = EXTENSION_SETTINGS.useLegacySettings || 'yes';
@@ -129,6 +140,12 @@ var getYoutubeEventData = function(player) {
     volume: player.getVolume()
   };
 
+  if (player.launchExt) {
+    if (player.launchExt.playTime) {
+      eventData.playTime = player.launchExt.playTime;
+    }
+  }
+
   return eventData;
 };
 
@@ -145,18 +162,33 @@ var getYoutubeEventData = function(player) {
  * @param {Object} triggerData.trigger The Launch Rule's trigger function.
  */
 var processTrigger = function(element, eventState, nativeEvent, eventData, triggerData) {
-  // `settings` is not needed
-  // var settings = triggerData.settings;
+  var settings = triggerData.settings;
   var trigger = triggerData.trigger;
 
-  var getYoutubeEvent = createGetYoutubeEvent.bind(element);
+  var player = eventData.player;
 
-  trigger(getYoutubeEvent(
-    element,
-    eventState,
-    nativeEvent,
-    eventData
-  ));
+  var runTrigger = true;
+  switch (eventState) {
+    case VIDEO_MILESTONE:
+      runTrigger = false; // assume that the milestone hasn't been reached yet
+      var foundMilestone = findMilestone(player, settings);
+      if (foundMilestone) {
+        eventData.videoMilestone = foundMilestone;
+        runTrigger = true;
+      }
+      break;
+  }
+
+  if (runTrigger) {
+    var getYoutubeEvent = createGetYoutubeEvent.bind(element);
+
+    trigger(getYoutubeEvent(
+      element,
+      eventState,
+      nativeEvent,
+      eventData
+    ));
+  }
 };
 
 /**
@@ -172,7 +204,23 @@ var processTriggers = function(eventState, nativeEvent) {
   // trigger only with those players that have been setup by this extension
   var elementIsSetup = element.dataset.launchextSetup === YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
   if (elementIsSetup) {
-    var eventData = getYoutubeEventData(player);
+    var elementId = element.id;
+
+    // start or stop the player's heartbeat based on the event's state
+    // this needs to be called here so that player.launchExt can be updated first
+    // before getYoutubeEventData() is called
+    switch (eventState) {
+      case VIDEO_PLAYING:
+        startHeartbeat(player, nativeEvent);
+        break;
+      case VIDEO_BUFFERING:
+      case VIDEO_PAUSED:
+      case VIDEO_ENDED:
+        stopHeartbeat(player);
+        break;
+    }
+
+    var eventData = getYoutubeEventData(player, elementId);
 
     // add additional information based on the event's state
     switch (eventState) {
@@ -189,6 +237,13 @@ var processTriggers = function(eventState, nativeEvent) {
         eventData.errorCode = nativeEvent.data;
         eventData.errorMessage = ERROR_CODES[nativeEvent.data];
         break;
+      case VIDEO_MILESTONE:
+        if (player.launchExt) {
+          // replace currentTime with the one from the heartbeat
+          // because the playhead could have changed since the milestone event was triggered
+          eventData.currentTime = player.launchExt.playStopTime;
+        }
+        break;
     }
 
     var eventStateRegistry = registry[eventState];
@@ -204,6 +259,118 @@ var processTriggers = function(eventState, nativeEvent) {
       );
     }
   }
+};
+
+/**
+ * Start beating the player's heart.
+ *
+ * @param {Object} player The YouTube player object.
+ * @param {Object} nativeEvent The native YouTube event object.
+ */
+var startHeartbeat = function(player, nativeEvent) {
+  if (!player || !player.launchExt) {
+    return;
+  }
+  if (player.launchExt.heartbeatInterval.id) {
+    // heart is already beating
+    return;
+  }
+
+  var currentTime = player.getCurrentTime();
+  player.launchExt.playStartTime = currentTime;
+  player.launchExt.playStopTime = currentTime;
+  player.launchExt.playTime = 0;
+
+  player.launchExt.heartbeatInterval.id = setInterval(function() {
+    if (player.getPlayerState() !== YOUTUBE_PLAYING_STATE) {
+      // video is not being played
+      return;
+    }
+
+    var currentTime = player.getCurrentTime();
+    // update the player's stop time using the current time
+    // because if the stop time were recorded during a video pause event,
+    // getCurrentTime() _at that moment_ will be wherever the playhead is
+    // which can be bad if the user had skipped forward/backward!
+    player.launchExt.playStopTime = currentTime;
+
+    processTriggers(VIDEO_MILESTONE, nativeEvent);
+  }, player.launchExt.heartbeatInterval.time);
+};
+
+/**
+ * Stop beating the player's heart that had been started in startHeartbeat().
+ *
+ * @param {Object} player The YouTube player object.
+ * @param {String} elementId ID of the YouTube IFrame DOM element.
+ */
+var stopHeartbeat = function(player) {
+  if (!player || !player.launchExt) {
+    return;
+  }
+
+  clearInterval(player.launchExt.heartbeatInterval.id);
+  player.launchExt.heartbeatInterval.id = null;
+
+  // record how long the video has been playing since the last time it started playing
+  var playStartTime = player.launchExt.playStartTime;
+  var playStopTime = player.launchExt.playStopTime;
+  if (playStartTime && playStopTime) {
+    player.launchExt.playTime = playStopTime - playStartTime;
+  }
+};
+
+/**
+ * Check if a video milestone for the specified YouTube player has been reached.
+ *
+ * @param {Object} player The YouTube player object.
+ * @param {Object} milestoneSettings Settings from the Launch Rule.
+ *
+ * @return {String} The found milestone, or a blank string if no milestone was found.
+ */
+var findMilestone = function(player, milestoneSettings) {
+  // check if a milestone has been reached
+  if (!player.launchExt) {
+    return;
+  }
+
+  // use the currentTime that was last set by the heartbeat
+  // so it would be more accurate than using player.getCurrentTime(),
+  // because the playhead could have moved already
+  var currentTime = Math.floor(player.launchExt.playStopTime);
+  var duration = player.getDuration();
+  var currentPercentage = Math.floor((currentTime / duration) * 100);
+
+  var milestoneAmounts = milestoneSettings.fixedMilestoneAmounts;
+  var milestoneUnit = milestoneSettings.fixedMilestoneUnit;
+
+  var foundIndex = -1;
+  switch (milestoneUnit) {
+    case VIDEO_MILESTONE_SECONDS_UNIT:
+      foundIndex = milestoneAmounts.indexOf(currentTime);
+      break;
+    case VIDEO_MILESTONE_PERCENT_UNIT:
+      foundIndex = milestoneAmounts.indexOf(currentPercentage);
+      break;
+  }
+
+  var foundMilestone = '';
+  if (foundIndex > -1) {
+    var milestoneAmount = milestoneAmounts[foundIndex];
+    var playedMilestone = player.launchExt.playedMilestones[milestoneAmount];
+
+    var lastPlayedTimestamp = new Date().getTime();
+
+    if (!playedMilestone) {
+      player.launchExt.playedMilestones[milestoneAmount] = {
+        lastPlayedTimestamp: lastPlayedTimestamp,
+        numPlays: 1,
+      };
+      foundMilestone = milestoneAmount + VIDEO_MILESTONE_UNIT_ABBREVIATIONS[milestoneUnit];
+    }
+  }
+
+  return foundMilestone;
 };
 
 /**
@@ -386,6 +553,14 @@ var setupPendingPlayer = function(element) {
 
     // add additional properties for this player
     player.launchExt = {
+      heartbeatInterval: {
+        id: null,
+        time: 500, // milliseconds between heartbeats
+      },
+      playedMilestones: {},
+      playStartTime: null,
+      playStopTime: null,
+      playTime: null,
     };
 
     // if player has not loaded properly (e.g. network failed),
@@ -533,6 +708,7 @@ module.exports = {
   videoBuffering: VIDEO_BUFFERING,
   videoCued: VIDEO_CUED,
   videoEnded: VIDEO_ENDED,
+  videoMilestone: VIDEO_MILESTONE,
   videoPaused: VIDEO_PAUSED,
   videoPlaying: VIDEO_PLAYING,
   videoUnstarted: VIDEO_UNSTARTED,
