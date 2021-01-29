@@ -24,7 +24,7 @@
       </div>
 
       <p>Enable video tracking for:</p>
-      <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup" value="players">
+      <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup">
         <label class="spectrum-Radio">
           <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
           <span class="spectrum-Radio-label">any player</span>
@@ -167,14 +167,14 @@
           var elementSpecificityValueIsValid =
             ['any', 'specific'].indexOf(elementSpecificityValue) > -1;
 
-          var elementsSelectorValueHasValue = elementSpecificityValue === 'any' ?
+          var elementsSelectorValueIsValid = elementSpecificityValue === 'any' ?
             true :
             elementsSelectorValue.length > 0;
 
           var loadYoutubeIframeApiIsValid = ['', 'yes'].indexOf(loadYoutubeIframeApi) > -1;
 
           return elementSpecificityValueIsValid &&
-            elementsSelectorValueHasValue &&
+            elementsSelectorValueIsValid &&
             loadYoutubeIframeApiIsValid;
         }
       });

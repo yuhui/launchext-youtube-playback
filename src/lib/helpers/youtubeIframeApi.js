@@ -58,6 +58,7 @@ var YOUTUBE_USER_PLAYBACK_EVENT_STATES = [
   VIDEO_PAUSED,
 ];
 
+// set of event states corresponding to this Extension's Event Types
 var YOUTUBE_EVENT_STATES = [
   API_CHANGED,
   PLAYBACK_QUALITY_CHANGED,
@@ -70,7 +71,7 @@ var YOUTUBE_EVENT_STATES = [
   VIDEO_MILESTONE,
   VIDEO_PAUSED,
   VIDEO_PLAYING,
-  VIDEO_UNSTARTED
+  VIDEO_UNSTARTED,
 ];
 
 // constants related to YouTube error codes
@@ -102,6 +103,7 @@ var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {};
 VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_PERCENT_UNIT] = '%';
 VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_SECONDS_UNIT] = 's';
 
+// constants related to this Extension's settings
 var EXTENSION_SETTINGS = turbine.getExtensionSettings();
 var USE_LEGACY_SETTINGS = EXTENSION_SETTINGS.useLegacySettings || 'yes';
 var WINDOW_EVENT = EXTENSION_SETTINGS.windowEvent || 'window-loaded';
@@ -249,7 +251,7 @@ var processTrigger = function(element, eventState, nativeEvent, eventData, trigg
 /**
  * When a YouTube player's state changes, run all triggers registered with that state.
  *
- * @param {string} eventState The YouTube player event's state.
+ * @param {String} eventState The YouTube player event's state.
  * @param {Object} nativeEvent The native YouTube event object.
  */
 var processTriggers = function(eventState, nativeEvent) {

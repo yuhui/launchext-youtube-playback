@@ -1,10 +1,10 @@
 1.4.0
 -----
 
-- Adds data element types to retrieve video playback data using Adobe Launch's familiar interface, instead of via the clunky `event` code.
+- Added data element types to retrieve video playback data using Adobe Launch's familiar interface, instead of via the clunky `event` code.
 - Allows YouTube IFrame elements to be prepared properly when the web page's URL includes a port in the host.
 - Fixed "Playback Quality Changed" and "Playback Rate Changed" events.
-- Add support-related links in all views' footers.
+- Added support-related links in all views' footers.
 
 1.3.1
 -----
@@ -14,9 +14,9 @@
 1.3.0
 -----
 
-- Improves playback tracking on slow network connections.
+- Improved playback tracking on slow network connections.
 - Allows YouTube IFrame API script to be loaded with a Rule action. With this ability, loading the script when preparing the YouTube IFrame elements is optional.
-- Hide legacy extension configuration settings  if they are not being used.
+- Hide legacy extension configuration settings if they are not being used.
 - Bug fixes for Internet Explorer.
 
 1.2.0

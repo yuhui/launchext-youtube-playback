@@ -18,7 +18,7 @@
 
 /**
  * Video URL data element.
- * This data element returns the YouTube.com URL for the currently loaded/playing video.
+ * This data element returns the YouTube URL of the currently loaded/playing video.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.

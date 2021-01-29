@@ -192,7 +192,7 @@
   ],
   "dataElements": [
     {
-      "displayName": "Player state",
+      "displayName": "Player State",
       "name": "player-state",
       "categoryName": "Player",
       "schema": {
