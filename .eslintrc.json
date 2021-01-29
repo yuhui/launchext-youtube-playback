@@ -9,7 +9,14 @@
   "globals": {
     "_satellite": true,
     "turbine": true,
-    "YT": true
+    "YT": true,
+    /** jasmine */
+    "jasmine": true,
+    "beforeAll": true,
+    "beforeEach": true,
+    "describe": true,
+    "expect": true,
+    "it": true
   },
   "parserOptions": {
     "ecmaVersion": 5, // Adobe Launch still uses ES5
