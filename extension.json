@@ -228,6 +228,18 @@
       "viewPath": "dataElements/videoDuration.html"
     },
     {
+      "displayName": "Video ID",
+      "name": "video-id",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoId.js",
+      "viewPath": "dataElements/videoId.html"
+    },
+    {
       "displayName": "Video Loaded Fraction",
       "name": "video-loaded-fraction",
       "categoryName": "Video playback",
@@ -286,6 +298,18 @@
       },
       "libPath": "src/lib/dataElements/videoPlaybackRate.js",
       "viewPath": "dataElements/videoPlaybackRate.html"
+    },
+    {
+      "displayName": "Video Title",
+      "name": "video-title",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoTitle.js",
+      "viewPath": "dataElements/videoTitle.html"
     },
     {
       "displayName": "Video URL",

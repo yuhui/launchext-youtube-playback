@@ -126,6 +126,8 @@ var createGetYoutubeEvent = function(element, eventState, nativeEvent, eventData
  * @return {Object} Data about the current playback in the YouTube player.
  */
 var getYoutubeEventData = function(player) {
+  var videoData = player.getVideoData();
+
   // remove the `t` parameter from the YouTube video URL
   var videoUrl = player.getVideoUrl().replace(/&?t=[0-9]+&?/, '');
 
@@ -135,9 +137,11 @@ var getYoutubeEventData = function(player) {
     duration: player.getDuration(),
     muted: player.isMuted(),
     playbackRate: player.getPlaybackRate(),
+    videoId: videoData.video_id,
     videoLoadedFraction: player.getVideoLoadedFraction(),
+    videoTitle: videoData.title,
     videoUrl: videoUrl,
-    volume: player.getVolume()
+    volume: player.getVolume(),
   };
 
   if (player.launchExt) {
