@@ -24,14 +24,19 @@
  * message with.
  */
 module.exports = function(level, message, element) {
-  // prefix the message with the element's ID
-  var elementId = element ? ('Player ID ' + element.id + ': ') : '';
+  if (level && message) {
+    // prefix the message with the element's ID
+    var elementId = '';
+    if (element && element.id) {
+      elementId = 'Player ID ' + element.id + ': ';
+    }
 
-  if (!/\.$/.test(message)) {
-    // add a full stop at the end of the message
-    // ...because it looks nice 😉
-    message = message + '.';
+    if (!/\.$/.test(message)) {
+      // add a full stop at the end of the message
+      // ...because it looks nice 😉
+      message = message + '.';
+    }
+
+    turbine.logger[level](elementId + message);
   }
-
-  turbine.logger[level](elementId + message);
 };
