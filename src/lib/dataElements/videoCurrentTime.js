@@ -18,7 +18,7 @@
 
 /**
  * Video Current Time data element.
- * This data element returns the elapsed time in seconds since the video started playing.
+ * This data element returns the current time in seconds at the video's playhead.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>YouTube Ready Event</title>
+    <title>YouTube Player Ready Event</title>
     <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
     <script src="//use.typekit.net/buj6cmr.js"></script>
@@ -61,6 +61,29 @@
           </tr>
           <tr class="spectrum-Table-row">
             <td class="spectrum-Table-cell">
+              Video ID
+            </td>
+            <td class="spectrum-Table-cell">
+              String
+            </td>
+            <td class="spectrum-Table-cell">
+              YouTube ID of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              Video Loaded Fraction
+            </td>
+            <td class="spectrum-Table-cell">
+              Floating point number
+            </td>
+            <td class="spectrum-Table-cell">
+              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
+              as buffered.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
               Video Muted
             </td>
             <td class="spectrum-Table-cell">
@@ -84,14 +107,13 @@
           </tr>
           <tr class="spectrum-Table-row">
             <td class="spectrum-Table-cell">
-              Video Loaded Fraction
+              Video Title
             </td>
             <td class="spectrum-Table-cell">
-              Floating point number
+              String
             </td>
             <td class="spectrum-Table-cell">
-              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
-              as buffered.
+              YouTube title of the currently loaded/playing video.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -102,7 +124,7 @@
               String
             </td>
             <td class="spectrum-Table-cell">
-              YouTube.com URL for the currently loaded/playing video.
+              YouTube URL of the currently loaded/playing video.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -121,19 +143,24 @@
     </section>
 
     <footer class="spectrum-Body--small text footer">
-      <p>Support Information</p>
-      <ul>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
-            Open a ticket
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
-            Read change log
-          </a>
-        </li>
-      </ul>
+      <div id="donations">
+        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+      </div>
+      <div id="support">
+        <p>Support Information</p>
+        <ul>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+              Open a ticket
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+              Read change log
+            </a>
+          </li>
+        </ul>
+      </div>
 
       <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
       <p>

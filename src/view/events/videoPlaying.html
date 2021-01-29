@@ -8,7 +8,36 @@
     <script src="//use.typekit.net/buj6cmr.js"></script>
   </head>
   <body class="spectrum spectrum--light spectrum-Body">
-    <h4 class="spectrum-Heading4">No configuration necessary</h4>
+    <form id="event-configuration" class="spectrum-Form">
+      <h4 class="spectrum-Heading4">Setup Video Playing</h4>
+
+      <div id="video-playing-options-container">
+        <div id="track-started-option" class="max-width">
+          <label class="spectrum-Checkbox">
+            <input class="spectrum-Checkbox-box" type="checkbox" name="trackStarted" value="yes">
+            <span>If the video has not been started, track it as <code>video started</code>.</span>
+          </label>
+        </div>
+        <div id="track-resumed-option" class="max-width">
+          <label class="spectrum-Checkbox">
+            <input class="spectrum-Checkbox-box" type="checkbox" name="trackResumed" value="yes">
+            <span>If the video was paused previously, track it as <code>video resumed</code>.</span>
+          </label>
+        </div>
+        <div id="track-replayed-option" class="max-width">
+          <label class="spectrum-Checkbox">
+            <input class="spectrum-Checkbox-box" type="checkbox" name="trackReplayed" value="yes">
+            <span>If the video has ended, track it as <code>video replayed</code>.</span>
+          </label>
+        </div>
+        <div id="do-not-track-option" class="max-width">
+          <label class="spectrum-Checkbox">
+            <input class="spectrum-Checkbox-box" type="checkbox" name="doNotTrack" value="yes">
+            <span><b>Do not track this event</b> except for the above selected options.</span>
+          </label>
+        </div>
+      </div>
+    </form>
 
     <section>
       <h5 class="spectrum-Heading5">How this Event works</h5>
@@ -33,7 +62,9 @@
               String
             </td>
             <td class="spectrum-Table-cell">
-              Fixed value: <code>video playing</code>
+              Fixed value: <code>video playing</code>, <code>video replayed</code>,
+              <code>video resumed</code> or <code>video started</code>, depending on the selected
+              options.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -56,6 +87,29 @@
             </td>
             <td class="spectrum-Table-cell">
               Duration in seconds of the currently playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              Video ID
+            </td>
+            <td class="spectrum-Table-cell">
+              String
+            </td>
+            <td class="spectrum-Table-cell">
+              YouTube ID of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              Video Loaded Fraction
+            </td>
+            <td class="spectrum-Table-cell">
+              Floating point number
+            </td>
+            <td class="spectrum-Table-cell">
+              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
+              as buffered.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -83,14 +137,13 @@
           </tr>
           <tr class="spectrum-Table-row">
             <td class="spectrum-Table-cell">
-              Video Loaded Fraction
+              Video Title
             </td>
             <td class="spectrum-Table-cell">
-              Floating point number
+              String
             </td>
             <td class="spectrum-Table-cell">
-              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
-              as buffered.
+              YouTube title of the currently loaded/playing video.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -101,7 +154,7 @@
               String
             </td>
             <td class="spectrum-Table-cell">
-              YouTube.com URL for the currently loaded/playing video.
+              YouTube URL of the currently loaded/playing video.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -120,19 +173,24 @@
     </section>
 
     <footer class="spectrum-Body--small text footer">
-      <p>Support Information</p>
-      <ul>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
-            Open a ticket
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
-            Read change log
-          </a>
-        </li>
-      </ul>
+      <div id="donations">
+        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+      </div>
+      <div id="support">
+        <p>Support Information</p>
+        <ul>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+              Open a ticket
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+              Read change log
+            </a>
+          </li>
+        </ul>
+      </div>
 
       <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
       <p>
@@ -146,17 +204,40 @@
     <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
     <script src="../scripts/common.js"></script>
     <script>
+      var FORM_ID = 'event-configuration';
+
       window.extensionBridge.register({
         init: function(info) {
-          if (info.settings) {}
+          if (info.settings) {
+            setFormValues(FORM_ID, info.settings);
+          }
         },
 
         getSettings: function() {
-          return {};
+          var formValues = getFormValues(FORM_ID);
+
+          return formValues;
         },
 
         validate: function() {
-          return true;
+          var formValues = getFormValues(FORM_ID);
+
+          var trackStarted = formValues.trackStarted;
+          var trackStartedIsValid = ['', 'yes'].indexOf(trackStarted) > -1;
+
+          var trackReplayed = formValues.trackReplayed;
+          var trackReplayedIsValid = ['', 'yes'].indexOf(trackReplayed) > -1;
+
+          var trackResumed = formValues.trackResumed;
+          var trackResumedIsValid = ['', 'yes'].indexOf(trackResumed) > -1;
+
+          var doNotTrack = formValues.doNotTrack;
+          var doNotTrackIsValid = ['', 'yes'].indexOf(doNotTrack) > -1;
+
+          return trackStartedIsValid &&
+            trackReplayedIsValid &&
+            trackResumedIsValid &&
+            doNotTrackIsValid;
         }
       });
     </script>

@@ -2,8 +2,8 @@
   "displayName": "YouTube Playback",
   "name": "youtube-playback",
   "platform": "web",
-  "version": "1.4.0",
-  "description": "The most full-featured extension for tracking playback of all of your YouTube videos",
+  "version": "1.5.0",
+  "description": "The most full-featured extension for tracking playback of all of your YouTube videos. Rich set of events and data elements for building your Rules. Supports dynamic loading of YouTube players. Control loading of YouTube's API. Now with Video Milestone tracking!",
   "author": {
     "name": "Yuhui",
     "url": "https://yuhui.sg",
@@ -106,6 +106,18 @@
       "viewPath": "events/videoPlaying.html"
     },
     {
+      "displayName": "Video Milestone",
+      "name": "video-milestone",
+      "categoryName": "Video status",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/events/videoMilestone.js",
+      "viewPath": "events/videoMilestone.html"
+    },
+    {
       "displayName": "Video Paused",
       "name": "video-paused",
       "categoryName": "Video status",
@@ -180,7 +192,7 @@
   ],
   "dataElements": [
     {
-      "displayName": "Player state",
+      "displayName": "Player State",
       "name": "player-state",
       "categoryName": "Player",
       "schema": {
@@ -216,6 +228,18 @@
       "viewPath": "dataElements/videoDuration.html"
     },
     {
+      "displayName": "Video ID",
+      "name": "video-id",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoId.js",
+      "viewPath": "dataElements/videoId.html"
+    },
+    {
       "displayName": "Video Loaded Fraction",
       "name": "video-loaded-fraction",
       "categoryName": "Video playback",
@@ -226,6 +250,18 @@
       },
       "libPath": "src/lib/dataElements/videoLoadedFraction.js",
       "viewPath": "dataElements/videoLoadedFraction.html"
+    },
+    {
+      "displayName": "Video Milestone",
+      "name": "video-milestone",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoMilestone.js",
+      "viewPath": "dataElements/videoMilestone.html"
     },
     {
       "displayName": "Video Muted",
@@ -262,6 +298,18 @@
       },
       "libPath": "src/lib/dataElements/videoPlaybackRate.js",
       "viewPath": "dataElements/videoPlaybackRate.html"
+    },
+    {
+      "displayName": "Video Title",
+      "name": "video-title",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "libPath": "src/lib/dataElements/videoTitle.js",
+      "viewPath": "dataElements/videoTitle.html"
     },
     {
       "displayName": "Video URL",

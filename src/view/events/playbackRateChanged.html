@@ -13,7 +13,7 @@
     <section>
       <h5 class="spectrum-Heading5">How this Event works</h5>
       <p>
-        This Event is triggered when the video playback rate changes.
+        This Event is triggered when the video playback rate has changed.
       </p>
       <p>
         The following Data Elements are available for use with your Rule's Conditions and Actions.
@@ -60,6 +60,29 @@
           </tr>
           <tr class="spectrum-Table-row">
             <td class="spectrum-Table-cell">
+              Video ID
+            </td>
+            <td class="spectrum-Table-cell">
+              String
+            </td>
+            <td class="spectrum-Table-cell">
+              YouTube ID of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
+              Video Loaded Fraction
+            </td>
+            <td class="spectrum-Table-cell">
+              Floating point number
+            </td>
+            <td class="spectrum-Table-cell">
+              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
+              as buffered.
+            </td>
+          </tr>
+          <tr class="spectrum-Table-row">
+            <td class="spectrum-Table-cell">
               Video Muted
             </td>
             <td class="spectrum-Table-cell">
@@ -83,14 +106,13 @@
           </tr>
           <tr class="spectrum-Table-row">
             <td class="spectrum-Table-cell">
-              Video Loaded Fraction
+              Video Title
             </td>
             <td class="spectrum-Table-cell">
-              Floating point number
+              String
             </td>
             <td class="spectrum-Table-cell">
-              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
-              as buffered.
+              YouTube title of the currently loaded/playing video.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -101,7 +123,7 @@
               String
             </td>
             <td class="spectrum-Table-cell">
-              YouTube.com URL for the currently loaded/playing video.
+              YouTube URL of the currently loaded/playing video.
             </td>
           </tr>
           <tr class="spectrum-Table-row">
@@ -120,19 +142,24 @@
     </section>
 
     <footer class="spectrum-Body--small text footer">
-      <p>Support Information</p>
-      <ul>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
-            Open a ticket
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
-            Read change log
-          </a>
-        </li>
-      </ul>
+      <div id="donations">
+        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+      </div>
+      <div id="support">
+        <p>Support Information</p>
+        <ul>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+              Open a ticket
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+              Read change log
+            </a>
+          </li>
+        </ul>
+      </div>
 
       <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
       <p>

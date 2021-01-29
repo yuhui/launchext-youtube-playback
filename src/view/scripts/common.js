@@ -121,6 +121,14 @@ function isDataElementToken(formValue) {
   return /^%.+%$/.test(formValue);
 }
 
+/** Check if a value is an integer */
+// eslint-disable-next-line no-unused-vars
+function valueIsInteger(value) {
+  return (value + '').length > 0 &&
+    !isNaN(parseInt(value)) &&
+    parseInt(value) === parseFloat(value);
+}
+
 /** Show or hide an element based on the value of a form field */
 // eslint-disable-next-line no-unused-vars
 function toggleElement(formId, toggleField, toggleValue, selectorToToggle) {

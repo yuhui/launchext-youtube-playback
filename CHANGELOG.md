@@ -1,10 +1,20 @@
+1.5.0
+-----
+- Added "Video Milestone" event type to track video playback at fixed thresholds.
+- Added "Video Milestone" data element type to retrieve the video milestone with the "Video Milestone" event type.
+- Updated "Video Playing" event type to track specific events for video started, video resumed, and video replayed events.
+- Added "Video ID" and "Video Title" data element types.
+- Improves enabling video playback tracking when there is a network delay / timeout.
+- Added donation-related links in all views' footers.
+- Added unit tests.
+
 1.4.0
 -----
 
-- Adds data element types to retrieve video playback data using Adobe Launch's familiar interface, instead of via the clunky `event` code.
+- Added data element types to retrieve video playback data using Adobe Launch's familiar interface, instead of via the clunky `event` code.
 - Allows YouTube IFrame elements to be prepared properly when the web page's URL includes a port in the host.
 - Fixed "Playback Quality Changed" and "Playback Rate Changed" events.
-- Add support-related links in all views' footers.
+- Added support-related links in all views' footers.
 
 1.3.1
 -----
@@ -14,9 +24,9 @@
 1.3.0
 -----
 
-- Improves playback tracking on slow network connections.
+- Improved playback tracking on slow network connections.
 - Allows YouTube IFrame API script to be loaded with a Rule action. With this ability, loading the script when preparing the YouTube IFrame elements is optional.
-- Hide legacy extension configuration settings  if they are not being used.
+- Hide legacy extension configuration settings if they are not being used.
 - Bug fixes for Internet Explorer.
 
 1.2.0

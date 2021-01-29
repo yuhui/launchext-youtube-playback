@@ -24,7 +24,7 @@
       </div>
 
       <p>Enable video tracking for:</p>
-      <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup" value="players">
+      <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup">
         <label class="spectrum-Radio">
           <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
           <span class="spectrum-Radio-label">any player</span>
@@ -89,19 +89,24 @@
     </section>
 
     <footer class="spectrum-Body--small text footer">
-      <p>Support Information</p>
-      <ul>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
-            Open a ticket
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
-            Read change log
-          </a>
-        </li>
-      </ul>
+      <div id="donations">
+        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+      </div>
+      <div id="support">
+        <p>Support Information</p>
+        <ul>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+              Open a ticket
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+              Read change log
+            </a>
+          </li>
+        </ul>
+      </div>
 
       <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
       <p>
@@ -162,14 +167,14 @@
           var elementSpecificityValueIsValid =
             ['any', 'specific'].indexOf(elementSpecificityValue) > -1;
 
-          var elementsSelectorValueHasValue = elementSpecificityValue === 'any' ?
+          var elementsSelectorValueIsValid = elementSpecificityValue === 'any' ?
             true :
             elementsSelectorValue.length > 0;
 
           var loadYoutubeIframeApiIsValid = ['', 'yes'].indexOf(loadYoutubeIframeApi) > -1;
 
           return elementSpecificityValueIsValid &&
-            elementsSelectorValueHasValue &&
+            elementsSelectorValueIsValid &&
             loadYoutubeIframeApiIsValid;
         }
       });
