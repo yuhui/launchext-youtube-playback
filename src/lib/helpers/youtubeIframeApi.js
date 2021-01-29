@@ -35,7 +35,28 @@ var VIDEO_PAUSED = 'video paused';
 var VIDEO_PLAYING = 'video playing';
 var VIDEO_UNSTARTED = 'video unstarted';
 
+// constants related to custom event states created for this Extension
 var VIDEO_MILESTONE = 'video milestone';
+var VIDEO_REPLAYED = 'video replayed'; // no Extension trigger
+var VIDEO_RESUMED = 'video resumed'; // no Extension trigger
+var VIDEO_STARTED = 'video started'; // no Extension trigger
+
+// set of YouTube event states during playback
+var YOUTUBE_PLAYBACK_EVENT_STATES = [
+  VIDEO_BUFFERING,
+  VIDEO_CUED,
+  VIDEO_ENDED,
+  VIDEO_PAUSED,
+  VIDEO_PLAYING,
+  VIDEO_UNSTARTED,
+];
+
+// set of YouTube event states caused by the user's interaction during playback
+var YOUTUBE_USER_PLAYBACK_EVENT_STATES = [
+  VIDEO_BUFFERING,
+  VIDEO_CUED,
+  VIDEO_PAUSED,
+];
 
 var YOUTUBE_EVENT_STATES = [
   API_CHANGED,
@@ -181,6 +202,36 @@ var processTrigger = function(element, eventState, nativeEvent, eventData, trigg
         runTrigger = true;
       }
       break;
+    case VIDEO_PLAYING:
+      var previousPlayedEventState = player.launchExt.previousPlayedEventState;
+      if (settings.trackStarted === 'yes' && !player.launchExt.hasStarted) {
+        eventState = VIDEO_STARTED;
+      } else if (player.launchExt.hasEnded) {
+        // when a video is replayed, YouTube runs these events in this order:
+        // 1. YT.PlayerState.PLAYING
+        // 2. YT.PlayerState.BUFFERING
+        // 3. YT.PlayerState.PLAYING
+        // so don't trigger at the first YT.PlayerState.PLAYING
+        // instead, remember that a replay has occurred,
+        // then trigger the replay at the second YT.PlayerState.PLAYING.
+        player.launchExt.hasReplayed = true;
+        runTrigger = false;
+      } else if (player.launchExt.hasReplayed) {
+        // triggering the replay with the second YT.PlayerState.PLAYING
+        // so clear the flag that remembers the replay
+        player.launchExt.hasReplayed = false;
+        if (settings.trackReplayed === 'yes') {
+          eventState = VIDEO_REPLAYED;
+        }
+      } else if (
+        settings.trackResumed === 'yes' &&
+        YOUTUBE_USER_PLAYBACK_EVENT_STATES.indexOf(previousPlayedEventState) > -1
+      ) {
+        eventState = VIDEO_RESUMED;
+      } else if (settings.doNotTrack === 'yes') {
+        runTrigger = false;
+      }
+      break;
   }
 
   if (runTrigger) {
@@ -226,7 +277,7 @@ var processTriggers = function(eventState, nativeEvent) {
 
     var eventData = getYoutubeEventData(player, elementId);
 
-    // add additional information based on the event's state
+    // perform additional tasks based on the event's state
     switch (eventState) {
       case API_CHANGED:
         var moduleNames = player.getOptions();
@@ -261,6 +312,21 @@ var processTriggers = function(eventState, nativeEvent) {
         eventData,
         triggerData
       );
+    }
+
+    switch (eventState) {
+      case VIDEO_ENDED:
+        player.launchExt.hasEnded = true;
+        break;
+      case VIDEO_PLAYING:
+        // if the video is playing, then it has started and hasn't ended
+        player.launchExt.hasStarted = true;
+        player.launchExt.hasEnded = false;
+        break;
+    }
+
+    if (YOUTUBE_PLAYBACK_EVENT_STATES.indexOf(eventState) > -1) {
+      player.launchExt.previousPlayedEventState = eventState;
     }
   }
 };
@@ -432,32 +498,37 @@ var playerReady = function(event) {
  * extension, so it makes sense to expose them at the top-level.
  */
 var playerStateChanged = function(event) {
-  var state;
+  var state = event.data;
+  var player = event.target;
 
-  switch (event.data) {
+  var eventState;
+  switch (state) {
     case YT.PlayerState.BUFFERING:
-      state = VIDEO_BUFFERING;
+      eventState = VIDEO_BUFFERING;
       break;
     case YT.PlayerState.CUED:
-      state = VIDEO_CUED;
+      eventState = VIDEO_CUED;
       break;
     case YT.PlayerState.ENDED:
-      state = VIDEO_ENDED;
+      eventState = VIDEO_ENDED;
       break;
     case YT.PlayerState.PAUSED:
-      state = VIDEO_PAUSED;
+      eventState = VIDEO_PAUSED;
       break;
     case YT.PlayerState.PLAYING:
-      state = VIDEO_PLAYING;
+      eventState = VIDEO_PLAYING;
       break;
     case YT.PlayerState.UNSTARTED:
-      state = VIDEO_UNSTARTED;
+      eventState = VIDEO_UNSTARTED;
       break;
   }
 
-  if (state) {
-    log('info', 'Player state changed: ' + state, event.target.getIframe());
-    processTriggers(state, event);
+  if (eventState) {
+    var previousPlayedEventState = player.launchExt.previousPlayedEventState;
+    if (!previousPlayedEventState || previousPlayedEventState !== eventState) {
+      log('info', 'Player state changed: ' + eventState, player.getIframe());
+      processTriggers(eventState, event);
+    }
   }
 };
 
@@ -557,6 +628,9 @@ var setupPendingPlayer = function(element) {
 
     // add additional properties for this player
     player.launchExt = {
+      hasEnded: false,
+      hasReplayed: false,
+      hasStarted: false,
       heartbeatInterval: {
         id: null,
         time: 500, // milliseconds between heartbeats
@@ -565,6 +639,7 @@ var setupPendingPlayer = function(element) {
       playStartTime: null,
       playStopTime: null,
       playTime: null,
+      previousPlayedEventState: null,
     };
 
     // if player has not loaded properly (e.g. network failed),
