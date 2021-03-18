@@ -94,6 +94,7 @@ var ENABLE_JSAPI_VALUE = '1';
 var ORIGIN_PARAMETER = 'origin';
 var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
 var YOUTUBE_PLAYER_SETUP_STARTED_STATUS = 'started';
+var YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS = 'modified';
 var YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS = 'completed';
 
 // constants related to video milestone tracking
@@ -562,96 +563,34 @@ var pendingPlayersRegistryHasPlayers = function() {
  *
  * @param {DOMElement} element A YouTube IFrame DOM element.
  */
-var setupPendingPlayer = function(element) {
-  // setup only those players that have NOT been setup by this extension
-  if (
-    element.dataset.launchextSetup &&
-    element.dataset.launchextSetup === YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS
-  ) {
-    return;
-  }
-
-  var elementSrc = element.src;
-  if (!elementSrc) {
-    return;
-  }
-
-  // ensure that the IFrame has an `id` attribute
-  var elementId = element.id;
-  if (!elementId) {
-    // set the `id` attribute to the current timestamp and a random number
-    var randomNumber = Math.floor(Math.random() * 1000);
-    elementId = YOUTUBE_NAME_PREFIX + '_' + new Date().valueOf() + '_' + randomNumber;
-    element.id = elementId;
-  }
-
-  // ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
-  // parameters
-  var requiredParametersToAdd = [];
-  if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
-    // `enablejsapi` is absent in the IFrame's src URL, add it
-    requiredParametersToAdd.push(
-      ENABLE_JSAPI_PARAMETER + '=' + ENABLE_JSAPI_VALUE
-    );
-  }
-  if (elementSrc.indexOf(ORIGIN_PARAMETER) < 0) {
-    // `origin` is absent in the IFrame's src URL, add it
-    var originProtocol = document.location.protocol;
-    var originHostname = document.location.hostname;
-    var originPort = document.location.port;
-    var originValue = originProtocol + '//' + originHostname;
-    if (originPort) {
-      originValue += ':' + originPort;
+var setupYoutubePlayer = function(element) {
+  // eslint-disable-next-line no-unused-vars
+  var player = new YT.Player(element.id, {
+    events: {
+      onApiChange: apiChanged,
+      onError: playerError,
+      onPlaybackQualityChange: playbackQualityChanged,
+      onPlaybackRateChange: playbackRateChanged,
+      onReady: playerReady,
+      onStateChange: playerStateChanged
     }
-    requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
-  }
-  if (requiredParametersToAdd.length > 0) {
-    requiredParametersToAdd = requiredParametersToAdd.join('&');
-    var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
-    elementSrc = elementSrc + separator + requiredParametersToAdd;
-    element.src = elementSrc;
-  }
-
-  element.addEventListener('load', function() {
-    var loadedElement = this;
-    var loadedElementId = loadedElement.id;
-
-    // eslint-disable-next-line no-unused-vars
-    var player = new YT.Player(loadedElementId, {
-      events: {
-        onApiChange: apiChanged,
-        onError: playerError,
-        onPlaybackQualityChange: playbackQualityChanged,
-        onPlaybackRateChange: playbackRateChanged,
-        onReady: playerReady,
-        onStateChange: playerStateChanged
-      }
-    });
-
-    // add additional properties for this player
-    player.launchExt = {
-      hasEnded: false,
-      hasReplayed: false,
-      hasStarted: false,
-      heartbeatInterval: {
-        id: null,
-        time: 500, // milliseconds between heartbeats
-      },
-      playedMilestones: {},
-      playStartTime: null,
-      playStopTime: null,
-      playTime: null,
-      previousPlayedEventState: null,
-    };
-
-    // if player has not loaded properly (e.g. network failed),
-    // try reloading by settings its `src` again after 2s.
-    setTimeout(function() {
-      if (loadedElement.dataset.launchextSetup !== YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS) {
-        loadedElement.src = elementSrc;
-      }
-    }, 2000);
   });
+
+  // add additional properties for this player
+  player.launchExt = {
+    hasEnded: false,
+    hasReplayed: false,
+    hasStarted: false,
+    heartbeatInterval: {
+      id: null,
+      time: 500, // milliseconds between heartbeats
+    },
+    playedMilestones: {},
+    playStartTime: null,
+    playStopTime: null,
+    playTime: null,
+    previousPlayedEventState: null,
+  };
 };
 
 /**
@@ -663,21 +602,21 @@ var setupPendingPlayers = function() {
     return;
   }
 
-  if (!youtubeIframeAPIIsReady()) {
+  if (!youtubeIframeApiIsReady()) {
     log('error', 'Unexpected error! YouTube IFrame API has not been initialised');
     return;
   }
 
   while (pendingPlayersRegistry.length > 0) {
     var playerElement = pendingPlayersRegistry.shift();
-    setupPendingPlayer(playerElement);
+    setupYoutubePlayer(playerElement);
   }
 };
 
 /**
  * Check if the YouTube IFrame Player API has been loaded and is ready.
  */
-var youtubeIframeAPIIsReady = function() {
+var youtubeIframeApiIsReady = function() {
   return window.YT && window.YT.Player;
 };
 
@@ -725,10 +664,58 @@ var registerYoutubePlayers = function(settings) {
   for (var i = 0; i < numElements; i++) {
     var element = elements[i];
 
-    // set a data attribute to indicate that this player is being setup
-    element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_STARTED_STATUS;
+    // setup only those players that have NOT been setup by this extension
+    switch (element.dataset.launchextSetup) {
+      case YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS:
+        break;
+      case YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS:
+        registerPendingPlayer(element);
+        break;
+      default:
+        // set a data attribute to indicate that this player is being setup
+        element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_STARTED_STATUS;
 
-    registerPendingPlayer(element);
+        // ensure that the IFrame has an `id` attribute
+        var elementId = element.id;
+        if (!elementId) {
+          // set the `id` attribute to the current timestamp and index
+          elementId = YOUTUBE_NAME_PREFIX + '_' + new Date().valueOf() + '_' + i;
+          element.id = elementId;
+        }
+
+        var elementSrc = element.src;
+
+        // ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
+        // parameters
+        var requiredParametersToAdd = [];
+        if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
+          // `enablejsapi` is absent in the IFrame's src URL, add it
+          requiredParametersToAdd.push(
+            ENABLE_JSAPI_PARAMETER + '=' + ENABLE_JSAPI_VALUE
+          );
+        }
+        if (elementSrc.indexOf(ORIGIN_PARAMETER) < 0) {
+          // `origin` is absent in the IFrame's src URL, add it
+          var originProtocol = document.location.protocol;
+          var originHostname = document.location.hostname;
+          var originPort = document.location.port;
+          var originValue = originProtocol + '//' + originHostname;
+          if (originPort) {
+            originValue += ':' + originPort;
+          }
+          requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
+        }
+        if (requiredParametersToAdd.length > 0) {
+          requiredParametersToAdd = requiredParametersToAdd.join('&');
+          var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
+          element.src = elementSrc + separator + requiredParametersToAdd;
+        }
+
+        element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS;
+        registerPendingPlayer(element);
+
+        break;
+    }
   }
 
   if (pendingPlayersRegistryHasPlayers()) {
