@@ -118,7 +118,7 @@ function getFormFields(formId) {
 /** Check if a form value is a data element token */
 // eslint-disable-next-line no-unused-vars
 function isDataElementToken(formValue) {
-  return /^%.+%$/.test(formValue);
+  return /^%([^%]+)%$/.test(formValue);
 }
 
 /** Check if a value is an integer */
@@ -142,24 +142,5 @@ function toggleElement(formId, toggleField, toggleValue, selectorToToggle) {
   } else {
     elementToShowHide.classList.remove('show');
     elementToShowHide.classList.add('hide');
-  }
-}
-
-/** Show or hide an input's error message based on the validity of that input */
-// eslint-disable-next-line no-unused-vars
-function toggleInputErrorMessage(inputName, inputIsValid) {
-  var input = document.querySelector('input[name="' + inputName + '"]');
-  var errorMessage =
-    document.querySelector('input[name="' + inputName + '"]').
-      parentNode.parentNode.parentNode.parentNode.
-      querySelector('span.error-message');
-  if (inputIsValid) {
-    input.classList.remove('spectrum-Alert--error');
-    errorMessage.classList.remove('show');
-    errorMessage.classList.add('hide');
-  } else {
-    input.classList.add('spectrum-Alert--error');
-    errorMessage.classList.remove('hide');
-    errorMessage.classList.add('show');
   }
 }

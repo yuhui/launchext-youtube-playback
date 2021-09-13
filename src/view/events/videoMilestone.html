@@ -3,37 +3,44 @@
   <head>
     <meta charset="UTF-8">
     <title>YouTube Video Milestone Event</title>
-    <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
+    <link rel="stylesheet" href="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/css/coral.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
-    <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/js/coral.min.js" data-coral-icons-external="js"></script>
   </head>
-  <body class="spectrum spectrum--light spectrum-Body">
-    <form id="event-configuration" class="spectrum-Form">
-      <h4 class="spectrum-Heading4">Setup Video Milestones</h4>
+  <body class="coral--light coral-Body--S u-coral-margin">
+    <form id="event-configuration" class="coral-Form coral-FormGroup--labelsAbove">
+      <h4 class="coral-Heading--M">Setup Video Milestones</h4>
 
-      <div id="fixed-milestone-container">
-        <div id="fixed-milestone">
-          <span>At fixed thresholds of </span>
-          <label>
-            <input type="text" name="fixedMilestoneAmounts" value="25, 50, 75" size="20">
-          </label>
-          <select class="spectrum-Dropdown" name="fixedMilestoneUnit">
-            <option value="percent" selected>per cent</option>
-            <option value="seconds">seconds</option>
-          </select>
+      <div id="fixed-milestone-container" class="coral-FormGroup-item">
+        <label for="fixed-milestone-amounts" class="coral-FormGroup-itemLabel">
+          At fixed thresholds of
+          <coral-icon icon="Asterisk" class="coral-FieldLabel-requiredIcon" size="XXS" alt="required"></coral-icon>
+        </label>
+        <div class="coral-InputGroup" style="width: 100%;" role="presentation">
+          <input id="fixed-milestone-amounts" name="fixedMilestoneAmounts" value="25, 50, 75" class="coral-InputGroup-input" is="coral-textfield">
+          <coral-select id="fixed-milestone-unit" name="fixedMilestoneUnit" class="coral-Form-field">
+            <coral-select-item value="percent" selected="">per cent</coral-select-item>
+            <coral-select-item value="seconds">seconds</coral-select-item>
+          </coral-select>
+          <coral-icon icon="info" title="Info" size="S"></coral-icon>
+          <coral-tooltip target="_prev" variant="info" placement="right" offset="8">
+            Example: 25, 50, 75
+          </coral-tooltip>
         </div>
-        <div>
-          Thresholds must be comma-separated, e.g. "25, 50, 75".
-        </div>
-        <p>
-          <b>Important!</b> Using "per cent" milestones with "live" videos will not work properly,
-          because the video's duration is unknown. Use "seconds" instead.
-        </p>
       </div>
+      <coral-alert>
+        <coral-alert-header>
+          Important!
+        </coral-alert-header>
+        <coral-alert-content>
+          Using "per cent" milestones with "live" videos will not work properly, because the
+          video's duration is unknown. Use "seconds" instead.
+        </coral-alert-content>
+      </coral-alert>
     </form>
 
-    <section>
-      <h5 class="spectrum-Heading5">How this Event works</h5>
+    <section class="coral-Well">
+      <h4 class="coral-Heading--S coral-Heading--light">How this Event works</h4>
       <p>
         This Event is triggered when the YouTube player has reached a particular moment
         ("milestone") in the playing video.
@@ -41,154 +48,168 @@
       <p>
         The following Data Elements are available for use with your Rule's Conditions and Actions.
       </p>
-      <table class="spectrum-Table">
-        <tr class="spectrum-Table-row">
-          <th class="spectrum-Table-headCell">Data Element</th>
-          <th class="spectrum-Table-headCell">Data type</th>
-          <th class="spectrum-Table-headCell">Value</th>
-        </tr>
-        <tbody class="spectrum-Table-body">
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+      <table is="coral-table" variant="quiet">
+        <colgroup>
+          <col is="coral-table-column" sortable="" sortabledirection="ascending">
+          <col is="coral-table-column" sortable="" sortabledirection="ascending">
+          <col is="coral-table-column">
+        </colgroup>
+        <thead is="coral-table-head">
+          <tr is="coral-table-row">
+            <th is="coral-table-headercell">Data Element</th>
+            <th is="coral-table-headercell">Data type</th>
+            <th is="coral-table-headercell">Value</th>
+          </tr>
+        </thead>
+        <tbody is="coral-table-body">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Player State
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
-              Fixed value: <code>video milestone</code>
+            <td is="coral-table-cell">
+              Fixed value: <code class="coral-Code--S">video milestone</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Current Time
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Floating point number
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Elapsed time in seconds since the video started playing.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Duration
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Integer
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Duration in seconds of the currently playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video ID
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               YouTube ID of the currently loaded/playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Loaded Fraction
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Floating point number
             </td>
-            <td class="spectrum-Table-cell">
-              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
-              as buffered.
+            <td is="coral-table-cell">
+              Fraction of the video between <code class="coral-Code--S">0</code> and
+              <code class="coral-Code--S">1</code> that the player shows as buffered.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Milestone
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Milestone that has been played for the currently playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Muted
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Boolean
             </td>
-            <td class="spectrum-Table-cell">
-              Whether the video is muted (<code>true</code>) or unmuted
-              (<code>false</code>).
+            <td is="coral-table-cell">
+              Whether the video is muted (<code class="coral-Code--S">true</code>) or unmuted
+              (<code class="coral-Code--S">false</code>).
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Playback Rate
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Floating point number
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Playback rate of the currently playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Title
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               YouTube title of the currently loaded/playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video URL
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               YouTube URL of the currently loaded/playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Volume
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Integer
             </td>
-            <td class="spectrum-Table-cell">
-              The player's current volume between <code>0</code> and <code>100</code>.
+            <td is="coral-table-cell">
+              The player's current volume between <code class="coral-Code--S">0</code> and
+              <code class="coral-Code--S">100</code>.
             </td>
           </tr>
         </tbody>
       </table>
     </section>
 
-    <footer class="spectrum-Body--small text footer">
+    <hr class="coral-Divider--S">
+
+    <footer class="coral--lightest coral-Body--XS">
       <div id="donations">
-        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+        <p>
+          Donate: <a class="coral-Link" href="https://paypal.me/yuhuibc" target="_blank">PayPal</a>
+        </p>
       </div>
       <div id="support">
-        <p>Support Information</p>
-        <ul>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+        <p>
+          Support Information
+        </p>
+        <ul class="coral-List">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
               Open a ticket
             </a>
           </li>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
               Read change log
             </a>
           </li>
@@ -197,10 +218,10 @@
 
       <p>Copyright &copy; 2021 Yuhui. All rights reserved.</p>
       <p>
-        <a href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
-        <a href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
-        <a href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
-        <a href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+        <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
+        <a class="coral-Link" href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
       </p>
     </footer>
 
@@ -223,36 +244,54 @@
           var formValues = getFormValues(FORM_ID);
 
           // convert string values to array of integers
-          formValues.fixedMilestoneAmounts = formValues.fixedMilestoneAmounts.split(',').
-            map(function(value) {
-              var numberMatch = value.match(/([0-9]+)/);
-              return parseInt(numberMatch[1]);
-            });
+          formValues.fixedMilestoneAmounts = splitStringToInt(formValues.fixedMilestoneAmounts);
 
           return formValues;
         },
 
         validate: function() {
+          var coralTextFieldSelector = 'input[is="coral-textfield"]';
+          document.querySelectorAll(coralTextFieldSelector).forEach(function(input) {
+            input.removeAttribute('invalid');
+          });
+          var errorTextFieldSelector = coralTextFieldSelector + '[name="fieldName"]';
+
           var formValues = getFormValues(FORM_ID);
 
           var fixedMilestoneAmounts = formValues.fixedMilestoneAmounts;
           var fixedMilestoneUnit = formValues.fixedMilestoneUnit;
 
-          var fixedMilestoneAmountsAreValid =
-            fixedMilestoneAmounts.split(',').
-            map(function(value) {
-              var numberMatch = value.match(/([0-9]+)/);
-              return numberMatch ? numberMatch[1] : '';
-            }).
-            every(function(value) {
+          var fixedMilestoneAmountsArr = splitStringToInt(fixedMilestoneAmounts);
+          var fixedMilestoneAmountsAreNotBlank = fixedMilestoneAmountsArr.length > 0;
+          var fixedMilestoneAmountsAreIntegers = fixedMilestoneAmountsArr.every(function(value) {
               return valueIsInteger(value);
             });
+          var fixedMilestoneAmountsAreValid = fixedMilestoneAmountsAreNotBlank &&
+            fixedMilestoneAmountsAreIntegers;
+          if (!fixedMilestoneAmountsAreValid) {
+            var selector = errorTextFieldSelector.replace('fieldName', 'fixedMilestoneAmounts');
+            document.querySelectorAll(selector).forEach(function(input) {
+              input.setAttribute('invalid', '');
+            });
+          }
 
-          var fixedMilestoneUnitIsValid = ['percent', 'seconds'].indexOf(fixedMilestoneUnit) > -1;
+          var fixedMilestoneUnitIsValid = ['percent', 'seconds'].includes(fixedMilestoneUnit);
 
-          return fixedMilestoneAmountsAreValid && fixedMilestoneUnitIsValid
+          return fixedMilestoneAmountsAreValid && fixedMilestoneUnitIsValid;
         }
       });
+
+      /**
+       * Split a string into an array of integers.
+       */
+      function splitStringToInt(string) {
+        return string.split(',').map(function(value) {
+          var numberMatch = value.match(/([0-9]+)/);
+          return numberMatch ? parseInt(numberMatch[1]) : null;
+        }).filter(function(value) {
+          return value !== null;
+        });
+      }
     </script>
   </body>
 </html>

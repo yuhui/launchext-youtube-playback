@@ -3,76 +3,82 @@
   <head>
     <meta charset="UTF-8">
     <title>Enable YouTube Video Playback Tracking</title>
-    <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
+    <link rel="stylesheet" href="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/css/coral.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
-    <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/js/coral.min.js" data-coral-icons-external="js"></script>
   </head>
-  <body class="spectrum spectrum--light spectrum-Body">
-    <form id="action-configuration" class="spectrum-Form">
-      <h4 class="spectrum-Heading4">Enable Video Playback Tracking</h4>
+  <body class="coral--light coral-Body--S u-coral-margin">
+    <form id="action-configuration" class="coral-Form">
+      <h3 class="coral-Heading--M">Enable Video Playback Tracking</h3>
 
-      <div class="spectrum-Toast spectrum-Toast--warning max-width" role="alert">
-        <svg class="spectrum-UIIcon-AlertMedium spectrum-Icon spectrum-Toast-typeIcon" focusable="false" aria-label="Warning" role="img">
-          <path d="M8.564 1.289L.2 16.256A.5.5 0 0 0 .636 17h16.728a.5.5 0 0 0 .5-.5.494.494 0 0 0-.064-.244L9.436 1.289a.5.5 0 0 0-.872 0zM10 14.75a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25zm0-3a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25z" class="spectrum-UIIcon--medium"></path>
-        </svg>
-        <div class="spectrum-Toast-body">
-          <div class="spectrum-Toast-content">
-            Ensure that the YouTube video player is loaded in your users' browsers <i>before</i>
-            this Action runs.
-          </div>
-        </div>
-      </div>
+      <coral-alert variant="warning">
+        <coral-alert-header>
+          Important!
+        </coral-alert-header>
+        <coral-alert-content>
+          Ensure that the YouTube video player is loaded in your users' browsers <i>before</i> this
+          Action runs.
+        </coral-alert-content>
+      </coral-alert>
 
-      <p>Enable video tracking for:</p>
-      <div id="element-specificity" class="spectrum-FieldGroup" role="radiogroup">
-        <label class="spectrum-Radio">
-          <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="any" checked="true">
-          <span class="spectrum-Radio-label">any player</span>
+      <div id="element-specificity-container" class="coral-FormGroup-item">
+        <label class="coral-FormGroup-itemLabel coral-FieldLabel--left">
+          Use this extension with
+          <coral-icon icon="Asterisk" class="coral-FieldLabel-requiredIcon" size="XXS" alt="required"></coral-icon>
         </label>
-        <label class="spectrum-Radio">
-          <input class="spectrum-Radio-button" type="radio" name="elementSpecificity" value="specific">
-          <span class="spectrum-Radio-label">specific players</span>
-        </label>
-      </div>
-      <div id="elements-selector-container" class="hide">
-        <div id="elements-selector" class="max-width">
-          <span>Players matching the CSS selector</span>
-          <label>
-            <input type="text" name="elementsSelector" value="">
-          </label>
-          <a class="spectrum-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">Learn more</a>
-        </div>
-        <div>
-          <b>Important!</b> Only the players that you specify here will be able
-          to work with the YouTube playback events provided by this extension.
-        </div>
+        <coral-radiogroup orientation="vertical">
+          <coral-radio name="elementSpecificity" value="any" checked="">
+            any player
+          </coral-radio>
+          <coral-radio name="elementSpecificity" value="specific">
+            specific players
+          </coral-radio>
+        </coral-radiogroup>
       </div>
 
-      <div class="content-separator">
-        &nbsp;
+      <div id="elements-selector-container" class="coral-FormGroup-item hide">
+        <label for="elements-selector" class="coral-FormGroup-itemLabel coral-FieldLabel--left">
+          Players matching the CSS selector
+        </label>
+        <div class="coral-InputGroup" style="width: 100%;" role="presentation">
+          <input id="elements-selector" name="elementsSelector" value="" class="coral-InputGroup-input" is="coral-textfield" placeholder="CSS selector of specific players">
+          <span class="coral-InputGroup-button">
+            <button is="coral-button" icon="data" title="Data Element selector"></button>
+          </span>
+          <span style="margin-left: 1em; white-space: nowrap;">
+            <a class="coral-Link" href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors" rel="noopener noreferrer" target="_blank">
+              Learn more
+            </a>
+          </span>
+        </div>
+        <coral-alert>
+          <coral-alert-header>
+            Important!
+          </coral-alert-header>
+          <coral-alert-content>
+            Only the players that match this CSS selector will be able to work with the YouTube
+            playback events provided by this extension.
+          </coral-alert-content>
+        </coral-alert>
       </div>
 
       <div id="load-youtube-iframe-api-container">
-        <div id="load-youtube-iframe-api" class="max-width">
-          <label class="spectrum-Checkbox">
-            <input class="spectrum-Checkbox-box" type="checkbox" name="loadYoutubeIframeApi" value="yes" checked="true">
-            <span>Load YouTube IFrame API script if it hasn't been loaded yet.</span>
-          </label>
-        </div>
-        <div>
-          Uncheck this box if you want to control when the YouTube IFrame API script is loaded,
-          for example, after the user has given consent. (In that case, use the "Load YouTube
-          IFrame API script" Action.) If you are not sure, leave this checkbox as checked.
+        <div class="coral-FormGroup-item">
+          <coral-checkboxgroup orientation="vertical">
+            <coral-checkbox name="loadYoutubeIframeApi" value="yes" checked="">
+              Load YouTube IFrame API script if it hasn't been loaded yet.
+            </coral-checkbox>
+            Uncheck this box if you want to control when the YouTube IFrame API script is
+            loaded, for example, after the user has given consent. (In that case, use the "Load
+            YouTube IFrame API script" Action.) If you are not sure, leave this checkbox as
+            checked.
+          </coral-checkboxgroup>
         </div>
       </div>
     </form>
 
-    <div class="content-separator">
-      &nbsp;
-    </div>
-
-    <section>
-      <h5 class="spectrum-Heading5">How this Action works</h5>
+    <section class="coral-Well">
+      <h4 class="coral-Heading--S coral-Heading--light">How this Action works</h4>
       <p>
         When this Action runs, it sets up the YouTube players to work with the YouTube IFrame API.
         This detects the video playback interactions so that they can be tracked.
@@ -81,39 +87,47 @@
         This Action should be run every time YouTube players are loaded into the web page. For
         example:
       </p>
-      <ul>
-        <li>with the Core extension's "Window Loaded" Event</li>
-        <li>when a button is clicked to load the YouTube player(s)</li>
-        <li>etc.</li>
+      <ul class="coral-List">
+        <li class="coral-List-item">with the Core extension's "Window Loaded" Event</li>
+        <li class="coral-List-item">when a button is clicked to load the YouTube player(s)</li>
+        <li class="coral-List-item">etc.</li>
       </ul>
     </section>
 
-    <footer class="spectrum-Body--small text footer">
+    <hr class="coral-Divider--S">
+
+    <footer class="coral--lightest coral-Body--XS">
       <div id="donations">
-        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+        <p>
+          Donate: <a class="coral-Link" href="https://paypal.me/yuhuibc" target="_blank">PayPal</a>
+        </p>
       </div>
       <div id="support">
-        <p>Support Information</p>
-        <ul>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+        <p>
+          Support Information
+        </p>
+        <ul class="coral-List">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
               Open a ticket
             </a>
           </li>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
               Read change log
             </a>
           </li>
         </ul>
       </div>
 
-      <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
       <p>
-        <a href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
-        <a href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
-        <a href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
-        <a href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+        Copyright &copy; 2020 Yuhui. All rights reserved.
+      </p>
+      <p>
+        <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
+        <a class="coral-Link" href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
       </p>
     </footer>
 
@@ -158,6 +172,12 @@
         },
 
         validate: function() {
+          var coralTextFieldSelector = 'input[is="coral-textfield"]';
+          document.querySelectorAll(coralTextFieldSelector).forEach(function(input) {
+            input.removeAttribute('invalid');
+          });
+          var errorTextFieldSelector = coralTextFieldSelector + '[name="fieldName"]';
+
           var formValues = getFormValues(FORM_ID);
 
           var elementSpecificityValue = formValues.elementSpecificity;
@@ -165,13 +185,19 @@
           var loadYoutubeIframeApi = formValues.loadYoutubeIframeApi;
 
           var elementSpecificityValueIsValid =
-            ['any', 'specific'].indexOf(elementSpecificityValue) > -1;
+            ['any', 'specific'].includes(elementSpecificityValue);
 
           var elementsSelectorValueIsValid = elementSpecificityValue === 'any' ?
             true :
             elementsSelectorValue.length > 0;
+          if (!elementsSelectorValueIsValid) {
+            var selector = errorTextFieldSelector.replace('fieldName', 'elementsSelector');
+            document.querySelectorAll(selector).forEach(function(input) {
+              input.setAttribute('invalid', '');
+            });
+          }
 
-          var loadYoutubeIframeApiIsValid = ['', 'yes'].indexOf(loadYoutubeIframeApi) > -1;
+          var loadYoutubeIframeApiIsValid = ['', 'yes'].includes(loadYoutubeIframeApi);
 
           return elementSpecificityValueIsValid &&
             elementsSelectorValueIsValid &&
@@ -179,8 +205,23 @@
         }
       });
 
-      document.querySelectorAll('#element-specificity label').forEach(function(label) {
-        label.addEventListener('click', function(event) {
+      /**
+       * When the data element selector coral-icon button is clicked,
+       * open Launch's data element selector,
+       * then set the coral-icon's nearest input with the selected data element.
+       */
+      document.querySelectorAll('button[icon="data"]').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+          var inputElement = this.closest('div.coral-InputGroup').querySelector('input');
+          window.extensionBridge.openDataElementSelector().then(function(dataElement) {
+            inputElement.value = dataElement;
+          });
+        });
+      });
+
+      var elementSpecificityRadioSelector = '#element-specificity-container coral-radio';
+      document.querySelectorAll(elementSpecificityRadioSelector).forEach(function(radio) {
+        radio.addEventListener('click', function(event) {
           toggleElement(FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container');
         });
       });

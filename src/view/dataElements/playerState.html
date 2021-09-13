@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8">
     <title>Player State Data Element</title>
-    <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
+    <link rel="stylesheet" href="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/css/coral.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
-    <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/js/coral.min.js" data-coral-icons-external="js"></script>
   </head>
-  <body class="spectrum spectrum--light spectrum-Body">
-    <h4 class="spectrum-Heading4">No configuration necessary</h4>
+  <body class="coral--light coral-Body--S u-coral-margin">
+    <h3 class="coral-Heading--M">No configuration necessary</h3>
 
-    <section>
-      <h5 class="spectrum-Heading5">How this Data Element works</h5>
+    <section class="coral-Well">
+      <h4 class="coral-Heading--S coral-Heading--light">How this Data Element works</h4>
       <p>
         This Data Element returns the state of the YouTube player. It corresponds to the YouTube
         Playback Event.
@@ -24,136 +24,155 @@
       <p>
         How to use:
       </p>
-      <ul>
-        <li><code>%data element name%</code></li>
-        <li><code>_satellite.getVar('data element name', event)</code></li>
+      <ul class="coral-List">
+        <li class="coral-List-item"><code class="coral-Code--S">%data element name%</code></li>
+        <li class="coral-List-item"><code class="coral-Code--S">_satellite.getVar('data element name', event)</code></li>
       </ul>
 
-      <table class="spectrum-Table">
-        <tr class="spectrum-Table-row">
-          <th class="spectrum-Table-headCell">When the Event is...</th>
-          <th class="spectrum-Table-headCell">this Data Element's value is...</th>
-        </tr>
-        <tbody class="spectrum-Table-body">
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+      <table is="coral-table" variant="quiet">
+        <colgroup>
+          <col is="coral-table-column" sortable="" sortabledirection="ascending">
+          <col is="coral-table-column">
+        </colgroup>
+        <thead is="coral-table-head">
+          <tr is="coral-table-row">
+            <th is="coral-table-headercell">When the Event is...</th>
+            <th is="coral-table-headercell">this Data Element's value is...</th>
+          </tr>
+        </thead>
+        <tbody is="coral-table-body">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Player Ready
             </td>
-            <td class="spectrum-Table-cell">
-              <code>player ready</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">player ready</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Player Error
             </td>
-            <td class="spectrum-Table-cell">
-              <code>player error</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">player error</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Unstarted
             </td>
-            <td class="spectrum-Table-cell">
-              <code>video unstarted</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">video unstarted</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Buffering
             </td>
-            <td class="spectrum-Table-cell">
-              <code>video buffering</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">video buffering</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Cued
             </td>
-            <td class="spectrum-Table-cell">
-              <code>video cued</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">video cued</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Playing
             </td>
-            <td class="spectrum-Table-cell">
-              <code>video playing</code>, <code>video replayed</code>, <code>video resumed</code>
-              or <code>video started</code>, depending on the Event option.
+            <td is="coral-table-cell">
+              <ul class="coral-List--condensed">
+                <li class="coral-List-item"><code class="coral-Code--S">video playing</code></li>
+                <li class="coral-List-item"><code class="coral-Code--S">video replayed</code></li>
+                <li class="coral-List-item"><code class="coral-Code--S">video resumed</code></li>
+                <li class="coral-List-item"><code class="coral-Code--S">video started</code></li>
+              </ul>
+              depending on the Event option.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Paused
             </td>
-            <td class="spectrum-Table-cell">
-              <code>video paused</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">video paused</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Ended
             </td>
-            <td class="spectrum-Table-cell">
-              <code>video ended</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">video ended</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Playback Quality Changed
             </td>
-            <td class="spectrum-Table-cell">
-              <code>playback quality changed</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">playback quality changed</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Playback Rate Changed
             </td>
-            <td class="spectrum-Table-cell">
-              <code>playback rate changed</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">playback rate changed</code>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               API Changed
             </td>
-            <td class="spectrum-Table-cell">
-              <code>module with exposed API changed</code>
+            <td is="coral-table-cell">
+              <code class="coral-Code--S">module with exposed API changed</code>
             </td>
           </tr>
         </tbody>
       </table>
     </section>
 
-    <footer class="spectrum-Body--small text footer">
+    <hr class="coral-Divider--S">
+
+    <footer class="coral--lightest coral-Body--XS">
       <div id="donations">
-        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+        <p>
+          Donate: <a class="coral-Link" href="https://paypal.me/yuhuibc" target="_blank">PayPal</a>
+        </p>
       </div>
       <div id="support">
-        <p>Support Information</p>
-        <ul>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+        <p>
+          Support Information
+        </p>
+        <ul class="coral-List">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
               Open a ticket
             </a>
           </li>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
               Read change log
             </a>
           </li>
         </ul>
       </div>
 
-      <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
       <p>
-        <a href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
-        <a href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
-        <a href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
-        <a href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+        Copyright &copy; 2020 Yuhui. All rights reserved.
+      </p>
+      <p>
+        <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
+        <a class="coral-Link" href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
       </p>
     </footer>
 

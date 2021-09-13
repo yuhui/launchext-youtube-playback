@@ -3,201 +3,211 @@
   <head>
     <meta charset="UTF-8">
     <title>YouTube Video Playing Event</title>
-    <link rel="stylesheet" href="//assets.adobedtm.com/activation/reactor/spectrum/2.9.0/spectrum-light.css">
+    <link rel="stylesheet" href="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/css/coral.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
-    <script src="//use.typekit.net/buj6cmr.js"></script>
+    <script src="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/js/coral.min.js" data-coral-icons-external="js"></script>
   </head>
-  <body class="spectrum spectrum--light spectrum-Body">
-    <form id="event-configuration" class="spectrum-Form">
-      <h4 class="spectrum-Heading4">Setup Video Playing</h4>
+  <body class="coral--light coral-Body--S u-coral-margin">
+    <form id="event-configuration" class="coral-Form coral-FormGroup--labelsAbove">
+      <h4 class="coral-Heading--M">Setup Video Playing</h4>
 
-      <div id="video-playing-options-container">
-        <div id="track-started-option" class="max-width">
-          <label class="spectrum-Checkbox">
-            <input class="spectrum-Checkbox-box" type="checkbox" name="trackStarted" value="yes">
-            <span>If the video has not been started, track it as <code>video started</code>.</span>
-          </label>
-        </div>
-        <div id="track-resumed-option" class="max-width">
-          <label class="spectrum-Checkbox">
-            <input class="spectrum-Checkbox-box" type="checkbox" name="trackResumed" value="yes">
-            <span>If the video was paused previously, track it as <code>video resumed</code>.</span>
-          </label>
-        </div>
-        <div id="track-replayed-option" class="max-width">
-          <label class="spectrum-Checkbox">
-            <input class="spectrum-Checkbox-box" type="checkbox" name="trackReplayed" value="yes">
-            <span>If the video has ended, track it as <code>video replayed</code>.</span>
-          </label>
-        </div>
-        <div id="do-not-track-option" class="max-width">
-          <label class="spectrum-Checkbox">
-            <input class="spectrum-Checkbox-box" type="checkbox" name="doNotTrack" value="yes">
-            <span><b>Do not track this event</b> except for the above selected options.</span>
-          </label>
-        </div>
+      <div id="video-playing-options-container" class="coral-FormGroup-item">
+        <coral-checkboxgroup orientation="vertical">
+          <coral-checkbox name="trackStarted" value="yes">
+            If the video has not been started, track it as <code class="coral-Code--S">video started</code>.
+          </coral-checkbox>
+          <coral-checkbox name="trackResumed" value="yes">
+            If the video was paused previously, track it as <code class="coral-Code--S">video resumed</code>.
+          </coral-checkbox>
+          <coral-checkbox name="trackReplayed" value="yes">
+            If the video has ended, track it as <code class="coral-Code--S">video replayed</code>.
+          </coral-checkbox>
+          <coral-checkbox name="doNotTrack" value="yes">
+            <b>Do not track this event</b> except for the above selected options.
+          </coral-checkbox>
+        </coral-checkboxgroup>
       </div>
     </form>
 
-    <section>
-      <h5 class="spectrum-Heading5">How this Event works</h5>
+    <section class="coral-Well">
+      <h4 class="coral-Heading--S coral-Heading--light">How this Event works</h4>
       <p>
         This Event is triggered when the YouTube player is playing a video.
       </p>
       <p>
         The following Data Elements are available for use with your Rule's Conditions and Actions.
       </p>
-      <table class="spectrum-Table">
-        <tr class="spectrum-Table-row">
-          <th class="spectrum-Table-headCell">Data Element</th>
-          <th class="spectrum-Table-headCell">Data type</th>
-          <th class="spectrum-Table-headCell">Value</th>
-        </tr>
-        <tbody class="spectrum-Table-body">
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+      <table is="coral-table" variant="quiet">
+        <colgroup>
+          <col is="coral-table-column" sortable="" sortabledirection="ascending">
+          <col is="coral-table-column" sortable="" sortabledirection="ascending">
+          <col is="coral-table-column">
+        </colgroup>
+        <thead is="coral-table-head">
+          <tr is="coral-table-row">
+            <th is="coral-table-headercell">Data Element</th>
+            <th is="coral-table-headercell">Data type</th>
+            <th is="coral-table-headercell">Value</th>
+          </tr>
+        </thead>
+        <tbody is="coral-table-body">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Player State
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
-              Fixed value: <code>video playing</code>, <code>video replayed</code>,
-              <code>video resumed</code> or <code>video started</code>, depending on the selected
-              options.
+            <td is="coral-table-cell">
+              Fixed value depending on the selected options:
+              <ul class="coral-List--condensed">
+                <li class="coral-List-item"><code class="coral-Code--S">video playing</code></li>
+                <li class="coral-List-item"><code class="coral-Code--S">video replayed</code></li>
+                <li class="coral-List-item"><code class="coral-Code--S">video resumed</code></li>
+                <li class="coral-List-item"><code class="coral-Code--S">video started</code></li>
+              </ul>
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Current Time
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Floating point number
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Elapsed time in seconds since the video started playing.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Duration
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Integer
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Duration in seconds of the currently playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video ID
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               YouTube ID of the currently loaded/playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Loaded Fraction
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Floating point number
             </td>
-            <td class="spectrum-Table-cell">
-              Fraction of the video between <code>0</code> and <code>1</code> that the player shows
-              as buffered.
+            <td is="coral-table-cell">
+              Fraction of the video between <code class="coral-Code--S">0</code> and
+              <code class="coral-Code--S">1</code> that the player shows as buffered.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Muted
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Boolean
             </td>
-            <td class="spectrum-Table-cell">
-              Whether the video is muted (<code>true</code>) or unmuted
-              (<code>false</code>).
+            <td is="coral-table-cell">
+              Whether the video is muted (<code class="coral-Code--S">true</code>) or unmuted
+              (<code class="coral-Code--S">false</code>).
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Playback Rate
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Floating point number
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Playback rate of the currently playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Title
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               YouTube title of the currently loaded/playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video URL
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               String
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               YouTube URL of the currently loaded/playing video.
             </td>
           </tr>
-          <tr class="spectrum-Table-row">
-            <td class="spectrum-Table-cell">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
               Video Volume
             </td>
-            <td class="spectrum-Table-cell">
+            <td is="coral-table-cell">
               Integer
             </td>
-            <td class="spectrum-Table-cell">
-              The player's current volume between <code>0</code> and <code>100</code>.
+            <td is="coral-table-cell">
+              The player's current volume between <code class="coral-Code--S">0</code> and
+              <code class="coral-Code--S">100</code>.
             </td>
           </tr>
         </tbody>
       </table>
     </section>
 
-    <footer class="spectrum-Body--small text footer">
+    <hr class="coral-Divider--S">
+
+    <footer class="coral--lightest coral-Body--XS">
       <div id="donations">
-        <p>Donate: <a href="https://paypal.me/yuhuibc" target="_blank">PayPal</a></p>
+        <p>
+          Donate: <a class="coral-Link" href="https://paypal.me/yuhuibc" target="_blank">PayPal</a>
+        </p>
       </div>
       <div id="support">
-        <p>Support Information</p>
-        <ul>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+        <p>
+          Support Information
+        </p>
+        <ul class="coral-List">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
               Open a ticket
             </a>
           </li>
-          <li>
-            <a href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
               Read change log
             </a>
           </li>
         </ul>
       </div>
 
-      <p>Copyright &copy; 2020 Yuhui. All rights reserved.</p>
       <p>
-        <a href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
-        <a href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
-        <a href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
-        <a href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+        Copyright &copy; 2020 Yuhui. All rights reserved.
+      </p>
+      <p>
+        <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
+        <a class="coral-Link" href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
       </p>
     </footer>
 
@@ -209,12 +219,40 @@
       window.extensionBridge.register({
         init: function(info) {
           if (info.settings) {
+            // rewrite checkbox input values for "false" checked state
+            if (info.settings.trackStarted === 'no') {
+              info.settings.trackStarted = '';
+            }
+            if (info.settings.trackReplayed === 'no') {
+              info.settings.trackReplayed = '';
+            }
+            if (info.settings.trackResumed === 'no') {
+              info.settings.trackResumed = '';
+            }
+            if (info.settings.doNotTrack === 'no') {
+              info.settings.doNotTrack = '';
+            }
+
             setFormValues(FORM_ID, info.settings);
           }
         },
 
         getSettings: function() {
           var formValues = getFormValues(FORM_ID);
+
+          // rewrite checkbox input values so as not to deal with empty strings
+          if (formValues.trackStarted === '') {
+            formValues.trackStarted = 'no';
+          }
+          if (formValues.trackReplayed === '') {
+            formValues.trackReplayed = 'no';
+          }
+          if (formValues.trackResumed === '') {
+            formValues.trackResumed = 'no';
+          }
+          if (formValues.doNotTrack === '') {
+            formValues.doNotTrack = 'no';
+          }
 
           return formValues;
         },
@@ -223,16 +261,16 @@
           var formValues = getFormValues(FORM_ID);
 
           var trackStarted = formValues.trackStarted;
-          var trackStartedIsValid = ['', 'yes'].indexOf(trackStarted) > -1;
+          var trackStartedIsValid = ['', 'yes'].includes(trackStarted);
 
           var trackReplayed = formValues.trackReplayed;
-          var trackReplayedIsValid = ['', 'yes'].indexOf(trackReplayed) > -1;
+          var trackReplayedIsValid = ['', 'yes'].includes(trackReplayed);
 
           var trackResumed = formValues.trackResumed;
-          var trackResumedIsValid = ['', 'yes'].indexOf(trackResumed) > -1;
+          var trackResumedIsValid = ['', 'yes'].includes(trackResumed);
 
           var doNotTrack = formValues.doNotTrack;
-          var doNotTrackIsValid = ['', 'yes'].indexOf(doNotTrack) > -1;
+          var doNotTrackIsValid = ['', 'yes'].includes(doNotTrack);
 
           return trackStartedIsValid &&
             trackReplayedIsValid &&
