@@ -2,6 +2,9 @@
 setup
 *.zip
 
+# Visual Studio Code
+*.code-workspace
+
 # Logs
 logs
 *.log

@@ -51,7 +51,7 @@ module.exports = {
     }]
   }, {
     "id": "RL1608090868708",
-    "name": "YouTube Player Ready, YouTube Video Playing, YouTube Video Paused, Video Ended",
+    "name": "YouTube Player Ready, YouTube Video Playing, YouTube Video Paused, Video Ended, Playback Quality Changed",
     "events": [{
       "modulePath": "youtube-playback/src/lib/events/playerReady.js",
       "settings": {}
@@ -61,13 +61,16 @@ module.exports = {
         "trackStarted": "yes",
         "trackResumed": "yes",
         "trackReplayed": "yes",
-        "doNotTrack": ""
+        "doNotTrack": "yes"
       }
     }, {
       "modulePath": "youtube-playback/src/lib/events/videoPaused.js",
       "settings": {}
     }, {
       "modulePath": "youtube-playback/src/lib/events/videoEnded.js",
+      "settings": {}
+    }, {
+      "modulePath": "youtube-playback/src/lib/events/playbackQualityChanged.js",
       "settings": {}
     }],
     "actions": [{
@@ -82,6 +85,20 @@ module.exports = {
       "settings": {
         "fixedMilestoneAmounts": [25, 50, 75, 90],
         "fixedMilestoneUnit": "percent"
+      }
+    }],
+    "actions": [{
+      "modulePath": "sandbox/logEventInfo.js",
+      "settings": {}
+    }]
+  }, {
+    "id": "RL1624113539409",
+    "name": "YouTube Milestone 5, 10, 15 seconds",
+    "events": [{
+      "modulePath": "youtube-playback/src/lib/events/videoMilestone.js",
+      "settings": {
+        "fixedMilestoneAmounts": [5, 10, 15],
+        "fixedMilestoneUnit": "seconds"
       }
     }],
     "actions": [{
@@ -103,8 +120,8 @@ module.exports = {
   },
   "buildInfo": {
     "turbineVersion": "26.0.2",
-    "turbineBuildDate": "2021-01-23T16:46:41.941Z",
-    "buildDate": "2021-01-23T16:46:41.941Z",
+    "turbineBuildDate": "2021-06-21T15:56:53.351Z",
+    "buildDate": "2021-06-21T15:56:53.351Z",
     "environment": "development"
   }
 }
