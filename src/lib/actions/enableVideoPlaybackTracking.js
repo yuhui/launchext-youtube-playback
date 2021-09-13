@@ -16,8 +16,9 @@
 
 'use strict';
 
-var log = require('../helpers/log');
 var youtubeIframeApi = require('../helpers/youtubeIframeApi');
+
+var logger = turbine.logger;
 
 /**
  * Enable Video Playback Tracking action.
@@ -27,6 +28,6 @@ var youtubeIframeApi = require('../helpers/youtubeIframeApi');
  * @param {Object} event The underlying event object that triggered the rule.
  */
 module.exports = function(settings, event) {
-  log('debug', 'Enabling YouTube playback tracking on ' + event.$type);
+  logger.debug('Enabling YouTube playback tracking on ' + event.$type);
   youtubeIframeApi.enableVideoPlaybackTracking(settings);
 };

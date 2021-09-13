@@ -16,8 +16,9 @@
 
 'use strict';
 
-var log = require('../helpers/log');
 var youtubeIframeApi = require('../helpers/youtubeIframeApi');
+
+var logger = turbine.logger;
 
 /**
  * Load the YouTube IFrame API script.
@@ -26,6 +27,6 @@ var youtubeIframeApi = require('../helpers/youtubeIframeApi');
  * @param {Object} event The underlying event object that triggered the rule.
  */
 module.exports = function(settings, event) {
-  log('debug', 'Loading YouTube IFrame API script on ' + event.$type);
+  logger.debug('Loading YouTube IFrame API script on ' + event.$type);
   youtubeIframeApi.loadYoutubeIframeApiScript(settings);
 };

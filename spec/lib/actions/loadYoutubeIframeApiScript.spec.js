@@ -19,14 +19,15 @@
 var proxyquire = require('proxyquire').noCallThru();
 
 describe('loadYoutubeIframeApiScript action delegate', function() {
-  var getLogSpy = require('../../specHelpers/getLogSpy');
-  var log = getLogSpy();
+  // mock turbine.logger
+  global.turbine = global.turbine || {
+    logger: jasmine.createSpyObj('', ['debug', 'info', 'warn', 'alert', 'error']),
+  };
 
   var getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
   var youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
 
   var actionDelegate = proxyquire('../../../src/lib/actions/loadYoutubeIframeApiScript', {
-    '../helpers/log': log,
     '../helpers/youtubeIframeApi': youtubeIframeApiSpyObj,
   });
 
@@ -49,9 +50,8 @@ describe('loadYoutubeIframeApiScript action delegate', function() {
   it(
     'logs a debug message for the event type',
     function() {
-      var result = log;
-      expect(result).toHaveBeenCalledWith(
-        'debug',
+      var logDebug = global.turbine.logger.debug;
+      expect(logDebug).toHaveBeenCalledWith(
         'Loading YouTube IFrame API script on ' + this.event.$type
       );
     }
