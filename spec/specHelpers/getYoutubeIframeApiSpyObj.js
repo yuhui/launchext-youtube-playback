@@ -25,7 +25,7 @@ module.exports = function() {
     [
       'enableVideoPlaybackTracking',
       'loadYoutubeIframeApiScript',
-      'registerEventStateTrigger',
+      'registerEventTrigger',
     ],
     {
       apiChanged: 'module with exposed API changed',

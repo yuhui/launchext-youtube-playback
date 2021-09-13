@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Yuhui. All rights reserved.
+ * Copyright 2021 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
 
 'use strict';
 
-var youtubeIframeApi = require('../helpers/youtubeIframeApi');
+describe('videoTimeFromFraction helper delegate', function() {
+  var helperDelegate = require('../../../src/lib/helpers/videoTimeFromFraction');
 
-/**
- * YouTube IFrame API Video Paused event.
- * This event occurs when a video is paused in the YouTube player.
- *
- * @param {Object} settings The event settings object.
- * @param {ruleTrigger} trigger The trigger callback.
- */
-module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerEventTrigger(
-    youtubeIframeApi.videoPaused,
-    settings,
-    trigger
+  it(
+    'results in 26.5 when the duration is 107 and the fraction is 0.2',
+    function() {
+      var result = helperDelegate(107, 0.2);  // = 21.4 ~= 21.0
+      expect(result).toEqual(21.0);
+    }
   );
-};
+
+  it(
+    'rounds to 10.5 when the input is 10.7',
+    function() {
+      var result = helperDelegate(262, 2 / 3);  // = 174.67 ~= 174.5
+      expect(result).toEqual(174.5);
+    }
+  );
+});

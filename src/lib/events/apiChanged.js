@@ -26,7 +26,7 @@ var youtubeIframeApi = require('../helpers/youtubeIframeApi');
  * @param {ruleTrigger} trigger The trigger callback.
  */
 module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerEventStateTrigger(
+  youtubeIframeApi.registerEventTrigger(
     youtubeIframeApi.apiChanged,
     settings,
     trigger

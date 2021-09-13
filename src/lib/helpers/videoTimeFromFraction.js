@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Yuhui. All rights reserved.
+ * Copyright 2021 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@
 
 'use strict';
 
-var youtubeIframeApi = require('../helpers/youtubeIframeApi');
+var flooredVideoTime = require('./flooredVideoTime');
 
 /**
- * YouTube IFrame API Video Paused event.
- * This event occurs when a video is paused in the YouTube player.
+ * Calculate the equivalent video time (in seconds) for a given fraction.
+ * Used mainly for milestone tracking.
  *
- * @param {Object} settings The event settings object.
- * @param {ruleTrigger} trigger The trigger callback.
+ * @param {Number} duration The video's duration in seconds.
+ * @param {Number} fraction The fraction of the video's duration, e.g. 0.25.
+ *
+ * @return {Number} The calculated video time for the given fraction.
  */
-module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerEventTrigger(
-    youtubeIframeApi.videoPaused,
-    settings,
-    trigger
-  );
+module.exports = function(duration, fraction) {
+  var videoTime = duration * fraction;
+  videoTime = flooredVideoTime(videoTime);
+  return videoTime;
 };

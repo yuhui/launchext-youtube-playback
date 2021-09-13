@@ -33,7 +33,7 @@ describe('"' + eventState + '" event delegate', function() {
       var trigger = function() {};
 
       eventDelegate(settings, trigger);
-      var result = youtubeIframeApiSpyObj.registerEventStateTrigger;
+      var result = youtubeIframeApiSpyObj.registerEventTrigger;
       expect(result).toHaveBeenCalledTimes(1);
       expect(result).toHaveBeenCalledWith(eventState, settings, trigger);
     }

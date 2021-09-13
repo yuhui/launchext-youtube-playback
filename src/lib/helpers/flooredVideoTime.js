@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Yuhui. All rights reserved.
+ * Copyright 2021 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,16 @@
 
 'use strict';
 
-var youtubeIframeApi = require('../helpers/youtubeIframeApi');
-
 /**
- * YouTube IFrame API Video Paused event.
- * This event occurs when a video is paused in the YouTube player.
+ * Floor the specified video time to the nearest 0.5 seconds.
+ * Used mainly for milestone tracking.
  *
- * @param {Object} settings The event settings object.
- * @param {ruleTrigger} trigger The trigger callback.
+ * @param {Number} videoTime The video's time in seconds to floor.
+ *
+ * @return {Number} The video time floored to the nearest 0.5 seconds.
  */
-module.exports = function(settings, trigger) {
-  youtubeIframeApi.registerEventTrigger(
-    youtubeIframeApi.videoPaused,
-    settings,
-    trigger
-  );
+module.exports = function(videoTime) {
+  var remainder = videoTime % 1;
+  var flooredVideoTime = videoTime - remainder + (remainder >= 0.5 ? 0.5 : 0.0);
+  return flooredVideoTime;
 };
