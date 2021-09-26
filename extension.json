@@ -2,8 +2,8 @@
   "displayName": "YouTube Playback",
   "name": "youtube-playback",
   "platform": "web",
-  "version": "2.0.0",
-  "description": "The most full-featured extension for tracking playback of all of your YouTube videos, with up to 50% memory savings! Rich set of events and data elements for building your Rules. Supports dynamic loading of YouTube players. Control loading of YouTube's API.",
+  "version": "2.0.1",
+  "description": "The most full-featured extension for tracking playback of all of your YouTube videos! Rich set of events and data elements for building your Rules. Supports dynamic loading of YouTube players. Control loading of YouTube's API.",
   "author": {
     "name": "Yuhui",
     "url": "https://yuhui.sg",
@@ -46,14 +46,7 @@
           "enum": [ "immediately", "window-loaded" ],
           "default": "immediately"
         }
-      },
-      "required": [
-        "useLegacySettings",
-        "elementSpecificity",
-        "loadYoutubeIframeApi",
-        "windowEvent"
-      ],
-      "additionalProperties": false
+      }
     }
   },
   "events": [
@@ -185,12 +178,7 @@
             "enum": [ "percent", "seconds" ],
             "default": "percent"
           }
-        },
-        "required": [
-          "fixedMilestoneAmounts",
-          "fixedMilestoneUnit"
-        ],
-        "additionalProperties": false
+        }
       },
       "libPath": "src/lib/events/videoMilestone.js",
       "viewPath": "events/videoMilestone.html"
@@ -240,14 +228,7 @@
             "enum": [ "", "no", "yes" ],
             "default": "yes"
           }
-        },
-        "required": [
-          "doNotTrack",
-          "trackReplayed",
-          "trackResumed",
-          "trackStarted"
-        ],
-        "additionalProperties": false
+        }
       },
       "libPath": "src/lib/events/videoPlaying.js",
       "viewPath": "events/videoPlaying.html"
@@ -290,12 +271,7 @@
             "enum": [ "", "no", "yes" ],
             "default": "yes"
           }
-        },
-        "required": [
-          "elementSpecificity",
-          "loadYoutubeIframeApi"
-        ],
-        "additionalProperties": false
+        }
       },
       "libPath": "src/lib/actions/enableVideoPlaybackTracking.js",
       "viewPath": "actions/enableVideoPlaybackTracking.html"
