@@ -1,3 +1,12 @@
+2.0.1 (released 28 September 2021)
+----------------------------------
+
+- Rewrote triggering logic to reduce the browser's memory usage.
+- Updated views' styles to use [Adobe Coral 4.5.0](https://opensource.adobe.com/coral-spectrum/documentation/).
+
+2.0.0 (rejected by Adobe)
+-------------------------
+
 1.5.1 (released 19 March 2021)
 ------------------------------
 
