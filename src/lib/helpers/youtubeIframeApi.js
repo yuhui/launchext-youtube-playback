@@ -42,6 +42,24 @@ var VIDEO_REPLAYED = 'video replayed'; // no Extension trigger
 var VIDEO_RESUMED = 'video resumed'; // no Extension trigger
 var VIDEO_STARTED = 'video started'; // no Extension trigger
 var VIDEO_UNSTARTED = 'video unstarted';
+var ALL_EVENT_TYPES = [
+  API_CHANGED,
+  PLAYBACK_QUALITY_CHANGED,
+  PLAYBACK_RATE_CHANGED,
+  PLAYER_ERROR,
+  PLAYER_READY,
+  PLAYER_STATE_CHANGE,
+  VIDEO_BUFFERING,
+  VIDEO_CUED,
+  VIDEO_ENDED,
+  VIDEO_MILESTONE,
+  VIDEO_PAUSED,
+  VIDEO_PLAYING,
+  VIDEO_REPLAYED,
+  VIDEO_RESUMED,
+  VIDEO_STARTED,
+  VIDEO_UNSTARTED,
+];
 
 // set of Event Types related to video playback
 var VIDEO_EVENT_TYPES = [
@@ -99,6 +117,7 @@ var YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS = 'completed';
 // constants related to video milestone tracking
 var VIDEO_MILESTONE_PERCENT_UNIT = 'percent';
 var VIDEO_MILESTONE_SECONDS_UNIT = 'seconds';
+var VIDEO_MILESTONE_UNITS = [VIDEO_MILESTONE_PERCENT_UNIT, VIDEO_MILESTONE_SECONDS_UNIT];
 var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {};
 VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_PERCENT_UNIT] = '%';
 VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_SECONDS_UNIT] = 's';
@@ -285,11 +304,13 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
 
   // handle each Rule trigger for this Event Type
   var getYoutubeEvent = createGetYoutubeEvent.bind(element);
-  eventTriggers.forEach(function(trigger) {
+  // use a for loop because it is faster than Array.prototype.forEach()
+  for (var i = 0; i < eventTriggers.length; i++) {
+    var trigger = eventTriggers[i];
     trigger(
       getYoutubeEvent(element, eventType, nativeEvent, stateData)
     );
-  });
+  }
 };
 
 /**
@@ -537,14 +558,13 @@ var findMilestone = function(player, nativeEvent, currentTime) {
     return;
   }
 
-  var milestoneLabels = Object.keys(currentMilestones);
-  milestoneLabels.forEach(function(label) {
+  for (var label in currentMilestones) {
     var triggers = currentMilestones[label];
     var options = {
       label: label,
     };
     processEventType(VIDEO_MILESTONE, nativeEvent, triggers, options);
-  });
+  }
 };
 
 /**
@@ -598,7 +618,6 @@ var startHeartbeat = function(player, nativeEvent) {
  * Stop beating the player's heart that had been started in startHeartbeat().
  *
  * @param {Object} player The YouTube player object.
- * @param {String} elementId ID of the YouTube IFrame DOM element.
  */
 var stopHeartbeat = function(player) {
   if (!player || !player.launchExt) {
@@ -656,23 +675,17 @@ var playerReady = function(event) {
   element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
 
   // update static metadata
-  var videoData = player.getVideoData();
-  if (player.launchExt) {
-    player.launchExt.videoId = videoData.video_id;
-    player.launchExt.videoTitle = videoData.title;
+  player.launchExt = player.launchExt || {};
 
-    // remove the `t` and `rel` parameters from the YouTube video URL
-    player.launchExt.videoUrl = player.getVideoUrl();
-    player.launchExt.videoUrl = player.launchExt.videoUrl.replace(/([?&])t=[0-9]+&?/, '$1');
-    player.launchExt.videoUrl = player.launchExt.videoUrl.replace(/([?&])rel=0&?/, '$1');
-    // finally, remove the ending `&`
-    player.launchExt.videoUrl = player.launchExt.videoUrl.replace(/&$/, '');
-  }
+  var videoData = player.getVideoData();
+  player.launchExt.videoId = videoData.video_id;
+  player.launchExt.videoTitle = videoData.title;
+
+  // create the YouTube video URL from the video ID
+  player.launchExt.videoUrl = 'https://www.youtube.com/watch?v=' + videoData.video_id;
+
   var duration = player.getDuration();
   player.launchExt.duration = duration;
-
-
-
 
   var isLiveEvent = duration === 0;
   player.launchExt.isLiveEvent = isLiveEvent;
@@ -734,14 +747,12 @@ var setupYoutubePlayer = function(element) {
    * }
    */
 
-  var matchingSelector;
-  for (matchingSelector in eventRegistry) {
+  for (var matchingSelector in eventRegistry) {
     if (matchingSelector !== 'no selector' && !element.matches(matchingSelector)) {
       continue;
     }
 
-    var eventTypes = Object.keys(eventRegistry[matchingSelector]);
-    eventTypes.forEach(function(eventType) {
+    for (var eventType in eventRegistry[matchingSelector]) {
       var eventTriggers = eventRegistry[matchingSelector][eventType];
 
       if (eventType !== VIDEO_MILESTONE) {
@@ -754,7 +765,7 @@ var setupYoutubePlayer = function(element) {
 
       triggers[eventType] = triggers[eventType] || [];
       triggers[eventType] = triggers[eventType].concat(eventTriggers);
-    });
+    }
   }
 
   var player = new window.YT.Player(element.id, {
@@ -1014,6 +1025,10 @@ module.exports = {
    * @param {ruleTrigger} trigger The trigger callback.
    */
   registerEventTrigger: function(eventType, settings, trigger) {
+    if (ALL_EVENT_TYPES.indexOf(eventType) === -1) {
+      return;
+    }
+
     var matchingSelector = 'no selector';
     if (settings.matchingSelector) {
       matchingSelector = settings.matchingSelector;
@@ -1055,17 +1070,32 @@ module.exports = {
       if (settings.fixedMilestoneAmounts && settings.fixedMilestoneUnit) {
         var milestoneUnit = settings.fixedMilestoneUnit;
         var milestoneAmounts = settings.fixedMilestoneAmounts;
-        var milestoneTriggers = milestoneAmounts.map(function(milestoneAmount) {
-          var milestone = {
-            amount: milestoneAmount,
-            type: 'fixed',
-            unit: milestoneUnit,
-          };
-          return Object.assign({ milestone: milestone }, eventTrigger);
-        });
 
-        eventRegistry[matchingSelector][eventType] =
-          eventRegistry[matchingSelector][eventType].concat(milestoneTriggers);
+        var isValidMilestoneUnit = VIDEO_MILESTONE_UNITS.indexOf(milestoneUnit) > -1;
+        var isArrayMilestoneAmounts = Array.isArray(milestoneAmounts);
+
+        if (isValidMilestoneUnit && isArrayMilestoneAmounts) {
+          var milestoneTriggers = milestoneAmounts.map(function(milestoneAmount) {
+            var amount = parseInt(milestoneAmount);
+            if (isNaN(amount)) {
+              return;
+            }
+
+            var milestone = {
+              amount: amount,
+              type: 'fixed',
+              unit: milestoneUnit,
+            };
+            return Object.assign({ milestone: milestone }, eventTrigger);
+          }).filter(function(milestoneTrigger) {
+            return !!milestoneTrigger;
+          });
+
+          if (milestoneTriggers.length > 0) {
+            eventRegistry[matchingSelector][eventType] =
+              eventRegistry[matchingSelector][eventType].concat(milestoneTriggers);
+          }
+        }
       }
     } else {
       eventTypes.forEach(function(eventType) {

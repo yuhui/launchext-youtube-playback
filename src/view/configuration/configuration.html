@@ -207,20 +207,20 @@
             }
 
             setFormValues(FORM_ID, info.settings);
-
-            toggleElement(
-              FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container'
-            );
-            toggleElement(
-              FORM_ID, 'useLegacySettings', 'yes', '#extension-configuration-container'
-            );
-            toggleElement(
-              FORM_ID, 'useLegacySettings', 'yes', '#legacy-extension-settings-container'
-            );
-            toggleElement(
-              FORM_ID, 'useLegacySettings', 'no', '#no-extension-configuration-needed'
-            );
           }
+
+          toggleElement(
+            FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container'
+          );
+          toggleElement(
+            FORM_ID, 'useLegacySettings', 'yes', '#extension-configuration-container'
+          );
+          toggleElement(
+            FORM_ID, 'useLegacySettings', 'yes', '#legacy-extension-settings-container'
+          );
+          toggleElement(
+            FORM_ID, 'useLegacySettings', 'no', '#no-extension-configuration-needed'
+          );
         },
 
         getSettings: function() {
