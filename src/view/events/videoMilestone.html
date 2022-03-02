@@ -28,15 +28,6 @@
           </coral-tooltip>
         </div>
       </div>
-      <coral-alert>
-        <coral-alert-header>
-          Important!
-        </coral-alert-header>
-        <coral-alert-content>
-          Using "per cent" milestones with "live" videos will not work properly, because the
-          video's duration is unknown. Use "seconds" instead.
-        </coral-alert-content>
-      </coral-alert>
     </form>
 
     <section class="coral-Well">
@@ -45,6 +36,38 @@
         This Event is triggered when the YouTube player has reached a particular moment
         ("milestone") in the playing video.
       </p>
+      <coral-alert>
+        <coral-alert-header>
+          Important! For Live broadcasts / Live streams and Premieres
+        </coral-alert-header>
+        <coral-alert-content>
+          <ul>
+            <li>
+              Percentage-based milestone tracking does not work with live videos because the video
+              duration is unknown.
+            </li>
+            <li>
+              Seconds-based milestones are tracked <u>after</u> the user had started playing the
+              video. For example:
+              <ul>
+                <li>You setup milestones for 30, 60 and 120 seconds.</li>
+                <li>
+                  The user starts playing the video when it is 24 minutes 18 seconds <em>after</em>
+                  the live video had started.
+                </li>
+                <li>
+                  Then, milestones are tracked at the following times:
+                  <ul>
+                    <li>24 minutes 48 seconds (30 seconds after the video's start time)</li>
+                    <li>25 minutes 18 seconds (60 seconds after the video's start time)</li>
+                    <li>26 minutes 18 seconds (120 seconds after the video's start time)</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </coral-alert-content>
+      </coral-alert>
       <p>
         The following Data Elements are available for use with your Rule's Conditions and Actions.
       </p>
@@ -161,6 +184,17 @@
             </td>
             <td is="coral-table-cell">
               YouTube title of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Type
+            </td>
+            <td is="coral-table-cell">
+              String
+            </td>
+            <td is="coral-table-cell">
+              YouTube type of the currently loaded/playing video.
             </td>
           </tr>
           <tr is="coral-table-row">
