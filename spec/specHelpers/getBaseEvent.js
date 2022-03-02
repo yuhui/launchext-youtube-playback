@@ -31,6 +31,7 @@ module.exports = function(optionalProperties) {
       videoId: 'abc123_x',
       videoLoadedFraction: 0.6789,
       videoTitle: 'Something something video',
+      videoType: 'video-on-demand',
       videoUrl: 'https://www.youtube.com/watch?v=abc123_x',
       volume: 100,
     },
