@@ -1,3 +1,10 @@
+2.1.0 (released 8 March 2022)
+----------------------------------
+
+- Added support for live videos (live broadcasts, live streams, Premieres).
+- Added "Video Type" data element type to retrieve the video type: `"live"` or `"video-on-demand"`.
+- Added milestone tracking for live videos, based on when the video starts playing.
+
 2.0.1 (released 28 September 2021)
 ----------------------------------
 
