@@ -172,7 +172,6 @@ var getYoutubeStateData = function(player) {
     playbackRate: player.getPlaybackRate(),
     videoId: player.launchExt.videoId,
     videoLoadedFraction: player.getVideoLoadedFraction(),
-    videoStartTime: player.launchExt.videoStartTime,
     videoTitle: player.launchExt.videoTitle,
     videoType: videoType,
     videoUrl: player.launchExt.videoUrl,
@@ -243,11 +242,17 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
     case VIDEO_UNSTARTED:
       logInfoMessage += 'Player state changed: ' + eventType;
 
-      // update the currentTime to be the time when the Event Type got detected
-      // because some milliseconds could have passed already
+      // update the following:
+      // 1. currentTime to be the time when the Event Type got detected
+      // because some milliseconds could have passed already.
+      // 2. playTotalTime -- but only with events where the video has stopped playing.
       switch (eventType) {
         case VIDEO_ENDED:
           stateData.currentTime = player.launchExt.duration;
+          stateData.playTotalTime = player.launchExt.playTotalTime;
+          break;
+        case VIDEO_PAUSED:
+          stateData.playTotalTime = player.launchExt.playTotalTime;
           break;
         case VIDEO_PLAYING:
         case VIDEO_RESUMED:
@@ -278,6 +283,14 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
 
   stateData.currentTime = Math.floor(stateData.currentTime);
   stateData.duration = Math.floor(stateData.duration);
+  if (stateData.playTotalTime) {
+    stateData.playTotalTime = Math.floor(stateData.playTotalTime);
+    stateData.playSegmentTime = Math.floor(
+      player.launchExt.playTotalTime - player.launchExt.playPreviousTotalTime
+    );
+    player.launchExt.playPreviousTotalTime = stateData.playTotalTime;
+  }
+
   logger.info(logInfoMessage);
 
   // handle each Rule trigger for this Event Type
@@ -347,7 +360,7 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent) {
             eventType = VIDEO_STARTED;
           }
           if (player.launchExt.isLiveEvent) {
-            player.launchExt.videoStartTime = flooredVideoTime(player.getCurrentTime());
+            player.launchExt.videoStartTime = Math.floor(player.getCurrentTime());
           }
         } else if (triggerOnVideoReplay && videoHasReplayed) {
           eventType = VIDEO_REPLAYED;
@@ -604,6 +617,7 @@ var stopHeartbeat = function(player) {
 
   clearInterval(player.launchExt.heartbeatInterval.id);
   player.launchExt.heartbeatInterval.id = null;
+  player.launchExt.playTotalTime += player.launchExt.playTime;
 };
 
 /**
@@ -769,9 +783,12 @@ var setupYoutubePlayer = function(element) {
     },
     isLiveEvent: false,
     playedMilestones: {},
+    playPreviousTotalTime: 0,
+    playSegmentTime: 0,
     playStartTime: null,
     playStopTime: null,
     playTime: null,
+    playTotalTime: 0,
     previousEventType: null,
     triggers: triggers,
     videoId: null,

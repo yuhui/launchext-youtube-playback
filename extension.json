@@ -447,6 +447,32 @@
       "viewPath": "dataElements/videoPlaybackRate.html"
     },
     {
+      "displayName": "Video Played Segment Time",
+      "name": "video-played-segment-time",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "libPath": "src/lib/dataElements/videoPlayedSegmentTime.js",
+      "viewPath": "dataElements/videoPlayedSegmentTime.html"
+    },
+    {
+      "displayName": "Video Played Total Time",
+      "name": "video-played-total-time",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "libPath": "src/lib/dataElements/videoPlayedTotalTime.js",
+      "viewPath": "dataElements/videoPlayedTotalTime.html"
+    },
+    {
       "displayName": "Video Title",
       "name": "video-title",
       "categoryName": "Video playback",

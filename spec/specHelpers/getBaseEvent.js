@@ -28,6 +28,8 @@ module.exports = function(optionalProperties) {
       muted: false,
       playbackRate: 25.0,
       playTime: 4.765,
+      playSegmentTime: 9,
+      playTotalTime: 53703,
       videoId: 'abc123_x',
       videoLoadedFraction: 0.6789,
       videoTitle: 'Something something video',
