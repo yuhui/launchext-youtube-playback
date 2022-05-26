@@ -90,6 +90,19 @@
       "viewPath": "events/playerReady.html"
     },
     {
+      "displayName": "Player Removed",
+      "name": "player-removed",
+      "categoryName": "Player",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "libPath": "src/lib/events/playerRemoved.js",
+      "viewPath": "events/playerRemoved.html"
+    },
+    {
       "displayName": "Playback Quality Changed",
       "name": "playback-quality-changed",
       "categoryName": "Video playback",

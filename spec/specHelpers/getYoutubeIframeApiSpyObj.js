@@ -33,6 +33,7 @@ module.exports = () => {
       playbackRateChanged: 'playback rate changed',
       playerError: 'player error',
       playerReady: 'player ready',
+      playerRemoved: 'player removed',
       videoBuffering: 'video buffering',
       videoCued: 'video cued',
       videoEnded: 'video ended',
