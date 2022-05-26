@@ -20,7 +20,7 @@
  * Return a base `event` object for use with data element unit testing.
  */
 module.exports = function(optionalProperties) {
-  var baseEvent = {
+  const baseEvent = {
     state: 'video playing',
     youtube: {
       currentTime: 12.345,
@@ -38,7 +38,7 @@ module.exports = function(optionalProperties) {
   };
 
   if (optionalProperties) {
-    optionalProperties.forEach(function(optionalProperty) {
+    optionalProperties.forEach((optionalProperty) => {
       switch (optionalProperty) {
         case 'errorCode':
         case 'errorMessage':

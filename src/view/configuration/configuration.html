@@ -188,10 +188,10 @@
     <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
     <script src="../scripts/common.js"></script>
     <script>
-      var FORM_ID = 'extension-configuration';
+      const FORM_ID = 'extension-configuration';
 
       window.extensionBridge.register({
-        init: function(info) {
+        init: (info) => {
           if (info.settings) {
             // this setting was added in v1.2.0
             if (!info.settings.hasOwnProperty('useLegacySettings')) {
@@ -223,8 +223,8 @@
           );
         },
 
-        getSettings: function() {
-          var formValues = getFormValues(FORM_ID);
+        getSettings: () => {
+          const formValues = getFormValues(FORM_ID);
 
           if (formValues.useLegacySettings === 'no') {
             // reset all legacy settings to their defaults
@@ -246,39 +246,39 @@
           return formValues;
         },
 
-        validate: function() {
-          var coralTextFieldSelector = 'input[is="coral-textfield"]';
-          document.querySelectorAll(coralTextFieldSelector).forEach(function(input) {
+        validate: () => {
+          const coralTextFieldSelector = 'input[is="coral-textfield"]';
+          document.querySelectorAll(coralTextFieldSelector).forEach((input) => {
             input.removeAttribute('invalid');
           });
-          var errorTextFieldSelector = coralTextFieldSelector + '[name="fieldName"]';
+          const errorTextFieldSelector = `${coralTextFieldSelector}[name="fieldName"]`;
 
-          var formValues = getFormValues(FORM_ID);
+          const formValues = getFormValues(FORM_ID);
 
-          var useLegacySettings = formValues.useLegacySettings;
-          var elementSpecificityValue = formValues.elementSpecificity;
-          var elementsSelectorValue = formValues.elementsSelector;
-          var loadYoutubeIframeApi = formValues.loadYoutubeIframeApi;
-          var windowEventValue = formValues.windowEvent;
+          const useLegacySettings = formValues.useLegacySettings;
+          const elementSpecificityValue = formValues.elementSpecificity;
+          const elementsSelectorValue = formValues.elementsSelector;
+          const loadYoutubeIframeApi = formValues.loadYoutubeIframeApi;
+          const windowEventValue = formValues.windowEvent;
 
-          var useLegacySettingsIsValid = ['no', 'yes'].includes(useLegacySettings);
+          const useLegacySettingsIsValid = ['no', 'yes'].includes(useLegacySettings);
 
-          var elementSpecificityValueIsValid =
+          const elementSpecificityValueIsValid =
             ['any', 'specific'].includes(elementSpecificityValue);
 
-          var elementsSelectorValueIsValid = elementSpecificityValue === 'any' ?
+          const elementsSelectorValueIsValid = elementSpecificityValue === 'any' ?
             true :
             elementsSelectorValue.length > 0;
           if (!elementsSelectorValueIsValid) {
-            var selector = errorTextFieldSelector.replace('fieldName', 'elementsSelector');
-            document.querySelectorAll(selector).forEach(function(input) {
+            const selector = errorTextFieldSelector.replace('fieldName', 'elementsSelector');
+            document.querySelectorAll(selector).forEach((input) => {
               input.setAttribute('invalid', '');
             });
           }
 
-          var loadYoutubeIframeApiIsValid = ['', 'yes'].includes(loadYoutubeIframeApi);
+          const loadYoutubeIframeApiIsValid = ['', 'yes'].includes(loadYoutubeIframeApi);
 
-          var windowEventValueIsValid =
+          const windowEventValueIsValid =
             ['immediately', 'window-loaded'].includes(windowEventValue);
 
           return useLegacySettingsIsValid &&
@@ -294,25 +294,25 @@
        * open Launch's data element selector,
        * then set the coral-icon's nearest input with the selected data element.
        */
-       document.querySelectorAll('button[icon="data"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
-          var inputElement = this.closest('div.coral-InputGroup').querySelector('input');
-          window.extensionBridge.openDataElementSelector().then(function(dataElement) {
+       document.querySelectorAll('button[icon="data"]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          const inputElement = this.closest('div.coral-InputGroup').querySelector('input');
+          window.extensionBridge.openDataElementSelector().then((dataElement) => {
             inputElement.value = dataElement;
           });
         });
       });
 
-      var useLegacySettingsRadioSelector = '#use-legacy-settings-container coral-radio';
-      document.querySelectorAll(useLegacySettingsRadioSelector).forEach(function(radio) {
-        radio.addEventListener('click', function(event) {
+      const useLegacySettingsRadioSelector = '#use-legacy-settings-container coral-radio';
+      document.querySelectorAll(useLegacySettingsRadioSelector).forEach((radio) => {
+        radio.addEventListener('click', (event) => {
           toggleElement(FORM_ID, 'useLegacySettings', 'yes', '#legacy-extension-settings-container');
         });
       });
 
-      var elementSpecificityRadioSelector = '#element-specificity-container coral-radio';
-      document.querySelectorAll(elementSpecificityRadioSelector).forEach(function(radio) {
-        radio.addEventListener('click', function(event) {
+      const elementSpecificityRadioSelector = '#element-specificity-container coral-radio';
+      document.querySelectorAll(elementSpecificityRadioSelector).forEach((radio) => {
+        radio.addEventListener('click', (event) => {
           toggleElement(FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container');
         });
       });

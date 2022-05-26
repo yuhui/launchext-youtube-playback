@@ -16,37 +16,37 @@
 
 'use strict';
 
-describe('flooredVideoTime helper delegate', function() {
-  var helperDelegate = require('../../../src/lib/helpers/flooredVideoTime');
+describe('flooredVideoTime helper delegate', () => {
+  const helperDelegate = require('../../../src/lib/helpers/flooredVideoTime');
 
   it(
     'floors to 10.0 when the input is 10.0',
-    function() {
-      var result = helperDelegate(10.0);
+    () => {
+      const result = helperDelegate(10.0);
       expect(result).toEqual(10.0);
     }
   );
 
   it(
     'floors to 10.0 when the input is 10.4',
-    function() {
-      var result = helperDelegate(10.4);
+    () => {
+      const result = helperDelegate(10.4);
       expect(result).toEqual(10.0);
     }
   );
 
   it(
     'floors to 10.5 when the input is 10.5',
-    function() {
-      var result = helperDelegate(10.5);
+    () => {
+      const result = helperDelegate(10.5);
       expect(result).toEqual(10.5);
     }
   );
 
   it(
     'floors to 10.5 when the input is 10.7',
-    function() {
-      var result = helperDelegate(10.7);
+    () => {
+      const result = helperDelegate(10.7);
       expect(result).toEqual(10.5);
     }
   );

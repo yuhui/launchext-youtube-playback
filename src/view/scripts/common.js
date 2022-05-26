@@ -18,21 +18,21 @@
 
 /** Get the form */
 function getForm(formId) {
-  var form = document.getElementById(formId);
+  const form = document.getElementById(formId);
   return form;
 }
 
 /** Get the values from the form */
 function getFormValues(formId) {
-  var formValues = {};
+  const formValues = {};
 
-  var form = getForm(formId);
+  const form = getForm(formId);
   if (!form || form.nodeName !== 'FORM') {
     return formValues;
   }
 
-  for (var i = 0, j = form.elements.length; i < j; i++) {
-    var formElement = form.elements[i];
+  for (let i = 0, j = form.elements.length; i < j; i++) {
+    const formElement = form.elements[i];
     if (formElement.name === '') {
       continue;
     }
@@ -68,7 +68,7 @@ function getFormValues(formId) {
             formValues[formElement.name] = formElement.value;
             break;
           case 'select-multiple':
-            for (var k = 0, l = formElement.options.length; k < l; k++) {
+            for (let k = 0, l = formElement.options.length; k < l; k++) {
               if (formElement.options[k].selected) {
                 formValues[formElement.name] = formElement.options[j].value;
               }
@@ -94,10 +94,10 @@ function getFormValues(formId) {
 /** Set the values in the form */
 // eslint-disable-next-line no-unused-vars
 function setFormValues(formId, formValues) {
-  var form = getForm(formId);
-  var formFields = getFormFields(formId);
-  for (var i = 0, j = formFields.length; i < j; i++) {
-    var field = formFields[i];
+  const form = getForm(formId);
+  const formFields = getFormFields(formId);
+  for (let i = 0, j = formFields.length; i < j; i++) {
+    const field = formFields[i];
     if (field in formValues) {
       if (form[field].type === 'checkbox') {
         form[field].checked = formValues[field] === form[field].value ? true : false;
@@ -111,7 +111,7 @@ function setFormValues(formId, formValues) {
 /** Get the fields in the form */
 // eslint-disable-next-line no-unused-vars
 function getFormFields(formId) {
-  var formValues = getFormValues(formId);
+  const formValues = getFormValues(formId);
   return Object.keys(formValues);
 }
 
@@ -124,7 +124,7 @@ function isDataElementToken(formValue) {
 /** Check if a value is an integer */
 // eslint-disable-next-line no-unused-vars
 function valueIsInteger(value) {
-  return (value + '').length > 0 &&
+  return (`${value}`).length > 0 &&
     !isNaN(parseInt(value)) &&
     parseInt(value) === parseFloat(value);
 }
@@ -132,10 +132,10 @@ function valueIsInteger(value) {
 /** Show or hide an element based on the value of a form field */
 // eslint-disable-next-line no-unused-vars
 function toggleElement(formId, toggleField, toggleValue, selectorToToggle) {
-  var formValues = getFormValues(formId);
-  var toggleFieldValue = formValues[toggleField];
+  const formValues = getFormValues(formId);
+  const toggleFieldValue = formValues[toggleField];
 
-  var elementToShowHide = document.querySelector(selectorToToggle);
+  const elementToShowHide = document.querySelector(selectorToToggle);
   if (toggleFieldValue === toggleValue) {
     elementToShowHide.classList.remove('hide');
     elementToShowHide.classList.add('show');

@@ -134,10 +134,10 @@
     <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
     <script src="../scripts/common.js"></script>
     <script>
-      var FORM_ID = 'action-configuration';
+      const FORM_ID = 'action-configuration';
 
       window.extensionBridge.register({
-        init: function(info) {
+        init: (info) => {
           if (info.settings) {
             // this setting was added in v1.3.0
             if (!info.settings.hasOwnProperty('loadYoutubeIframeApi')) {
@@ -156,8 +156,8 @@
           }
         },
 
-        getSettings: function() {
-          var formValues = getFormValues(FORM_ID);
+        getSettings: () => {
+          const formValues = getFormValues(FORM_ID);
 
           if (formValues.elementSpecificity === 'any') {
             formValues.elementsSelector = '';
@@ -171,33 +171,33 @@
           return formValues;
         },
 
-        validate: function() {
-          var coralTextFieldSelector = 'input[is="coral-textfield"]';
-          document.querySelectorAll(coralTextFieldSelector).forEach(function(input) {
+        validate: () => {
+          const coralTextFieldSelector = 'input[is="coral-textfield"]';
+          document.querySelectorAll(coralTextFieldSelector).forEach((input) => {
             input.removeAttribute('invalid');
           });
-          var errorTextFieldSelector = coralTextFieldSelector + '[name="fieldName"]';
+          const errorTextFieldSelector = `${coralTextFieldSelector}[name="fieldName"]`;
 
-          var formValues = getFormValues(FORM_ID);
+          const formValues = getFormValues(FORM_ID);
 
-          var elementSpecificityValue = formValues.elementSpecificity;
-          var elementsSelectorValue = formValues.elementsSelector;
-          var loadYoutubeIframeApi = formValues.loadYoutubeIframeApi;
+          const elementSpecificityValue = formValues.elementSpecificity;
+          const elementsSelectorValue = formValues.elementsSelector;
+          const loadYoutubeIframeApi = formValues.loadYoutubeIframeApi;
 
-          var elementSpecificityValueIsValid =
+          const elementSpecificityValueIsValid =
             ['any', 'specific'].includes(elementSpecificityValue);
 
-          var elementsSelectorValueIsValid = elementSpecificityValue === 'any' ?
+          const elementsSelectorValueIsValid = elementSpecificityValue === 'any' ?
             true :
             elementsSelectorValue.length > 0;
           if (!elementsSelectorValueIsValid) {
-            var selector = errorTextFieldSelector.replace('fieldName', 'elementsSelector');
-            document.querySelectorAll(selector).forEach(function(input) {
+            const selector = errorTextFieldSelector.replace('fieldName', 'elementsSelector');
+            document.querySelectorAll(selector).forEach((input) => {
               input.setAttribute('invalid', '');
             });
           }
 
-          var loadYoutubeIframeApiIsValid = ['', 'yes'].includes(loadYoutubeIframeApi);
+          const loadYoutubeIframeApiIsValid = ['', 'yes'].includes(loadYoutubeIframeApi);
 
           return elementSpecificityValueIsValid &&
             elementsSelectorValueIsValid &&
@@ -210,18 +210,18 @@
        * open Launch's data element selector,
        * then set the coral-icon's nearest input with the selected data element.
        */
-      document.querySelectorAll('button[icon="data"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
-          var inputElement = this.closest('div.coral-InputGroup').querySelector('input');
-          window.extensionBridge.openDataElementSelector().then(function(dataElement) {
+      document.querySelectorAll('button[icon="data"]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          const inputElement = this.closest('div.coral-InputGroup').querySelector('input');
+          window.extensionBridge.openDataElementSelector().then((dataElement) => {
             inputElement.value = dataElement;
           });
         });
       });
 
-      var elementSpecificityRadioSelector = '#element-specificity-container coral-radio';
-      document.querySelectorAll(elementSpecificityRadioSelector).forEach(function(radio) {
-        radio.addEventListener('click', function(event) {
+      const elementSpecificityRadioSelector = '#element-specificity-container coral-radio';
+      document.querySelectorAll(elementSpecificityRadioSelector).forEach((radio) => {
+        radio.addEventListener('click', (event) => {
           toggleElement(FORM_ID, 'elementSpecificity', 'specific', '#elements-selector-container');
         });
       });

@@ -19,8 +19,8 @@
 /**
  * Return a `youtubeIframeApi` spy object for use with event and action unit testing.
  */
-module.exports = function() {
-  var youtubeIframeApiSpyObj = jasmine.createSpyObj(
+module.exports = () => {
+  const youtubeIframeApiSpyObj = jasmine.createSpyObj(
     'youtubeIframeApi',
     [
       'enableVideoPlaybackTracking',

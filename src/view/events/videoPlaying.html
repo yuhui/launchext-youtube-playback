@@ -225,10 +225,10 @@
     <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
     <script src="../scripts/common.js"></script>
     <script>
-      var FORM_ID = 'event-configuration';
+      const FORM_ID = 'event-configuration';
 
       window.extensionBridge.register({
-        init: function(info) {
+        init: (info) => {
           if (info.settings) {
             // rewrite checkbox input values for "false" checked state
             if (info.settings.trackStarted === 'no') {
@@ -248,8 +248,8 @@
           }
         },
 
-        getSettings: function() {
-          var formValues = getFormValues(FORM_ID);
+        getSettings: () => {
+          const formValues = getFormValues(FORM_ID);
 
           // rewrite checkbox input values so as not to deal with empty strings
           if (formValues.trackStarted === '') {
@@ -268,20 +268,20 @@
           return formValues;
         },
 
-        validate: function() {
-          var formValues = getFormValues(FORM_ID);
+        validate: () => {
+          const formValues = getFormValues(FORM_ID);
 
-          var trackStarted = formValues.trackStarted;
-          var trackStartedIsValid = ['', 'yes'].includes(trackStarted);
+          const trackStarted = formValues.trackStarted;
+          const trackStartedIsValid = ['', 'yes'].includes(trackStarted);
 
-          var trackReplayed = formValues.trackReplayed;
-          var trackReplayedIsValid = ['', 'yes'].includes(trackReplayed);
+          const trackReplayed = formValues.trackReplayed;
+          const trackReplayedIsValid = ['', 'yes'].includes(trackReplayed);
 
-          var trackResumed = formValues.trackResumed;
-          var trackResumedIsValid = ['', 'yes'].includes(trackResumed);
+          const trackResumed = formValues.trackResumed;
+          const trackResumedIsValid = ['', 'yes'].includes(trackResumed);
 
-          var doNotTrack = formValues.doNotTrack;
-          var doNotTrackIsValid = ['', 'yes'].includes(doNotTrack);
+          const doNotTrack = formValues.doNotTrack;
+          const doNotTrackIsValid = ['', 'yes'].includes(doNotTrack);
 
           return trackStartedIsValid &&
             trackReplayedIsValid &&

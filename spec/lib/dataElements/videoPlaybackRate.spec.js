@@ -16,40 +16,40 @@
 
 'use strict';
 
-describe('videoPlaybackRate data element delegate', function() {
-  var dataElementDelegate = require('../../../src/lib/dataElements/videoPlaybackRate');
-  var getBaseEvent = require('../../specHelpers/getBaseEvent');
+describe('videoPlaybackRate data element delegate', () => {
+  const dataElementDelegate = require('../../../src/lib/dataElements/videoPlaybackRate');
+  const getBaseEvent = require('../../specHelpers/getBaseEvent');
 
-  beforeEach(function() {
+  beforeEach(() => {
     this.event = getBaseEvent();
     this.settings = {}; // this data element does not have any custom settings
   });
 
-  describe('with invalid "event" argument', function() {
+  describe('with invalid "event" argument', () => {
     it(
       'should be undefined when "youtube" property is missing',
-      function() {
+      () => {
         delete this.event.youtube;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
 
     it(
       'should be undefined when "playbackRate" property is missing',
-      function() {
+      () => {
         delete this.event.youtube.playbackRate;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
   });
 
-  describe('with valid "event" argument', function() {
+  describe('with valid "event" argument', () => {
     it(
       'should be a float',
-      function() {
-        var result = dataElementDelegate(this.settings, this.event);
+      () => {
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeInstanceOf(Number);
         expect(result % 1).toBeGreaterThanOrEqual(0);
       }

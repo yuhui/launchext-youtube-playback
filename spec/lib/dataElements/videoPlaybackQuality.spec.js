@@ -16,49 +16,49 @@
 
 'use strict';
 
-describe('videoPlaybackQuality data element delegate', function() {
-  var dataElementDelegate = require('../../../src/lib/dataElements/videoPlaybackQuality');
-  var getBaseEvent = require('../../specHelpers/getBaseEvent');
+describe('videoPlaybackQuality data element delegate', () => {
+  const dataElementDelegate = require('../../../src/lib/dataElements/videoPlaybackQuality');
+  const getBaseEvent = require('../../specHelpers/getBaseEvent');
 
-  beforeEach(function() {
+  beforeEach(() => {
     this.event = getBaseEvent(['playbackQuality']);
     this.settings = {}; // this data element does not have any custom settings
   });
 
-  describe('with invalid "event" argument', function() {
+  describe('with invalid "event" argument', () => {
     it(
       'should be undefined when "youtube" property is missing',
-      function() {
+      () => {
         delete this.event.youtube;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
 
     it(
       'should be undefined when "playbackQuality" property is missing',
-      function() {
+      () => {
         delete this.event.youtube.playbackQuality;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
 
     it(
       'should be undefined when "state" property is not "player playback quality changed"',
-      function() {
+      () => {
         this.event.state = 'player ready';
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
   });
 
-  describe('with valid "event" argument', function() {
+  describe('with valid "event" argument', () => {
     it(
       'should be a string',
-      function() {
-        var result = dataElementDelegate(this.settings, this.event);
+      () => {
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeInstanceOf(String);
       }
     );

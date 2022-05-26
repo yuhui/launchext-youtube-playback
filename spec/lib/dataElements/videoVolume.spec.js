@@ -16,40 +16,40 @@
 
 'use strict';
 
-describe('videoVolume data element delegate', function() {
-  var dataElementDelegate = require('../../../src/lib/dataElements/videoVolume');
-  var getBaseEvent = require('../../specHelpers/getBaseEvent');
+describe('videoVolume data element delegate', () => {
+  const dataElementDelegate = require('../../../src/lib/dataElements/videoVolume');
+  const getBaseEvent = require('../../specHelpers/getBaseEvent');
 
-  beforeEach(function() {
+  beforeEach(() => {
     this.event = getBaseEvent();
     this.settings = {}; // this data element does not have any custom settings
   });
 
-  describe('with invalid "event" argument', function() {
+  describe('with invalid "event" argument', () => {
     it(
       'should be undefined when "youtube" property is missing',
-      function() {
+      () => {
         delete this.event.youtube;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
 
     it(
       'should be undefined when "volume" property is missing',
-      function() {
+      () => {
         delete this.event.youtube.volume;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
   });
 
-  describe('with valid "event" argument', function() {
+  describe('with valid "event" argument', () => {
     it(
       'should be an integer between 0 and 100',
-      function() {
-        var result = dataElementDelegate(this.settings, this.event);
+      () => {
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeInstanceOf(Number);
         expect(result % 1).toBe(0);
         expect(result).toBeGreaterThanOrEqual(0);

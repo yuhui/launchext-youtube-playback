@@ -16,40 +16,40 @@
 
 'use strict';
 
-describe('videoMilestone data element delegate', function() {
-  var dataElementDelegate = require('../../../src/lib/dataElements/videoMilestone');
-  var getBaseEvent = require('../../specHelpers/getBaseEvent');
+describe('videoMilestone data element delegate', () => {
+  const dataElementDelegate = require('../../../src/lib/dataElements/videoMilestone');
+  const getBaseEvent = require('../../specHelpers/getBaseEvent');
 
-  beforeEach(function() {
+  beforeEach(() => {
     this.event = getBaseEvent(['videoMilestone']);
     this.settings = {}; // this data element does not have any custom settings
   });
 
-  describe('with invalid "event" argument', function() {
+  describe('with invalid "event" argument', () => {
     it(
       'should be undefined when "youtube" property is missing',
-      function() {
+      () => {
         delete this.event.youtube;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
 
     it(
       'should be undefined when "videoMilestone" property is missing',
-      function() {
+      () => {
         delete this.event.youtube.videoMilestone;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
   });
 
-  describe('with valid "event" argument', function() {
+  describe('with valid "event" argument', () => {
     it(
       'should be a string ending with "s" or "%"',
-      function() {
-        var result = dataElementDelegate(this.settings, this.event);
+      () => {
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeInstanceOf(String);
         expect(result).toMatch(/(s|%)$/);
       }

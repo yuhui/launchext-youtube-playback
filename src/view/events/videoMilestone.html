@@ -262,10 +262,10 @@
     <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
     <script src="../scripts/common.js"></script>
     <script>
-      var FORM_ID = 'event-configuration';
+      const FORM_ID = 'event-configuration';
 
       window.extensionBridge.register({
-        init: function(info) {
+        init: (info) => {
           if (info.settings) {
             // convert array of integers to comma-separated string
             info.settings.fixedMilestoneAmounts = info.settings.fixedMilestoneAmounts.join(', ');
@@ -274,8 +274,8 @@
           }
         },
 
-        getSettings: function() {
-          var formValues = getFormValues(FORM_ID);
+        getSettings: () => {
+          const formValues = getFormValues(FORM_ID);
 
           // convert string values to array of integers
           formValues.fixedMilestoneAmounts = splitStringToInt(formValues.fixedMilestoneAmounts);
@@ -283,33 +283,33 @@
           return formValues;
         },
 
-        validate: function() {
-          var coralTextFieldSelector = 'input[is="coral-textfield"]';
-          document.querySelectorAll(coralTextFieldSelector).forEach(function(input) {
+        validate: () => {
+          const coralTextFieldSelector = 'input[is="coral-textfield"]';
+          document.querySelectorAll(coralTextFieldSelector).forEach((input) => {
             input.removeAttribute('invalid');
           });
-          var errorTextFieldSelector = coralTextFieldSelector + '[name="fieldName"]';
+          const errorTextFieldSelector = `${coralTextFieldSelector}[name="fieldName"]`;
 
-          var formValues = getFormValues(FORM_ID);
+          const formValues = getFormValues(FORM_ID);
 
-          var fixedMilestoneAmounts = formValues.fixedMilestoneAmounts;
-          var fixedMilestoneUnit = formValues.fixedMilestoneUnit;
+          const fixedMilestoneAmounts = formValues.fixedMilestoneAmounts;
+          const fixedMilestoneUnit = formValues.fixedMilestoneUnit;
 
-          var fixedMilestoneAmountsArr = splitStringToInt(fixedMilestoneAmounts);
-          var fixedMilestoneAmountsAreNotBlank = fixedMilestoneAmountsArr.length > 0;
-          var fixedMilestoneAmountsAreIntegers = fixedMilestoneAmountsArr.every(function(value) {
+          const fixedMilestoneAmountsArr = splitStringToInt(fixedMilestoneAmounts);
+          const fixedMilestoneAmountsAreNotBlank = fixedMilestoneAmountsArr.length > 0;
+          const fixedMilestoneAmountsAreIntegers = fixedMilestoneAmountsArr.every((value) => {
               return valueIsInteger(value);
             });
-          var fixedMilestoneAmountsAreValid = fixedMilestoneAmountsAreNotBlank &&
+          const fixedMilestoneAmountsAreValid = fixedMilestoneAmountsAreNotBlank &&
             fixedMilestoneAmountsAreIntegers;
           if (!fixedMilestoneAmountsAreValid) {
-            var selector = errorTextFieldSelector.replace('fieldName', 'fixedMilestoneAmounts');
-            document.querySelectorAll(selector).forEach(function(input) {
+            const selector = errorTextFieldSelector.replace('fieldName', 'fixedMilestoneAmounts');
+            document.querySelectorAll(selector).forEach((input) => {
               input.setAttribute('invalid', '');
             });
           }
 
-          var fixedMilestoneUnitIsValid = ['percent', 'seconds'].includes(fixedMilestoneUnit);
+          const fixedMilestoneUnitIsValid = ['percent', 'seconds'].includes(fixedMilestoneUnit);
 
           return fixedMilestoneAmountsAreValid && fixedMilestoneUnitIsValid;
         }
@@ -319,8 +319,8 @@
        * Split a string into an array of integers.
        */
       function splitStringToInt(string) {
-        return string.split(',').map(function(value) {
-          var numberMatch = value.match(/([0-9]+)/);
+        return string.split(',').map((value) => {
+          const numberMatch = value.match(/([0-9]+)/);
           return numberMatch ? parseInt(numberMatch[1]) : null;
         }).filter(function(value) {
           return value !== null;
