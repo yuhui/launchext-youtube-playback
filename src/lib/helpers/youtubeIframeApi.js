@@ -177,13 +177,10 @@ var createGetYoutubeEvent = function(element, eventType, nativeEvent, stateData)
  */
 var getYoutubeStateData = function(player) {
   var currentTime = player.getCurrentTime();
-  currentTime = flooredVideoTime(currentTime);
-
   var duration = player.launchExt.duration;
   var isLiveEvent = player.launchExt.isLiveEvent;
   if (isLiveEvent) {
     duration = player.getDuration();
-    duration = flooredVideoTime(duration);
   }
 
   var videoType = isLiveEvent ? 'live' : 'video-on-demand';
@@ -275,7 +272,7 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
           break;
         case VIDEO_PLAYING:
         case VIDEO_RESUMED:
-          stateData.currentTime = flooredVideoTime(player.launchExt.playStartTime);
+          stateData.currentTime = player.launchExt.playStartTime;
           break;
         case VIDEO_REPLAYED:
         case VIDEO_STARTED:
@@ -293,13 +290,15 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
       if (player.launchExt && player.launchExt.playStopTime) {
         // replace currentTime with the one from the heartbeat
         // because the playhead could have changed since the milestone event was triggered
-        stateData.currentTime = flooredVideoTime(player.launchExt.playStopTime);
+        stateData.currentTime = player.launchExt.playStopTime;
       }
       stateData.videoMilestone = options.label;
       logInfoMessage += 'Milestone reached';
       break;
   }
 
+  stateData.currentTime = Math.floor(stateData.currentTime);
+  stateData.duration = Math.floor(stateData.duration);
   logger.info(logInfoMessage);
 
   // handle each Rule trigger for this Event Type

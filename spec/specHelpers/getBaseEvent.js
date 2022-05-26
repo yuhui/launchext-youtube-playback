@@ -23,8 +23,8 @@ module.exports = function(optionalProperties) {
   const baseEvent = {
     state: 'video playing',
     youtube: {
-      currentTime: 12.345,
-      duration: 90210.90,
+      currentTime: 12,
+      duration: 90210,
       muted: false,
       playbackRate: 25.0,
       playTime: 4.765,

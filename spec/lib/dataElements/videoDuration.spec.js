@@ -47,11 +47,11 @@ describe('videoDuration data element delegate', () => {
 
   describe('with valid "event" argument', () => {
     it(
-      'should be a float',
+      'should be an integer',
       () => {
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeInstanceOf(Number);
-        expect(result % 1).toBeGreaterThanOrEqual(0);
+        expect(result % 1).toBe(0);
       }
     );
   });
