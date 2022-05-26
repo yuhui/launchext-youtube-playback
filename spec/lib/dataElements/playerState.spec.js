@@ -16,40 +16,40 @@
 
 'use strict';
 
-describe('playerState data element delegate', function() {
-  var dataElementDelegate = require('../../../src/lib/dataElements/playerState');
-  var getBaseEvent = require('../../specHelpers/getBaseEvent');
+describe('playerState data element delegate', () => {
+  const dataElementDelegate = require('../../../src/lib/dataElements/playerState');
+  const getBaseEvent = require('../../specHelpers/getBaseEvent');
 
-  beforeEach(function() {
+  beforeEach(() => {
     this.event = getBaseEvent();
     this.settings = {}; // this data element does not have any custom settings
   });
 
-  describe('with invalid "event" argument', function() {
+  describe('with invalid "event" argument', () => {
     it(
       'should be undefined when "youtube" property is missing',
-      function() {
+      () => {
         delete this.event.youtube;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
 
     it(
       'should be undefined when "state" property is missing',
-      function() {
+      () => {
         delete this.event.state;
-        var result = dataElementDelegate(this.settings, this.event);
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
     );
   });
 
-  describe('with valid "event" argument', function() {
+  describe('with valid "event" argument', () => {
     it(
       'should be a string',
-      function() {
-        var result = dataElementDelegate(this.settings, this.event);
+      () => {
+        const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeInstanceOf(String);
       }
     );

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Yuhui. All rights reserved.
+ * Copyright 2022 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 'use strict';
 
-describe('videoTitle data element delegate', () => {
-  const dataElementDelegate = require('../../../src/lib/dataElements/videoTitle');
+describe('videoPlayedSegmentTime data element delegate', () => {
+  const dataElementDelegate = require('../../../src/lib/dataElements/videoPlayedSegmentTime');
   const getBaseEvent = require('../../specHelpers/getBaseEvent');
 
   beforeEach(() => {
@@ -36,9 +36,9 @@ describe('videoTitle data element delegate', () => {
     );
 
     it(
-      'should be undefined when "videoTitle" property is missing',
+      'should be undefined when "playTotalTime" property is missing',
       () => {
-        delete this.event.youtube.videoTitle;
+        delete this.event.youtube.playSegmentTime;
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
@@ -47,10 +47,11 @@ describe('videoTitle data element delegate', () => {
 
   describe('with valid "event" argument', () => {
     it(
-      'should be a string',
+      'should be an integer',
       () => {
         const result = dataElementDelegate(this.settings, this.event);
-        expect(result).toBeInstanceOf(String);
+        expect(result).toBeInstanceOf(Number);
+        expect(result % 1).toBe(0);
       }
     );
   });

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Yuhui. All rights reserved.
+ * Copyright 2022 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 'use strict';
 
 const proxyquire = require('proxyquire').noCallThru();
-const eventState = 'video buffering';
+const eventState = 'player removed';
 
 describe(`"${eventState}" event delegate`, () => {
   it(
@@ -26,7 +26,7 @@ describe(`"${eventState}" event delegate`, () => {
       const getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
       const youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
 
-      const eventDelegate = proxyquire('../../../src/lib/events/videoBuffering', {
+      const eventDelegate = proxyquire('../../../src/lib/events/playerRemoved', {
         '../helpers/youtubeIframeApi': youtubeIframeApiSpyObj,
       });
       const settings = {};

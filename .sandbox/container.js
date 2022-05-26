@@ -36,9 +36,12 @@ module.exports = {
   },
   "rules": [{
     "id": "RL1608090626599",
-    "name": "Page Top",
+    "name": "Page Top, Click",
     "events": [{
       "modulePath": "sandbox/pageTop.js",
+      "settings": {}
+    }, {
+      "modulePath": "sandbox/click.js",
       "settings": {}
     }],
     "actions": [{
@@ -51,9 +54,12 @@ module.exports = {
     }]
   }, {
     "id": "RL1608090868708",
-    "name": "YouTube Player Ready, YouTube Video Playing, YouTube Video Paused, Video Ended, Playback Quality Changed",
+    "name": "Player Ready, Player Removed, Video Playing, Video Paused, Video Ended, Video Unstarted, Playback Quality Changed",
     "events": [{
       "modulePath": "youtube-playback/src/lib/events/playerReady.js",
+      "settings": {}
+    }, {
+      "modulePath": "youtube-playback/src/lib/events/playerRemoved.js",
       "settings": {}
     }, {
       "modulePath": "youtube-playback/src/lib/events/videoPlaying.js",
@@ -68,6 +74,9 @@ module.exports = {
       "settings": {}
     }, {
       "modulePath": "youtube-playback/src/lib/events/videoEnded.js",
+      "settings": {}
+    }, {
+      "modulePath": "youtube-playback/src/lib/events/videoUnstarted.js",
       "settings": {}
     }, {
       "modulePath": "youtube-playback/src/lib/events/playbackQualityChanged.js",
@@ -118,10 +127,14 @@ module.exports = {
   "company": {
     "orgId": "ABCDEFGHIJKLMNOPQRSTUVWX@AdobeOrg"
   },
+  "environment": {
+    "id": "EN00000000000000000000000000000000",
+    "stage": "development"
+  },
   "buildInfo": {
-    "turbineVersion": "26.0.2",
-    "turbineBuildDate": "2021-06-21T15:56:53.351Z",
-    "buildDate": "2021-06-21T15:56:53.351Z",
+    "turbineVersion": "27.2.1",
+    "turbineBuildDate": "2022-05-25T09:11:16.730Z",
+    "buildDate": "2022-05-25T09:11:16.730Z",
     "environment": "development"
   }
 }

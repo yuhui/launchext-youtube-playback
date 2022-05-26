@@ -9,7 +9,7 @@ It performs the following functions:
 
 It also allows a selector to be used to select specific YouTube IFrame elements to track their playback.
 
-[Adobe Exchange Program app listing](https://exchange.adobe.com/experiencecloud.details.104160.youtube-playback-tracking.html)
+[Adobe Exchange Program app listing](https://exchange.adobe.com/apps/ec/104160/youtube-playback-tracking)
 
 ## Disclaimer
 

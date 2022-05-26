@@ -16,24 +16,24 @@
 
 'use strict';
 
-var proxyquire = require('proxyquire').noCallThru();
-var eventState = 'video playing';
+const proxyquire = require('proxyquire').noCallThru();
+const eventState = 'video playing';
 
-describe('"' + eventState + '" event delegate', function() {
+describe(`"${eventState}" event delegate`, () => {
   it(
     'sends the trigger to the youtubeIframeApi helper module once only',
-    function() {
-      var getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
-      var youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
+    () => {
+      const getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
+      const youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
 
-      var eventDelegate = proxyquire('../../../src/lib/events/videoPlaying', {
+      const eventDelegate = proxyquire('../../../src/lib/events/videoPlaying', {
         '../helpers/youtubeIframeApi': youtubeIframeApiSpyObj,
       });
-      var settings = {};
-      var trigger = function() {};
+      const settings = {};
+      const trigger = jasmine.createSpy();
 
       eventDelegate(settings, trigger);
-      var result = youtubeIframeApiSpyObj.registerEventTrigger;
+      const result = youtubeIframeApiSpyObj.registerEventTrigger;
       expect(result).toHaveBeenCalledTimes(1);
       expect(result).toHaveBeenCalledWith(eventState, settings, trigger);
     }

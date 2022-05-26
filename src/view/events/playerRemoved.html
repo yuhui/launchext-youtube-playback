@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>YouTube Player Ready Event</title>
+    <title>YouTube Player Removed Event</title>
     <link rel="stylesheet" href="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/css/coral.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
     <script src="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/js/coral.min.js" data-coral-icons-external="js"></script>
@@ -13,9 +13,43 @@
     <section class="coral-Well">
       <h4 class="coral-Heading--S coral-Heading--light">How this Event works</h4>
       <p>
-        This Event is triggered when the YouTube player is loaded and ready to receive events from
-        the YouTube IFrame API.
+        This Event is triggered when the YouTube player is removed from the web page. This can
+        happen when:
       </p>
+      <ul>
+        <li>
+          The user has navigated away from the web page, for example, by going to another page,
+          reloading the web page, or closing the browser window.
+          <coral-alert variant="warning">
+            <coral-alert-header>
+              When the player is removed because the user has navigated away from the web page
+            </coral-alert-header>
+            <coral-alert-content>
+              The user's web browser could navigate away from the web page <b>before</b> the Rule's
+              actions have run to completion. Unfortunately, this is the behaviour of the web browser
+              and it cannot be controlled.
+            </coral-alert-content>
+          </coral-alert>
+        </li>
+        <li>
+          A script has removed the player, for example, when the user clicks a button.
+          <coral-alert>
+            <coral-alert-header>
+              When the player is hidden instead of removed
+            </coral-alert-header>
+            <coral-alert-content>
+              If the player has been hidden using CSS (for example, by setting the player's
+              <code class="coral-Code--XS">display</code> style to
+              <code class="coral-Code--XS">"none"</code>), then this event is <b>not</b> triggered.
+              This is because the player still remains in the web page, even though the user cannot
+              see it.
+            </coral-alert-content>
+          </coral-alert>
+        </li>
+      </ul>
+
+
+
       <p>
         The following Data Elements are available for use with your Rule's Conditions and Actions.
       </p>
@@ -41,7 +75,30 @@
               String
             </td>
             <td is="coral-table-cell">
-              Fixed value: <code class="coral-Code--S">player ready</code>
+              Fixed value: <code class="coral-Code--S">player removed</code>
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Current Time
+            </td>
+            <td is="coral-table-cell">
+              Integer
+            </td>
+            <td is="coral-table-cell">
+              Elapsed time in seconds since the video started playing, indicated by the playhead
+              position.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Duration
+            </td>
+            <td is="coral-table-cell">
+              Integer
+            </td>
+            <td is="coral-table-cell">
+              Duration in seconds of the currently playing video.
             </td>
           </tr>
           <tr is="coral-table-row">
@@ -88,6 +145,28 @@
             </td>
             <td is="coral-table-cell">
               Playback rate of the currently playing video.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Played Segment Time
+            </td>
+            <td is="coral-table-cell">
+              Integer
+            </td>
+            <td is="coral-table-cell">
+              Elapsed time in seconds since the video was last played.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Played Total Time
+            </td>
+            <td is="coral-table-cell">
+              Integer
+            </td>
+            <td is="coral-table-cell">
+              Total elapsed time in seconds when the video was being played.
             </td>
           </tr>
           <tr is="coral-table-row">
@@ -166,7 +245,7 @@
       </div>
 
       <p>
-        Copyright &copy; 2020 Yuhui. All rights reserved.
+        Copyright &copy; 2022 Yuhui. All rights reserved.
       </p>
       <p>
         <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |

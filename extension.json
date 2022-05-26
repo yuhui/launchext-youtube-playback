@@ -2,14 +2,14 @@
   "displayName": "YouTube Playback",
   "name": "youtube-playback",
   "platform": "web",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "The most full-featured extension for tracking playback of all of your YouTube videos! Rich set of events and data elements for building your Rules. Supports dynamic loading of YouTube players. Control loading of YouTube's API.",
   "author": {
     "name": "Yuhui",
     "url": "https://yuhui.sg",
     "email": "dev@yuhui.sg"
   },
-  "exchangeUrl": "https://exchange.adobe.com/experiencecloud.details.104160.youtube-playback-tracking.html",
+  "exchangeUrl": "https://exchange.adobe.com/apps/ec/104160/youtube-playback-tracking",
   "iconPath": "youtube-playback-icon.svg",
   "viewBasePath": "src/view/",
   "configuration": {
@@ -88,6 +88,19 @@
       },
       "libPath": "src/lib/events/playerReady.js",
       "viewPath": "events/playerReady.html"
+    },
+    {
+      "displayName": "Player Removed",
+      "name": "player-removed",
+      "categoryName": "Player",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "libPath": "src/lib/events/playerRemoved.js",
+      "viewPath": "events/playerRemoved.html"
     },
     {
       "displayName": "Playback Quality Changed",
@@ -445,6 +458,32 @@
       },
       "libPath": "src/lib/dataElements/videoPlaybackRate.js",
       "viewPath": "dataElements/videoPlaybackRate.html"
+    },
+    {
+      "displayName": "Video Played Segment Time",
+      "name": "video-played-segment-time",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "libPath": "src/lib/dataElements/videoPlayedSegmentTime.js",
+      "viewPath": "dataElements/videoPlayedSegmentTime.html"
+    },
+    {
+      "displayName": "Video Played Total Time",
+      "name": "video-played-total-time",
+      "categoryName": "Video playback",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "libPath": "src/lib/dataElements/videoPlayedTotalTime.js",
+      "viewPath": "dataElements/videoPlayedTotalTime.html"
     },
     {
       "displayName": "Video Title",

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Video Muted Data Element</title>
+    <title>Video Played Total Time Data Element</title>
     <link rel="stylesheet" href="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/css/coral.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
     <script src="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/js/coral.min.js" data-coral-icons-external="js"></script>
@@ -13,13 +13,25 @@
     <section class="coral-Well">
       <h4 class="coral-Heading--S coral-Heading--light">How this Data Element works</h4>
       <p>
-        This Data Element returns whether the video is muted or not.
+        This Data Element returns the total elapsed time in seconds when the video was being played.
       </p>
 
       <p>
-        <b>This data element <span class="text-underline">must</span> be used with an Event from this
-          YouTube Playback extension.</b>
+        <b>This data element <span class="text-underline">can only</span> be used with the "Player
+          Removed", "Video Ended" and "Video Paused" Events from this YouTube Playback
+          extension.</b>
       </p>
+
+      <coral-alert>
+        <coral-alert-header>
+          Video Played Total Time can be greater than Video Duration
+        </coral-alert-header>
+        <coral-alert-content>
+          It is normal for this data element to return a value that is greater than the video's
+          duration. This can happen when the user plays the video repeatedly.
+        </coral-alert-content>
+      </coral-alert>
+
       <p>
         How to use:
       </p>
@@ -27,37 +39,6 @@
         <li class="coral-List-item"><code class="coral-Code--S">%data element name%</code></li>
         <li class="coral-List-item"><code class="coral-Code--S">_satellite.getVar('data element name', event)</code></li>
       </ul>
-
-      <table is="coral-table" variant="quiet">
-        <colgroup>
-          <col is="coral-table-column" sortable="" sortabledirection="ascending">
-          <col is="coral-table-column">
-        </colgroup>
-        <thead is="coral-table-head">
-          <tr is="coral-table-row">
-            <th is="coral-table-headercell">When the video is...</th>
-            <th is="coral-table-headercell">this Data Element's value is...</th>
-          </tr>
-        </thead>
-        <tbody is="coral-table-body">
-          <tr is="coral-table-row">
-            <td is="coral-table-cell" role="rowheader">
-              Muted
-            </td>
-            <td is="coral-table-cell">
-              <code class="coral-Code--S">true</code>
-            </td>
-          </tr>
-          <tr is="coral-table-row">
-            <td is="coral-table-cell" role="rowheader">
-              Not muted
-            </td>
-            <td is="coral-table-cell">
-              <code class="coral-Code--S">false</code>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </section>
 
     <hr class="coral-Divider--S">
@@ -87,7 +68,7 @@
       </div>
 
       <p>
-        Copyright &copy; 2020 Yuhui. All rights reserved.
+        Copyright &copy; 2022 Yuhui. All rights reserved.
       </p>
       <p>
         <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |

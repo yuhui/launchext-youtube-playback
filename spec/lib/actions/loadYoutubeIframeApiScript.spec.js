@@ -16,22 +16,22 @@
 
 'use strict';
 
-var proxyquire = require('proxyquire').noCallThru();
+const proxyquire = require('proxyquire').noCallThru();
 
-describe('loadYoutubeIframeApiScript action delegate', function() {
+describe('loadYoutubeIframeApiScript action delegate', () => {
   // mock turbine.logger
   global.turbine = global.turbine || {
     logger: jasmine.createSpyObj('', ['debug', 'info', 'warn', 'alert', 'error']),
   };
 
-  var getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
-  var youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
+  const getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
+  const youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
 
-  var actionDelegate = proxyquire('../../../src/lib/actions/loadYoutubeIframeApiScript', {
+  const actionDelegate = proxyquire('../../../src/lib/actions/loadYoutubeIframeApiScript', {
     '../helpers/youtubeIframeApi': youtubeIframeApiSpyObj,
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     this.settings = {}; // this action does not have any custom settings
     this.event = {
       '$type': 'dom-ready',
@@ -41,18 +41,18 @@ describe('loadYoutubeIframeApiScript action delegate', function() {
 
   it(
     'calls the action from the youtubeIframeApi helper module once only',
-    function() {
-      var result = youtubeIframeApiSpyObj.loadYoutubeIframeApiScript;
+    () => {
+      const result = youtubeIframeApiSpyObj.loadYoutubeIframeApiScript;
       expect(result).toHaveBeenCalledOnceWith(this.settings);
     }
   );
 
   it(
     'logs a debug message for the event type',
-    function() {
-      var logDebug = global.turbine.logger.debug;
+    () => {
+      const logDebug = global.turbine.logger.debug;
       expect(logDebug).toHaveBeenCalledWith(
-        'Loading YouTube IFrame API script on ' + this.event.$type
+        `Loading YouTube IFrame API script on ${this.event.$type}`
       );
     }
   );
