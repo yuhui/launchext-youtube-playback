@@ -20,6 +20,7 @@ var window = require('@adobe/reactor-window');
 var document = require('@adobe/reactor-document');
 var loadScript = require('@adobe/reactor-load-script');
 
+var createGetYoutubeEvent = require('./createGetYoutubeEvent');
 var flooredVideoTime = require('./flooredVideoTime');
 var videoTimeFromFraction = require('./videoTimeFromFraction');
 
@@ -145,28 +146,6 @@ var WINDOW_EVENT = EXTENSION_SETTINGS.windowEvent || 'window-loaded';
  * }
  */
 var eventRegistry = {};
-
-/**
- * Synthetic YouTube playback event to send to the trigger callback.
- * Should be bound to the YouTube IFrame DOM element.
- *
- * @param {DOMElement} element The YouTube IFrame DOM element.
- * @param {String} eventType The Event Type that has been triggered.
- * @param {Object} nativeEvent The native YouTube event object.
- * @param {Object} stateData Data about the current state of the YouTube player.
- * See `getYoutubeStateData()`.
- *
- * @return {Event} Event object that is specific to the YouTube player's state.
- */
-var createGetYoutubeEvent = function(element, eventType, nativeEvent, stateData) {
-  return {
-    element: element,
-    target: element,
-    nativeEvent: nativeEvent,
-    state: eventType,
-    youtube: stateData
-  };
-};
 
 /**
  * Get data about the current YouTube player's state.
@@ -307,7 +286,7 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
   for (var i = 0; i < eventTriggers.length; i++) {
     var trigger = eventTriggers[i];
     trigger(
-      getYoutubeEvent(element, eventType, nativeEvent, stateData)
+      getYoutubeEvent(eventType, nativeEvent, stateData)
     );
   }
 };
