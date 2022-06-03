@@ -1,5 +1,15 @@
+2.2.0 (released 2 June 2022)
+----------------------------
+
+- Stop heartbeat and delete YouTube player object when the player has been removed from the DOM tree or when the window has been unloaded.
+- Added "Player Removed" event type to track when a video player has been removed from the DOM tree or when the window has been unloaded.
+- Added "Video Played Segment Time" and "Video Played Total Time" data element types to retrieve the elapsed time when the video was last played and total elapsed time when the video was being played respectively.
+- Updated "Video Current Time" and "Video Duration" data element types to be of integer type.
+- Updated JavaScript code in views and unit tests to ES6.
+- Refactored some code.
+
 2.1.0 (released 8 March 2022)
-----------------------------------
+-----------------------------
 
 - Added support for live videos (live broadcasts, live streams, Premieres).
 - Added "Video Type" data element type to retrieve the video type: `"live"` or `"video-on-demand"`.
