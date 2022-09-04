@@ -6,14 +6,44 @@
   <meta name="template_version" content="2.0">
   <title>Test page for YouTube playback extension</title>
   <script src="launch-EN00000000000000000000000000000000.js" async></script>
+  <!--<script src="http://www.youtube.com/iframe"></script>-->
+  <script>
+    /*
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: 'M7lc1UVf-VE',
+        playerVars: {
+          'playsinline': 1
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+    function onPlayerReady(event) {
+      console.log(`Player ${event.target.id} is ready`);
+    }
+    function onPlayerStateChange(event) {
+      console.log(`Player ${event.target.id} has changed state to ${event.data}`);
+    }
+    */
+  </script>
 </head>
 
 <body>
   <h1>Reactor Extension Library Sandbox</h1>
+  <!-- video that is added by code -->
+  <p>Click anywhere in this page to enable the below video for tracking.</p>
+  <div id="player"></div>
   <!-- video that is added by a user action -->
-  <span style="color:blue;text-decoration: underline;" onclick="showVideo();">Show video</span>
-  &nbsp;&nbsp;&nbsp;
-  <span style="color:blue;text-decoration: underline;" onclick="removeVideo();">Remove video</span><br />
+  <p>
+    <span style="color:blue;text-decoration: underline;" onclick="showVideo();">Show video</span>
+    &nbsp;&nbsp;&nbsp;
+    <span style="color:blue;text-decoration: underline;" onclick="removeVideo();">Remove video</span>
+  </p>
   <div id="dynamicPlayer"></div>
   <iframe width="560" height="315" src="https://www.youtube.com/embed/r_SRf063ffo" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   <iframe width="560" height="315" src="https://www.youtube.com/embed/9mdMm7fJp2Q" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

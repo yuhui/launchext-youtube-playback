@@ -88,22 +88,14 @@ module.exports = {
     }]
   }, {
     "id": "RL1611236793890",
-    "name": "YouTube Milestone 25%, 50%, 75%, 90%",
+    "name": "YouTube Milestone 25%, 50%, 75%, 90%, and 5, 10, 15 seconds",
     "events": [{
       "modulePath": "youtube-playback/src/lib/events/videoMilestone.js",
       "settings": {
         "fixedMilestoneAmounts": [25, 50, 75, 90],
         "fixedMilestoneUnit": "percent"
       }
-    }],
-    "actions": [{
-      "modulePath": "sandbox/logEventInfo.js",
-      "settings": {}
-    }]
-  }, {
-    "id": "RL1624113539409",
-    "name": "YouTube Milestone 5, 10, 15 seconds",
-    "events": [{
+    }, {
       "modulePath": "youtube-playback/src/lib/events/videoMilestone.js",
       "settings": {
         "fixedMilestoneAmounts": [5, 10, 15],
@@ -118,6 +110,7 @@ module.exports = {
   "property": {
     "name": "Sandbox property",
     "settings": {
+      "id": 'PR12345',
       "domains": ["adobe.com", "example.com"],
       "linkDelay": 100,
       "trackingCookieName": "sat_track",
@@ -133,8 +126,8 @@ module.exports = {
   },
   "buildInfo": {
     "turbineVersion": "27.2.1",
-    "turbineBuildDate": "2022-05-25T09:11:16.730Z",
-    "buildDate": "2022-05-25T09:11:16.730Z",
+    "turbineBuildDate": "2022-08-31T15:47:20.656Z",
+    "buildDate": "2022-08-31T15:47:20.656Z",
     "environment": "development"
   }
 }
