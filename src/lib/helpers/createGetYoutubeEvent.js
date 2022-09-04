@@ -34,10 +34,11 @@
  * @throws Will throw an error if stateData is not an object.
  */
 module.exports = function(eventType, nativeEvent, stateData) {
-  if (Object.prototype.toString.call(eventType) !== '[object String]') {
+  var toString = Object.prototype.toString;
+  if (toString.call(eventType) !== '[object String]') {
     throw new Error('"eventType" input is not a string');
   }
-  if (Object.prototype.toString.call(stateData) !== '[object Object]') {
+  if (toString.call(stateData) !== '[object Object]') {
     throw new Error('"stateData" input is not an object');
   }
 

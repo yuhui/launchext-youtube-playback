@@ -32,7 +32,8 @@ describe('loadYoutubeIframeApiScript action delegate', () => {
   });
 
   beforeEach(() => {
-    this.settings = {}; // this action does not have any custom settings
+    // this action does not have any custom settings
+    this.settings = {};
     this.event = {
       '$type': 'dom-ready',
     };

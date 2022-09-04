@@ -271,23 +271,20 @@
 
         validate: () => {
           const formValues = getFormValues(FORM_ID);
+          const { trackStarted, trackReplayed, trackResumed, doNotTrack } = formValues;
 
-          const trackStarted = formValues.trackStarted;
           const trackStartedIsValid = ['', 'yes'].includes(trackStarted);
 
-          const trackReplayed = formValues.trackReplayed;
           const trackReplayedIsValid = ['', 'yes'].includes(trackReplayed);
 
-          const trackResumed = formValues.trackResumed;
           const trackResumedIsValid = ['', 'yes'].includes(trackResumed);
 
-          const doNotTrack = formValues.doNotTrack;
           const doNotTrackIsValid = ['', 'yes'].includes(doNotTrack);
 
-          return trackStartedIsValid &&
-            trackReplayedIsValid &&
-            trackResumedIsValid &&
-            doNotTrackIsValid;
+          return trackStartedIsValid
+            && trackReplayedIsValid
+            && trackResumedIsValid
+            && doNotTrackIsValid;
         }
       });
     </script>

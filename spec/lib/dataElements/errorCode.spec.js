@@ -22,7 +22,9 @@ describe('errorCode data element delegate', () => {
 
   beforeEach(() => {
     this.event = getBaseEvent(['errorCode']);
-    this.settings = {}; // this data element does not have any custom settings
+
+    // this data element does not have any custom settings
+    this.settings = {};
   });
 
   describe('with invalid "event" argument', () => {

@@ -22,7 +22,8 @@ describe('videoTimeFromFraction helper delegate', () => {
   it(
     'results in 26.5 when the duration is 107 and the fraction is 0.2',
     () => {
-      const result = helperDelegate(107, 0.2);  // = 21.4 ~= 21.0
+      // = 21.4 ~= 21.0
+      const result = helperDelegate(107, 0.2);
       expect(result).toEqual(21.0);
     }
   );
@@ -30,7 +31,8 @@ describe('videoTimeFromFraction helper delegate', () => {
   it(
     'rounds to 10.5 when the input is 10.7',
     () => {
-      const result = helperDelegate(262, 2 / 3);  // = 174.67 ~= 174.5
+      // = 174.67 ~= 174.5
+      const result = helperDelegate(262, 2 / 3);
       expect(result).toEqual(174.5);
     }
   );

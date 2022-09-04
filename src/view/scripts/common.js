@@ -31,28 +31,29 @@ function getFormValues(formId) {
     return formValues;
   }
 
-  for (let i = 0, j = form.elements.length; i < j; i++) {
-    const formElement = form.elements[i];
-    if (formElement.name === '') {
-      continue;
+  [...form.elements].forEach((formElement) => {
+    const { checked, name, nodeName, options, type, value } = formElement;
+    if (name === '') {
+      return;
     }
-    switch (formElement.nodeName) {
+
+    switch (nodeName) {
       case 'INPUT':
-        switch (formElement.type) {
+        switch (type) {
           case 'text':
           case 'hidden':
           case 'password':
           case 'button':
           case 'reset':
           case 'submit':
-            formValues[formElement.name] = formElement.value;
+            formValues[name] = value;
             break;
           case 'checkbox':
           case 'radio':
-            if (formElement.checked) {
-              formValues[formElement.name] = formElement.value;
-            } else if (formElement.type === 'checkbox') {
-              formValues[formElement.name] = '';
+            if (checked) {
+              formValues[name] = value;
+            } else if (type === 'checkbox') {
+              formValues[name] = '';
             }
             break;
         }
@@ -60,33 +61,33 @@ function getFormValues(formId) {
       case 'file':
         break;
       case 'TEXTAREA':
-        formValues[formElement.name] = formElement.value;
+        formValues[name] = value;
         break;
       case 'SELECT':
-        switch (formElement.type) {
+        switch (type) {
           case 'select-one':
-            formValues[formElement.name] = formElement.value;
+            formValues[name] = value;
             break;
           case 'select-multiple':
-            for (let k = 0, l = formElement.options.length; k < l; k++) {
-              if (formElement.options[k].selected) {
-                formValues[formElement.name] = formElement.options[j].value;
+            options.forEach((option) => {
+              if (option.selected) {
+                formValues[name] = option.value;
               }
-            }
+            });
             break;
         }
         break;
       case 'BUTTON':
-        switch (formElement.type) {
+        switch (type) {
           case 'reset':
           case 'submit':
           case 'button':
-            formValues[formElement.name] = formElement.value;
+            formValues[name] = value;
             break;
         }
         break;
     }
-  }
+  });
 
   return formValues;
 }
@@ -94,23 +95,28 @@ function getFormValues(formId) {
 /** Set the values in the form */
 // eslint-disable-next-line no-unused-vars
 function setFormValues(formId, formValues) {
+  const hasOwnProperty = Object.prototype.hasOwnProperty;
+
   const form = getForm(formId);
-  const formFields = getFormFields(formId);
-  for (let i = 0, j = formFields.length; i < j; i++) {
-    const field = formFields[i];
-    if (field in formValues) {
-      if (form[field].type === 'checkbox') {
-        form[field].checked = formValues[field] === form[field].value ? true : false;
-      } else {
-        form[field].value = formValues[field];
-      }
+  const formFieldNames = getFormFieldNames(formId);
+  formFieldNames.forEach((fieldName) => {
+    if (!hasOwnProperty.call(formValues, fieldName)) {
+      return;
     }
-  }
+
+    const fieldValue = formValues[fieldName];
+
+    if (form[fieldName].type === 'checkbox') {
+      form[fieldName].checked = form[fieldName].value === fieldValue;
+    } else {
+      form[fieldName].value = fieldValue;
+    }
+  });
 }
 
-/** Get the fields in the form */
+/** Get the names of fields in the form */
 // eslint-disable-next-line no-unused-vars
-function getFormFields(formId) {
+function getFormFieldNames(formId) {
   const formValues = getFormValues(formId);
   return Object.keys(formValues);
 }
@@ -124,9 +130,9 @@ function isDataElementToken(formValue) {
 /** Check if a value is an integer */
 // eslint-disable-next-line no-unused-vars
 function valueIsInteger(value) {
-  return (`${value}`).length > 0 &&
-    !isNaN(parseInt(value)) &&
-    parseInt(value) === parseFloat(value);
+  return (`${value}`).length > 0
+    && !Number.isNaN(parseInt(value, 10))
+    && parseInt(value, 10) === Number(value);
 }
 
 /** Show or hide an element based on the value of a form field */
