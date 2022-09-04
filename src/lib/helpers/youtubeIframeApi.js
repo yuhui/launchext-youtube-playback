@@ -112,6 +112,7 @@ var YOUTUBE_PLAYING_STATE = 1;
 var ENABLE_JSAPI_PARAMETER = 'enablejsapi';
 var ENABLE_JSAPI_VALUE = '1';
 var ORIGIN_PARAMETER = 'origin';
+var LAUNCHEXT_INIT_PARAMETER = 'launchextinit';
 var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
 var YOUTUBE_PLAYER_SETUP_STARTED_STATUS = 'started';
 var YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS = 'modified';
@@ -990,9 +991,13 @@ var registerYoutubePlayers = function(settings) {
 
         var elementSrc = element.src;
 
-        // ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
-        // parameters
-        var requiredParametersToAdd = [];
+        /**
+         * ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
+         * parameters, and also our own `usewithlaunchext` parameter.
+         */
+        var requiredParametersToAdd = [
+          LAUNCHEXT_INIT_PARAMETER + '=' + (new Date().getTime()),
+        ];
         if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
           // `enablejsapi` is absent in the IFrame's src URL, add it
           requiredParametersToAdd.push(
@@ -1010,11 +1015,9 @@ var registerYoutubePlayers = function(settings) {
           }
           requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
         }
-        if (requiredParametersToAdd.length > 0) {
-          requiredParametersToAdd = requiredParametersToAdd.join('&');
-          var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
-          element.src = elementSrc + separator + requiredParametersToAdd;
-        }
+        requiredParametersToAdd = requiredParametersToAdd.join('&');
+        var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
+        element.src = elementSrc + separator + requiredParametersToAdd;
 
         /**
          * add a custom "remove" event listener
