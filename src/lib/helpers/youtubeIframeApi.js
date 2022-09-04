@@ -116,6 +116,7 @@ var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
 var YOUTUBE_PLAYER_SETUP_STARTED_STATUS = 'started';
 var YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS = 'modified';
 var YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS = 'completed';
+var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_YOUTUBE_IFRAME_API = 5;
 
 // constants related to video milestone tracking
 var VIDEO_MILESTONE_PERCENT_UNIT = 'percent';
@@ -870,23 +871,46 @@ var setupYoutubePlayer = function(element) {
 };
 
 /**
+ * Check if the YouTube IFrame Player API has been loaded.
+ */
+var youtubeIframeApiIsLoaded = function() {
+  return !!window.YT;
+};
+
+/**
  * Check if the YouTube IFrame Player API has been loaded and is ready.
  */
 var youtubeIframeApiIsReady = function() {
-  return window.YT && window.YT.Player && typeof window.YT.Player === 'function';
+  return youtubeIframeApiIsLoaded()
+    && !!window.YT.Player
+    && Object.prototype.toString.call(window.YT.Player) === '[object Function]';
 };
 
 /**
  * Setup YouTube player elements to work with the YouTube IFrame API.
  * Returns with an error log if YouTube's YT object is unavailable.
+ *
+ * @param {integer} attempt The number of times that this function has been called. Default: 1.
  */
-var setupPendingPlayers = function() {
+var setupPendingPlayers = function(attempt) {
   if (!pendingPlayersRegistryHasPlayers()) {
     return;
   }
+  if (!attempt) {
+    // Yes, I know I'm overriding an argument. Wait for ES6...
+    attempt = 1;
+  }
 
   if (!youtubeIframeApiIsReady()) {
-    logger.error('Unexpected error! YouTube IFrame API has not been initialised');
+    // try again
+    if (attempt > MAXIMUM_ATTEMPTS_TO_WAIT_FOR_YOUTUBE_IFRAME_API) {
+      logger.error('Unexpected error! YouTube IFrame API has not been initialised');
+    } else {
+      var timeout = Math.pow(2, attempt - 1) * 1000;
+      setTimeout(function() {
+        setupPendingPlayers(attempt + 1);
+      }, timeout);
+    }
     return;
   }
 
@@ -901,15 +925,17 @@ var setupPendingPlayers = function() {
  * Returns with an error log if the API script could not be loaded.
  */
 var loadYoutubeIframeApi = function() {
-  if (youtubeIframeApiIsReady()) {
-    // the YouTube IFrame API script had already been loaded elsewhere, e.g. in HTML
-    // so setup the YouTube players immediately
+  if (youtubeIframeApiIsLoaded()) {
+    /**
+     * The YouTube IFrame API script had already been loaded elsewhere, e.g. in HTML
+     * so setup the YouTube players immediately
+     */
     setupPendingPlayers();
   } else {
+    // Load the YouTube IFrame API script, then setup the YouTube players
     loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
       logger.info('YouTube IFrame API was loaded successfully');
-      // the YouTube players will be setup when the YouTube IFrame API script finishes loading
-      // and runs onYouTubeIframeAPIReady on its own
+      setupPendingPlayers();
     }, function() {
       logger.error('YouTube IFrame API could not be loaded');
     });
@@ -1014,33 +1040,16 @@ var registerYoutubePlayers = function(settings) {
   if (pendingPlayersRegistryHasPlayers()) {
     if (loadYoutubeIframeApiSetting === 'yes') {
       loadYoutubeIframeApi();
-      // the players will be processed when onYouTubeIframeAPIReady() runs
-    } else if (youtubeIframeApiIsReady()) {
+      // the players will be processed when the YT object is ready
+    } else if (youtubeIframeApiIsLoaded()) {
       setupPendingPlayers();
     } else {
       logger.debug(
         'Need YouTube IFrame API to become ready before setting up players'
       );
-      // the players will be processed when onYouTubeIframeAPIReady() runs
     }
   }
 };
-
-/**
- * Required callback function when the YouTube IFrame API is ready.
- * If this callback function had been defined already, then run that old function before running
- * this one.
- */
-window.onYouTubeIframeAPIReady = (function(oldYouTubeIframeAPIReady) {
-  return function() {
-    logger.info('YouTube IFrame API is ready');
-
-    // preserve any existing function declaration
-    oldYouTubeIframeAPIReady && oldYouTubeIframeAPIReady();
-
-    setupPendingPlayers();
-  };
-})(window.onYouTubeIframeAPIReady);
 
 if (USE_LEGACY_SETTINGS === 'yes') {
   logger.deprecation(
