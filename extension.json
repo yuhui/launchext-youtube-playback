@@ -25,23 +25,23 @@
           "default": "no"
         },
         "elementSpecificity": {
-          "description": "Whether to enable all YouTube players or specific ones",
+          "description": "(legacy setting) Whether to enable all YouTube players or specific ones",
           "type": "string",
           "enum": [ "any", "specific" ],
           "default": "any"
         },
         "elementsSelector": {
-          "description": "Selector to use to match specific YouTube players",
+          "description": "(legacy setting) Selector to use to match specific YouTube players",
           "type": "string"
         },
         "loadYoutubeIframeApi": {
-          "description": "Whether to load the YouTube IFrame API if it hasn't been loaded yet",
+          "description": "(legacy setting) Whether to load the YouTube IFrame API if it hasn't been loaded yet",
           "type": "string",
           "enum": [ "", "no", "yes" ],
           "default": "yes"
         },
         "windowEvent": {
-          "description": "When to enable YouTube players",
+          "description": "(legacy setting) When to enable YouTube players",
           "type": "string",
           "enum": [ "immediately", "window-loaded" ],
           "default": "immediately"
