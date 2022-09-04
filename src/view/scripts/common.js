@@ -111,6 +111,17 @@ function setFormValues(formId, formValues) {
     } else {
       form[fieldName].value = fieldValue;
     }
+
+    /**
+     * IMPORTANT!
+     * Coral's <coral-select> include an <input> that contains the selected value.
+     * Since that <input> isn't a <select>, the <coral-select> will show its default value.
+     * So the <coral-select>'s value needs to be updated to match its <input> value.
+     */
+    const coralSelectElement = document.querySelector(`coral-select[name="${fieldName}"]`);
+    if (coralSelectElement) {
+      coralSelectElement.value = fieldValue;
+    }
   });
 }
 
