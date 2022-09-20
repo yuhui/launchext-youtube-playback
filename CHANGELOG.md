@@ -1,3 +1,10 @@
+2.3.0 (released 13 September 2022)
+---------------------------------
+
+- Improved enabling of YouTube players by removing dependency on onYouTubeIframeAPIReady(), in favour of using exponential backoff to check for valid YT object up to 5 times (about up to 30 seconds).
+- Fixed `coral-select` value.
+- Updated JavaScript code to conform with [Airbnb's style guide](https://github.com/airbnb/javascript).
+
 2.2.0 (released 2 June 2022)
 ----------------------------
 
@@ -20,6 +27,7 @@
 
 - Rewrote triggering logic to reduce the browser's memory usage.
 - Updated views' styles to use [Adobe Coral 4.5.0](https://opensource.adobe.com/coral-spectrum/documentation/).
+- Added validation properties in `extension.json`.
 
 2.0.0 (rejected by Adobe)
 -------------------------

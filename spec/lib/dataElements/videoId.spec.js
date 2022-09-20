@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Yuhui. All rights reserved.
+ * Copyright 2021-2022 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ describe('videoId data element delegate', () => {
 
   beforeEach(() => {
     this.event = getBaseEvent();
-    this.settings = {}; // this data element does not have any custom settings
+
+    // this data element does not have any custom settings
+    this.settings = {};
   });
 
   describe('with invalid "event" argument', () => {
@@ -36,7 +38,7 @@ describe('videoId data element delegate', () => {
     );
 
     it(
-      'should be undefined when "state" property is missing',
+      'should be undefined when "videoId" property is missing',
       () => {
         delete this.event.youtube.videoId;
         const result = dataElementDelegate(this.settings, this.event);

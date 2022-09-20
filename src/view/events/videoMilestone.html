@@ -251,7 +251,7 @@
         </ul>
       </div>
 
-      <p>Copyright &copy; 2021 Yuhui. All rights reserved.</p>
+      <p>Copyright &copy; 2021-2022 Yuhui. All rights reserved.</p>
       <p>
         <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
         <a class="coral-Link" href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
@@ -285,27 +285,27 @@
         },
 
         validate: () => {
-          const coralTextFieldSelector = 'input[is="coral-textfield"]';
-          document.querySelectorAll(coralTextFieldSelector).forEach((input) => {
+          const textFieldSelector = 'input[is="coral-textfield"]';
+          const textFieldInputs = document.querySelectorAll(textFieldSelector);
+          textFieldInputs.forEach((input) => {
             input.removeAttribute('invalid');
           });
-          const errorTextFieldSelector = `${coralTextFieldSelector}[name="fieldName"]`;
+          const errorTextFieldSelector = `${textFieldSelector}[name="fieldName"]`;
 
           const formValues = getFormValues(FORM_ID);
-
-          const fixedMilestoneAmounts = formValues.fixedMilestoneAmounts;
-          const fixedMilestoneUnit = formValues.fixedMilestoneUnit;
+          const { fixedMilestoneAmounts, fixedMilestoneUnit } = formValues;
 
           const fixedMilestoneAmountsArr = splitStringToInt(fixedMilestoneAmounts);
           const fixedMilestoneAmountsAreNotBlank = fixedMilestoneAmountsArr.length > 0;
           const fixedMilestoneAmountsAreIntegers = fixedMilestoneAmountsArr.every((value) => {
-              return valueIsInteger(value);
-            });
-          const fixedMilestoneAmountsAreValid = fixedMilestoneAmountsAreNotBlank &&
-            fixedMilestoneAmountsAreIntegers;
+            return valueIsInteger(value);
+          });
+          const fixedMilestoneAmountsAreValid = fixedMilestoneAmountsAreNotBlank
+            && fixedMilestoneAmountsAreIntegers;
           if (!fixedMilestoneAmountsAreValid) {
             const selector = errorTextFieldSelector.replace('fieldName', 'fixedMilestoneAmounts');
-            document.querySelectorAll(selector).forEach((input) => {
+            const errorTextFieldInputs = document.querySelectorAll(selector);
+            errorTextFieldInputs.forEach((input) => {
               input.setAttribute('invalid', '');
             });
           }
@@ -320,12 +320,13 @@
        * Split a string into an array of integers.
        */
       function splitStringToInt(string) {
-        return string.split(',').map((value) => {
+        const splitString = string.split(',');
+        const numbers = splitString.map((value) => {
           const numberMatch = value.match(/([0-9]+)/);
-          return numberMatch ? parseInt(numberMatch[1]) : null;
-        }).filter(function(value) {
-          return value !== null;
+          return numberMatch ? parseInt(numberMatch[1], 10) : null;
         });
+        const integers = numbers.filter((value) => value !== null);
+        return integers;
       }
     </script>
   </body>
