@@ -38,9 +38,9 @@ describe('videoDuration data element delegate', () => {
     );
 
     it(
-      'should be undefined when "duration" property is missing',
+      'should be undefined when "videoDuration" property is missing',
       () => {
-        delete this.event.youtube.duration;
+        delete this.event.youtube.videoDuration;
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }

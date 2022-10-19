@@ -23,19 +23,18 @@ module.exports = function(optionalProperties) {
   const baseEvent = {
     state: 'video playing',
     youtube: {
-      currentTime: 12,
-      duration: 90210,
-      muted: false,
-      playbackRate: 25.0,
-      playTime: 4.765,
-      playSegmentTime: 9,
-      playTotalTime: 53703,
+      videoCurrentTime: 12,
+      videoDuration: 90210,
       videoId: 'abc123_x',
       videoLoadedFraction: 0.6789,
+      videoMuted: false,
+      videoPlaybackRate: 25.0,
+      videoPlayedSegmentTime: 9,
+      videoPlayedTotalTime: 53703,
       videoTitle: 'Something something video',
       videoType: 'video-on-demand',
       videoUrl: 'https://www.youtube.com/watch?v=abc123_x',
-      volume: 100,
+      videoVolume: 100,
     },
   };
 
@@ -53,7 +52,7 @@ module.exports = function(optionalProperties) {
           break;
         case 'playbackQuality':
           baseEvent.state = 'playback quality changed';
-          baseEvent.youtube.playbackQuality = 'hd720';
+          baseEvent.youtube.videoPlaybackQuality = 'hd720';
           break;
         case 'videoMilestone':
           baseEvent.youtube.videoMilestone = '25%';

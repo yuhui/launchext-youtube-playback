@@ -38,9 +38,9 @@ describe('videoPlaybackRate data element delegate', () => {
     );
 
     it(
-      'should be undefined when "playbackRate" property is missing',
+      'should be undefined when "videoPlaybackRate" property is missing',
       () => {
-        delete this.event.youtube.playbackRate;
+        delete this.event.youtube.videoPlaybackRate;
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }

@@ -38,9 +38,9 @@ describe('videoMuted data element delegate', () => {
     );
 
     it(
-      'should be undefined when "muted" property is missing',
+      'should be undefined when "videoMuted" property is missing',
       () => {
-        delete this.event.youtube.muted;
+        delete this.event.youtube.videoMuted;
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
