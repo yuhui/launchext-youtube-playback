@@ -444,7 +444,22 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
          * the video has not started yet
          * (player.launchExt.hasStarted is set to "true" a few lines down)
          */
-        compileMilestones(player);
+        if (
+          player.launchExt.triggers
+          && Object.getOwnPropertyDescriptor(player.launchExt.triggers, VIDEO_MILESTONE)
+        ) {
+          var milestones = compileMilestones(
+            player.launchExt.triggers[VIDEO_MILESTONE],
+            player.launchExt.videoDuration,
+            player.launchExt.videoStartTime,
+            player.launchExt.isLiveEvent
+          );
+
+          delete player.launchExt.triggers[VIDEO_MILESTONE];
+          if (milestones) {
+            player.launchExt.triggers[VIDEO_MILESTONE] = milestones;
+          }
+        }
       }
 
       // if the video is playing, then it has started and hasn't ended nor paused
