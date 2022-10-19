@@ -70,8 +70,9 @@ function getFormValues(formId) {
             break;
           case 'select-multiple':
             options.forEach((option) => {
-              if (option.selected) {
-                formValues[name] = option.value;
+              const {selected, value} = option;
+              if (selected) {
+                formValues[name] = value;
               }
             });
             break;
@@ -136,6 +137,13 @@ function getFormFieldNames(formId) {
 // eslint-disable-next-line no-unused-vars
 function isDataElementToken(formValue) {
   return /^%([^%]+)%$/.test(formValue);
+}
+
+/** Convert a string value to an integer */
+// eslint-disable-next-line no-unused-vars
+function stringToInteger(value) {
+  const numberMatch = value.match(/([0-9]+)/);
+  return numberMatch ? parseInt(numberMatch[1], 10) : null;
 }
 
 /** Check if a value is an integer */
