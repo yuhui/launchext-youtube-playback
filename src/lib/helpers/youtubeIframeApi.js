@@ -21,8 +21,8 @@ var document = require('@adobe/reactor-document');
 var loadScript = require('@adobe/reactor-load-script');
 
 var createGetYoutubeEvent = require('./createGetYoutubeEvent');
+var compileMilestones = require('./compileMilestones');
 var flooredVideoTime = require('./flooredVideoTime');
-var videoTimeFromFraction = require('./videoTimeFromFraction');
 
 var logger = turbine.logger;
 
@@ -123,17 +123,6 @@ var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_YOUTUBE_IFRAME_API = 5;
 var VIDEO_MILESTONE_PERCENT_UNIT = 'percent';
 var VIDEO_MILESTONE_SECONDS_UNIT = 'seconds';
 var VIDEO_MILESTONE_UNITS = [VIDEO_MILESTONE_PERCENT_UNIT, VIDEO_MILESTONE_SECONDS_UNIT];
-// not ES6
-var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {};
-VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_PERCENT_UNIT] = '%';
-VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_SECONDS_UNIT] = 's';
-// ES6: placeholder to be used when updating the code base to ES6
-/*
-var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {
-  [VIDEO_MILESTONE_PERCENT_UNIT]: '%',
-  [VIDEO_MILESTONE_SECONDS_UNIT]: 's',
-};
-*/
 
 // constants related to this Extension's settings
 var EXTENSION_SETTINGS = turbine.getExtensionSettings();
@@ -438,93 +427,6 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
       break;
   }
-};
-
-/**
- * Change
- *
- * player.launchExt.triggers[VIDEO_MILESTONE] = [
- *   {
- *     milestone: {
- *       amount: <number>,
- *       type: <string "fixed", "every">,
- *       unit: <string "percent", "seconds">,
- *     },
- *     trigger: trigger,
- *   },
- * ]
- *
- * into
- *
- * player.launchExt.triggers[VIDEO_MILESTONE] = {
- *   "fixed" : {
- *     <string seconds> : {
- *       <string amount + unit> : [ trigger, trigger ],
- *     },
- *   },
- * }
- *
- * @param {Object} player The YouTube player object.
- */
-var compileMilestones = function(player) {
-  if (
-    !player.launchExt
-    || !player.launchExt.triggers
-    || !Object.getOwnPropertyDescriptor(player.launchExt.triggers, VIDEO_MILESTONE)
-  ) {
-    return;
-  }
-
-  var milestoneTriggersArr = player.launchExt.triggers[VIDEO_MILESTONE];
-  if (!Array.isArray(milestoneTriggersArr)) {
-    delete player.launchExt.triggers[VIDEO_MILESTONE];
-    return;
-  }
-
-  var duration = player.launchExt.duration;
-  var isLiveEvent = player.launchExt.isLiveEvent;
-  var videoStartTime = player.launchExt.videoStartTime;
-
-  var milestoneTriggersObj = {};
-
-  milestoneTriggersArr.forEach(function(milestoneTrigger) {
-    var trigger = milestoneTrigger.trigger;
-    var amount = milestoneTrigger.milestone.amount;
-    var type = milestoneTrigger.milestone.type;
-    var unit = milestoneTrigger.milestone.unit;
-
-    if (unit === VIDEO_MILESTONE_PERCENT_UNIT && isLiveEvent) {
-      /**
-       * "live" video broadcasts don't have a duration
-       * so percentage-based milestones can't be detected
-       */
-      return;
-    }
-
-    var seconds = amount;
-    var label = amount + VIDEO_MILESTONE_UNIT_ABBREVIATIONS[unit];
-
-    if (unit === VIDEO_MILESTONE_PERCENT_UNIT) {
-      // convert percentage amount to seconds
-      var percentage = amount / 100;
-      seconds = videoTimeFromFraction(duration, percentage);
-    }
-
-    if (isLiveEvent) {
-      // update the milestones to be offset from videoStartTime
-      seconds += videoStartTime;
-    }
-
-    milestoneTriggersObj[type] = milestoneTriggersObj[type] || {};
-    milestoneTriggersObj[type][seconds] = milestoneTriggersObj[type][seconds] || {};
-    milestoneTriggersObj[type][seconds][label] = (
-      milestoneTriggersObj[type][seconds][label] || []
-    );
-
-    milestoneTriggersObj[type][seconds][label].push(trigger);
-  });
-
-  player.launchExt.triggers[VIDEO_MILESTONE] = milestoneTriggersObj;
 };
 
 /**
