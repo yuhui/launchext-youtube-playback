@@ -206,23 +206,22 @@ var getYoutubeStateData = function(player) {
  * Handle an Event Type.
  *
  * @param {String} eventType The Event Type that has been triggered.
+ * @param {Object} player The YouTube player object.
  * @param {Object} nativeEvent The native YouTube event object.
  * @param {Object} eventTriggers Array of triggers for this Event Type, or Object of milestones.
- * @param {Object} options (optional) Any options for this Event Type, e.g. player object,
+ * @param {Object} options (optional) Any options for this Event Type, e.g. error message,
  * milestone labels, etc.
  */
-var processEventType = function(eventType, nativeEvent, eventTriggers, options) {
+var processEventType = function(eventType, player, nativeEvent, eventTriggers, options) {
   if (!eventTriggers || Object.keys(eventTriggers) === 0) {
     // don't continue if there are no triggers for this Event Type
     return;
   }
 
-  var player = (options && options.player) || nativeEvent.target;
-  var element = player.getIframe();
-
   var stateData = getYoutubeStateData(player);
 
   // perform additional tasks based on the Event Type
+  var element = player.getIframe();
   var elementId = element.id;
   var logInfoMessage = 'Player ID ' + elementId + ': ';
 
@@ -336,16 +335,14 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
  * Handle a YouTube playback event.
  *
  * @param {Object} playbackEventType Event Type based on the YouTube player's playback event.
+ * @param {Object} player The YouTube player object.
  * @param {Object} nativeEvent The native YouTube event object.
- * @param {Object} options (optional) Any options for this playback event, e.g. player object.
  */
-var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
+var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
   // get the Event Type for this playback event
   if (!playbackEventType) {
     return;
   }
-
-  var player = (options && options.player) || nativeEvent.target;
 
   // don't continue if this player hasn't been setup by this extension
   var element = player.getIframe();
@@ -357,51 +354,8 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
   var eventType = playbackEventType;
   var previousEventType = player.launchExt.previousEventType;
   var triggers = player.launchExt.triggers;
+  var options = {};
 
-  if (eventType === PLAYER_STATE_CHANGE) {
-    // get the actual video playing Event Type
-    var playbackState = nativeEvent.data;
-    switch (playbackState) {
-      case window.YT.PlayerState.BUFFERING:
-        eventType = VIDEO_BUFFERING;
-        break;
-      case window.YT.PlayerState.CUED:
-        eventType = VIDEO_CUED;
-        break;
-      case window.YT.PlayerState.ENDED:
-        eventType = VIDEO_ENDED;
-        break;
-      case window.YT.PlayerState.PAUSED:
-        eventType = VIDEO_PAUSED;
-        break;
-      case window.YT.PlayerState.PLAYING:
-        var triggerOnVideoStart = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_STARTED);
-        var triggerOnVideoReplay = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_REPLAYED);
-        var triggerOnVideoResume = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_RESUMED);
-
-        var videoHasNotStarted = !player.launchExt.hasStarted;
-        var videoHasReplayed = player.launchExt.hasReplayed;
-        var videoHasStopped = VIDEO_STOPPED_EVENT_TYPES.indexOf(previousEventType) > -1;
-
-        eventType = VIDEO_PLAYING;
-        if (videoHasNotStarted) {
-          if (triggerOnVideoStart) {
-            eventType = VIDEO_STARTED;
-          }
-          if (player.launchExt.isLiveEvent) {
-            player.launchExt.videoStartTime = Math.floor(player.getCurrentTime());
-          }
-        } else if (triggerOnVideoReplay && videoHasReplayed) {
-          eventType = VIDEO_REPLAYED;
-        } else if (triggerOnVideoResume && videoHasStopped) {
-          eventType = VIDEO_RESUMED;
-        }
-        break;
-      case window.YT.PlayerState.UNSTARTED:
-        eventType = VIDEO_UNSTARTED;
-        break;
-    }
-  }
 
   // ALWAYS start or stop the player's heartbeat based on the Event Type
   switch (eventType) {
@@ -431,7 +385,16 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
   }
 
   var eventTriggers = triggers[eventType];
-  processEventType(eventType, nativeEvent, eventTriggers, options);
+  processEventType(eventType, player, nativeEvent, eventTriggers, options);
+
+  /**
+   * for video playing Event Types:
+   * update the previous Event Type with this Event Type
+   * to use with the next time a video playing event gets triggered
+   */
+  if (VIDEO_EVENT_TYPES.indexOf(eventType) > -1) {
+    player.launchExt.previousEventType = eventType;
+  }
 
   /**
    * update video playing states
@@ -448,9 +411,9 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
       if (player.launchExt.hasEnded) {
         /**
          * when a video is replayed, YouTube changes states in this order:
-         * 1. YT.PlayerState.PLAYING
-         * 2. YT.PlayerState.BUFFERING
-         * 3. YT.PlayerState.PLAYING
+         * 1. YT.PlayerState.PLAYING (VIDEO_PLAYING)
+         * 2. YT.PlayerState.BUFFERING (VIDEO_BUFFERING)
+         * 3. YT.PlayerState.PLAYING (VIDEO_PLAYING)
          * so remember that a replay has occurred,
          * then the second YT.PlayerState.PLAYING will trigger the VIDEO_REPLAYED Event Type
          */
@@ -474,10 +437,6 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
       player.launchExt.hasEnded = false;
 
       break;
-  }
-
-  if (VIDEO_EVENT_TYPES.indexOf(eventType) > -1) {
-    player.launchExt.previousEventType = eventType;
   }
 };
 
@@ -597,7 +556,8 @@ var findMilestone = function(player, nativeEvent, currentTime) {
     var options = {
       label: label,
     };
-    processEventType(VIDEO_MILESTONE, nativeEvent, triggers, options);
+
+    processEventType(VIDEO_MILESTONE, player, nativeEvent, triggers, options);
   });
 };
 
@@ -669,38 +629,57 @@ var stopHeartbeat = function(player) {
 /**
  * Callback function when the player has loaded (or unloaded) a module with
  * exposed API methods.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var apiChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.API_CHANGE, event);
+  var player = event.target;
+  processPlaybackEvent(API_CHANGED, player, event);
 };
 
 /**
  * Callback function when the video playback quality changes.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var playbackQualityChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.PLAYBACK_QUALITY_CHANGE, event);
+  var player = event.target;
+  processPlaybackEvent(PLAYBACK_QUALITY_CHANGED, player, event);
 };
 
 /**
  * Callback function when the video playback rate changes.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var playbackRateChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.PLAYBACK_RATE_CHANGE, event);
+  var player = event.target;
+  processPlaybackEvent(PLAYBACK_RATE_CHANGED, player, event);
 };
 
 /**
  * Callback function when an error occurs in the player.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var playerError = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.ERROR, event);
+  var player = event.target;
+  processPlaybackEvent(PLAYER_ERROR, player, event);
 };
 
 /**
  * Callback function when the player has finished loading and is ready to begin receiving API calls.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 var playerReady = function(event) {
   // set a data attribute to indicate that this player has been setup
@@ -728,7 +707,7 @@ var playerReady = function(event) {
   var isLiveEvent = duration === 0;
   player.launchExt.isLiveEvent = isLiveEvent;
 
-  processPlaybackEvent(PLAYBACK_EVENTS.READY, event);
+  processPlaybackEvent(PLAYER_READY, player, event);
 };
 
 /**
@@ -742,19 +721,48 @@ var playerReady = function(event) {
  * to be passed in for subsequent functions to utilise.
  *
  * @see registerYoutubePlayers()
+ *
+ * @param {Object} event The native browser event object.
+ * @param {Object} player The YouTube player object.
  */
 var playerRemoved = function(event, player) {
-  var options = {
-    player: player,
-  };
-  processPlaybackEvent(PLAYER_REMOVED, event, options);
+  processPlaybackEvent(PLAYER_REMOVED, player, event);
 };
 
 /**
  * Callback function when the player's state changes.
+ *
+ * @param {Object} event The native YouTube event object.
+ * @param {Object} event.target The YouTube player object.
+ * @param {Object} event.data The YouTube player's state.
  */
 var playerStateChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.STATE_CHANGE, event);
+  // get the actual video playing Event Type
+  var playbackState = event.data;
+  var eventType;
+  switch (playbackState) {
+    case window.YT.PlayerState.BUFFERING:
+      eventType = VIDEO_BUFFERING;
+      break;
+    case window.YT.PlayerState.CUED:
+      eventType = VIDEO_CUED;
+      break;
+    case window.YT.PlayerState.ENDED:
+      eventType = VIDEO_ENDED;
+      break;
+    case window.YT.PlayerState.PAUSED:
+      eventType = VIDEO_PAUSED;
+      break;
+    case window.YT.PlayerState.PLAYING:
+      eventType = VIDEO_PLAYING;
+      break;
+    case window.YT.PlayerState.UNSTARTED:
+      eventType = VIDEO_UNSTARTED;
+      break;
+  }
+
+  var player = event.target;
+  processPlaybackEvent(eventType, player, event);
 };
 
 /**
