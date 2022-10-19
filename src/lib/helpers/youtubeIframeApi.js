@@ -20,8 +20,8 @@ var window = require('@adobe/reactor-window');
 var document = require('@adobe/reactor-document');
 var loadScript = require('@adobe/reactor-load-script');
 
-var createGetYoutubeEvent = require('./createGetYoutubeEvent');
 var compileMilestones = require('./compileMilestones');
+var createGetVideoEvent = require('./createGetVideoEvent');
 var flooredVideoTime = require('./flooredVideoTime');
 
 var logger = turbine.logger;
@@ -77,12 +77,18 @@ var VIDEO_EVENT_TYPES = [
   VIDEO_UNSTARTED,
 ];
 
-// set of Event Types when video had been playing but is stopped temporarily
+// set of Event Types when video had stopped playing
 var VIDEO_STOPPED_EVENT_TYPES = [
   VIDEO_BUFFERING,
   VIDEO_CUED,
   VIDEO_PAUSED,
+  VIDEO_ENDED,
 ];
+
+// set of Event Types when the player has been stopped
+var PLAYER_STOPPED_EVENT_TYPES = VIDEO_STOPPED_EVENT_TYPES.concat([
+  PLAYER_REMOVED,
+]);
 
 // constants related to YouTube error codes
 var ERROR_CODES = {
@@ -95,29 +101,22 @@ var ERROR_CODES = {
     'embedded players (error 150)'
 };
 
-// lookup of YouTube playback events to Event Types
-var PLAYBACK_EVENTS = {
-  API_CHANGE: API_CHANGED,
-  ERROR: PLAYER_ERROR,
-  READY: PLAYER_READY,
-  PLAYBACK_QUALITY_CHANGE: PLAYBACK_QUALITY_CHANGED,
-  PLAYBACK_RATE_CHANGE: PLAYBACK_RATE_CHANGED,
-  STATE_CHANGE: PLAYER_STATE_CHANGE,
-};
-
 // constants related to setting up the YouTube IFrame API
-var YOUTUBE_NAME_PREFIX = 'youTubePlayback';
+var IFRAME_ID_PREFIX = 'youTubePlayback';
+var IFRAME_SELECTOR = 'iframe[src*=youtube]';
+var IFRAME_URL_ENABLE_JSAPI_PARAMETER = 'enablejsapi';
+var IFRAME_URL_ENABLE_JSAPI_VALUE = '1';
+var IFRAME_URL_INIT_PARAMETER = 'launchextinit';
+var IFRAME_URL_ORIGIN_PARAMETER = 'origin';
+var PLAYER_SETUP_STARTED_STATUS = 'started';
+var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
+var PLAYER_SETUP_COMPLETED_STATUS = 'completed';
+var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API = 5;
+var VIDEO_PLATFORM = 'youtube';
+var VIDEO_TYPE_LIVE = 'live';
+var VIDEO_TYPE_VOD = 'video-on-demand';
 var YOUTUBE_IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
 var YOUTUBE_PLAYING_STATE = 1;
-var ENABLE_JSAPI_PARAMETER = 'enablejsapi';
-var ENABLE_JSAPI_VALUE = '1';
-var ORIGIN_PARAMETER = 'origin';
-var LAUNCHEXT_INIT_PARAMETER = 'launchextinit';
-var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
-var YOUTUBE_PLAYER_SETUP_STARTED_STATUS = 'started';
-var YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS = 'modified';
-var YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS = 'completed';
-var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_YOUTUBE_IFRAME_API = 5;
 
 // constants related to video milestone tracking
 var VIDEO_MILESTONE_PERCENT_UNIT = 'percent';
@@ -163,28 +162,22 @@ var playerRegistry = {};
  *
  * @return {Object} Data about the current state of the YouTube player.
  */
-var getYoutubeStateData = function(player) {
-  var currentTime = player.getCurrentTime();
-  var duration = player.launchExt.duration;
-  var isLiveEvent = player.launchExt.isLiveEvent;
-  if (isLiveEvent) {
-    duration = player.getDuration();
-  }
-
-  var videoType = isLiveEvent ? 'live' : 'video-on-demand';
+var getVideoStateData = function(player) {
+  var videoType = player.launchExt.isLiveEvent ? VIDEO_TYPE_LIVE : VIDEO_TYPE_VOD;
 
   var stateData = {
     player: player,
-    currentTime: currentTime,
-    duration: duration,
-    muted: player.isMuted(),
-    playbackRate: player.getPlaybackRate(),
+    videoCurrentTime: player.launchExt.videoCurrentTime,
+    videoDuration: player.launchExt.videoDuration,
     videoId: player.launchExt.videoId,
-    videoLoadedFraction: player.getVideoLoadedFraction(),
+    videoLoadedFraction: player.launchExt.videoLoadedFraction,
+    videoMuted: player.isMuted(),
+    videoPlaybackQuality: player.launchExt.videoPlaybackQuality,
+    videoPlaybackRate: player.launchExt.videoPlaybackRate,
     videoTitle: player.launchExt.videoTitle,
     videoType: videoType,
     videoUrl: player.launchExt.videoUrl,
-    volume: player.getVolume(),
+    videoVolume: player.launchExt.videoVolume,
   };
 
   return stateData;
@@ -207,12 +200,12 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
     return;
   }
 
-  var stateData = getYoutubeStateData(player);
+  var stateData = getVideoStateData(player);
 
   // perform additional tasks based on the Event Type
   var element = player.getIframe();
   var elementId = element.id;
-  var logInfoMessage = 'Player ID ' + elementId + ': ';
+  var logInfoMessage = 'Player ID ' + elementId + ': ' + eventType;
 
   switch (eventType) {
     case API_CHANGED:
@@ -220,30 +213,10 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
       if (moduleNames && moduleNames.length > 0) {
         stateData.moduleNames = moduleNames.join(',');
       }
-
-      logInfoMessage += 'Module with API methods changed';
-      break;
-    case PLAYBACK_QUALITY_CHANGED:
-      stateData.playbackQuality = nativeEvent.data;
-
-      logInfoMessage += 'Playback quality changed';
-      break;
-    case PLAYBACK_RATE_CHANGED:
-      logInfoMessage += 'Playback rate changed';
       break;
     case PLAYER_ERROR:
-      stateData.errorCode = nativeEvent.data;
-      stateData.errorMessage = ERROR_CODES[nativeEvent.data];
-
-      logInfoMessage += 'Player error';
-      break;
-    case PLAYER_READY:
-      logInfoMessage += 'Player ready';
-      break;
-    case PLAYER_REMOVED:
-      stateData.playTotalTime = player.launchExt.playTotalTime;
-
-      logInfoMessage += 'Player removed';
+      stateData.errorCode = options.error.code;
+      stateData.errorMessage = options.error.message;
       break;
     case VIDEO_BUFFERING:
     case VIDEO_CUED:
@@ -254,34 +227,29 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
     case VIDEO_RESUMED:
     case VIDEO_STARTED:
     case VIDEO_UNSTARTED:
-      logInfoMessage += 'Player state changed: ' + eventType;
-
       /**
-       * update the following:
-       * 1. currentTime to be the time when the Event Type got detected
+       * update videoCurrentTime to be the time when the Event Type got detected
        * because some milliseconds could have passed already.
-       * 2. playTotalTime -- but only with events where the video has stopped playing.
        */
       switch (eventType) {
         case VIDEO_ENDED:
-          stateData.currentTime = player.launchExt.duration;
-          stateData.playTotalTime = player.launchExt.playTotalTime;
+          stateData.videoCurrentTime = player.launchExt.videoDuration;
           break;
         case VIDEO_PAUSED:
-          stateData.playTotalTime = player.launchExt.playTotalTime;
+          stateData.videoCurrentTime = player.launchExt.playStopTime;
           break;
         case VIDEO_PLAYING:
         case VIDEO_RESUMED:
-          stateData.currentTime = player.launchExt.playStartTime;
+          stateData.videoCurrentTime = player.launchExt.playStartTime;
           break;
         case VIDEO_REPLAYED:
         case VIDEO_STARTED:
           var isLiveEvent = player.launchExt.isLiveEvent;
-          stateData.currentTime = isLiveEvent
+          stateData.videoCurrentTime = isLiveEvent
             ? player.launchExt.videoStartTime
             : 0.0;
-          if (isLiveEvent && stateData.duration < stateData.currentTime) {
-            stateData.duration = stateData.currentTime;
+          if (isLiveEvent && stateData.videoDuration < stateData.videoCurrentTime) {
+            stateData.videoDuration = stateData.videoCurrentTime;
           }
           break;
       }
@@ -289,33 +257,47 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
     case VIDEO_MILESTONE:
       if (player.launchExt && player.launchExt.playStopTime) {
         /**
-         * replace currentTime with the one from the heartbeat
+         * replace videoCurrentTime with the one from the heartbeat
          * because the playhead could have changed since the milestone event was triggered
          */
-        stateData.currentTime = player.launchExt.playStopTime;
+        stateData.videoCurrentTime = player.launchExt.playStopTime;
       }
       stateData.videoMilestone = options.label;
-      logInfoMessage += 'Milestone reached';
       break;
   }
 
-  stateData.currentTime = Math.floor(stateData.currentTime);
-  stateData.duration = Math.floor(stateData.duration);
-  if (stateData.playTotalTime) {
-    stateData.playTotalTime = Math.floor(stateData.playTotalTime);
-    stateData.playSegmentTime = Math.floor(
-      player.launchExt.playTotalTime - player.launchExt.playPreviousTotalTime
-    );
-    player.launchExt.playPreviousTotalTime = stateData.playTotalTime;
+  stateData.videoCurrentTime = Math.floor(stateData.videoCurrentTime);
+  stateData.videoDuration = Math.floor(stateData.videoDuration);
+
+  // set playTotalTime with events where the video has stopped playing
+  if (PLAYER_STOPPED_EVENT_TYPES.indexOf(eventType) > -1) {
+    player.launchExt.playTime = player.launchExt.playStopTime - player.launchExt.playStartTime;
+
+    /**
+     * if the video was already paused before the player got removed,
+     * then there is no playTime,
+     * otherwise playTotalTime would be double-adding the played time wrongly
+     */
+    var videoHasEnded = player.launchExt.hasEnded;
+    var videoHasPaused = player.launchExt.hasPaused;
+    if (eventType === PLAYER_REMOVED && (videoHasPaused || videoHasEnded)) {
+      player.launchExt.playTime = 0;
+    }
+
+    player.launchExt.playTotalTime += player.launchExt.playTime;
+    player.launchExt.playPreviousTotalTime = player.launchExt.playTotalTime;
+
+    stateData.videoPlayedTotalTime = Math.floor(player.launchExt.playTotalTime);
+    stateData.videoPlayedSegmentTime = Math.round(player.launchExt.playTime);
   }
 
   logger.info(logInfoMessage);
 
   // handle each Rule trigger for this Event Type
-  var getYoutubeEvent = createGetYoutubeEvent.bind(element);
+  var getVideoEvent = createGetVideoEvent.bind(element);
   eventTriggers.forEach(function(trigger) {
     trigger(
-      getYoutubeEvent(eventType, nativeEvent, stateData)
+      getVideoEvent(eventType, nativeEvent, stateData, VIDEO_PLATFORM)
     );
   });
 };
@@ -335,7 +317,7 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
   // don't continue if this player hasn't been setup by this extension
   var element = player.getIframe();
-  var elementIsSetup = element.dataset.launchextSetup === YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+  var elementIsSetup = element.dataset.launchextSetup === PLAYER_SETUP_COMPLETED_STATUS;
   if (!elementIsSetup) {
     return;
   }
@@ -345,14 +327,53 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
   var triggers = player.launchExt.triggers;
   var options = {};
 
+  player.launchExt.videoCurrentTime = player.getCurrentTime();
+  player.launchExt.videoLoadedFraction = player.getVideoLoadedFraction();
+  player.launchExt.videoVolume = player.getVolume();
 
-  // ALWAYS start or stop the player's heartbeat based on the Event Type
-  switch (eventType) {
+  switch (playbackEventType) {
+    case PLAYBACK_QUALITY_CHANGED:
+      player.launchExt.videoPlaybackQuality = nativeEvent.data;
+      break;
+    case PLAYBACK_RATE_CHANGED:
+      player.launchExt.videoPlaybackRate = player.getPlaybackRate();
+      break;
+    case PLAYER_ERROR:
+      options.error = {
+        code: nativeEvent.data,
+        message: ERROR_CODES[nativeEvent.data],
+      };
+      break;
     case VIDEO_PLAYING:
-    case VIDEO_REPLAYED:
-    case VIDEO_RESUMED:
-    case VIDEO_STARTED:
       startHeartbeat(player, nativeEvent);
+
+      /**
+       * update eventType for VIDEO_PLAYING
+       * because it could be set with another extension-specific event actually
+       *
+       * IMPORTANT! this must be run BEFORE the eventType has been processed
+       */
+      var triggerOnVideoStart = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_STARTED);
+      var triggerOnVideoReplay = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_REPLAYED);
+      var triggerOnVideoResume = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_RESUMED);
+
+      var videoHasNotStarted = !player.launchExt.hasStarted;
+      var videoHasReplayed = player.launchExt.hasReplayed;
+      var videoHasPaused = player.launchExt.hasPaused;
+
+      if (videoHasNotStarted) {
+        if (triggerOnVideoStart) {
+          eventType = VIDEO_STARTED;
+        }
+        if (player.launchExt.isLiveEvent) {
+          player.launchExt.videoStartTime = Math.floor(player.launchExt.videoCurrentTime);
+        }
+      } else if (triggerOnVideoReplay && videoHasReplayed) {
+        eventType = VIDEO_REPLAYED;
+      } else if (triggerOnVideoResume && videoHasPaused) {
+        eventType = VIDEO_RESUMED;
+      }
+
       break;
     case PLAYER_REMOVED:
     case VIDEO_BUFFERING:
@@ -393,6 +414,11 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
     case VIDEO_ENDED:
       player.launchExt.hasEnded = true;
       break;
+    case VIDEO_BUFFERING:
+    case VIDEO_CUED:
+    case VIDEO_PAUSED:
+      player.launchExt.hasPaused = true;
+      break;
     case VIDEO_PLAYING:
     case VIDEO_REPLAYED:
     case VIDEO_RESUMED:
@@ -415,15 +441,16 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
         player.launchExt.hasReplayed = false;
       } else if (!player.launchExt.hasStarted) {
         /**
-         * the video has started for the very first time
+         * the video has not started yet
          * (player.launchExt.hasStarted is set to "true" a few lines down)
          */
         compileMilestones(player);
       }
 
-      // if the video is playing, then it has started and hasn't ended
+      // if the video is playing, then it has started and hasn't ended nor paused
       player.launchExt.hasStarted = true;
       player.launchExt.hasEnded = false;
+      player.launchExt.hasPaused = false;
 
       break;
   }
@@ -479,10 +506,10 @@ var startHeartbeat = function(player, nativeEvent) {
     return;
   }
 
-  var currentTime = player.getCurrentTime();
-  player.launchExt.playStartTime = currentTime;
-  player.launchExt.playStopTime = currentTime;
-  player.launchExt.playTime = 0;
+  var videoCurrentTime = player.getCurrentTime();
+  player.launchExt.playStartTime = videoCurrentTime;
+  player.launchExt.playStopTime = videoCurrentTime;
+  //player.launchExt.playTime = 0;
 
   player.launchExt.heartbeatInterval.id = setInterval(function() {
     if (player.getPlayerState() !== YOUTUBE_PLAYING_STATE) {
@@ -491,7 +518,7 @@ var startHeartbeat = function(player, nativeEvent) {
       return;
     }
 
-    var currentTime = player.getCurrentTime();
+    var videoCurrentTime = player.getCurrentTime();
 
     /**
      * update the player's stop time using the current time
@@ -499,16 +526,9 @@ var startHeartbeat = function(player, nativeEvent) {
      * getCurrentTime() _at that moment_ will be wherever the playhead is
      * which can be bad if the user had skipped forward/backward!
      */
-    player.launchExt.playStopTime = currentTime;
+    player.launchExt.playStopTime = videoCurrentTime;
 
-    // record how long the video has been playing since the last time it started playing
-    var playStartTime = player.launchExt.playStartTime;
-    var playStopTime = player.launchExt.playStopTime;
-    player.launchExt.playTime = playStopTime >= playStartTime
-      ? (playStopTime - playStartTime)
-      : 0;
-
-    findMilestone(player, nativeEvent, currentTime);
+    findMilestone(player, nativeEvent, videoCurrentTime);
 
   }, player.launchExt.heartbeatInterval.time);
 };
@@ -525,7 +545,6 @@ var stopHeartbeat = function(player) {
 
   clearInterval(player.launchExt.heartbeatInterval.id);
   player.launchExt.heartbeatInterval.id = null;
-  player.launchExt.playTotalTime += player.launchExt.playTime;
 };
 
 /**
@@ -591,7 +610,7 @@ var playerReady = function(event) {
     // this player wasn't setup by this extension
     return;
   }
-  element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+  element.dataset.launchextSetup = PLAYER_SETUP_COMPLETED_STATUS;
 
   // update static metadata
   player.launchExt = player.launchExt || {};
@@ -603,10 +622,10 @@ var playerReady = function(event) {
   // create the YouTube video URL from the video ID
   player.launchExt.videoUrl = 'https://www.youtube.com/watch?v=' + videoData.video_id;
 
-  var duration = player.getDuration();
-  player.launchExt.duration = duration;
+  var videoDuration = player.getDuration();
+  player.launchExt.videoDuration = videoDuration;
 
-  var isLiveEvent = duration === 0;
+  var isLiveEvent = videoDuration === 0;
   player.launchExt.isLiveEvent = isLiveEvent;
 
   processPlaybackEvent(PLAYER_READY, player, event);
@@ -754,8 +773,8 @@ var setupYoutubePlayer = function(element) {
 
   // add additional properties for this player
   player.launchExt = {
-    duration: null,
     hasEnded: false,
+    hasPaused: false,
     hasReplayed: false,
     hasStarted: false,
     heartbeatInterval: {
@@ -766,16 +785,23 @@ var setupYoutubePlayer = function(element) {
     playedMilestones: {},
     playPreviousTotalTime: 0,
     playSegmentTime: 0,
-    playStartTime: null,
-    playStopTime: null,
-    playTime: null,
+    playStartTime: 0,
+    playStopTime: 0,
+    playTime: 0,
     playTotalTime: 0,
     previousEventType: null,
+    previousUpdateTime: 0,
     triggers: triggers,
+    videoCurrentTime: 0,
+    videoDuration: null,
     videoId: null,
+    videoLoadedFraction: 0,
+    videoPlaybackRate: 1,
     videoStartTime: 0,
     videoTitle: null,
+    videoUpdateTime: 0,
     videoUrl: null,
+    videoVolume: 100,
   };
 
   playerRegistry[elementId] = player;
@@ -814,7 +840,7 @@ var setupPendingPlayers = function(attempt) {
 
   if (!youtubeIframeApiIsReady()) {
     // try again
-    if (attempt > MAXIMUM_ATTEMPTS_TO_WAIT_FOR_YOUTUBE_IFRAME_API) {
+    if (attempt > MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API) {
       logger.error('Unexpected error! YouTube IFrame API has not been initialised');
     } else {
       var timeout = Math.pow(2, attempt - 1) * 1000;
@@ -865,7 +891,7 @@ var registerYoutubePlayers = function(settings) {
   var elementsSelectorSetting = settings.elementsSelector || '';
   var iframeSelector = elementSpecificitySetting === 'specific' && elementsSelectorSetting
     ? elementsSelectorSetting
-    : YOUTUBE_IFRAME_SELECTOR;
+    : IFRAME_SELECTOR;
   var loadYoutubeIframeApiSetting = settings.loadYoutubeIframeApi || 'yes';
 
   var elements = document.querySelectorAll(iframeSelector);
@@ -882,20 +908,20 @@ var registerYoutubePlayers = function(settings) {
   elements.forEach(function(element, i) {
     // setup only those players that have NOT been setup by this extension
     switch (element.dataset.launchextSetup) {
-      case YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS:
+      case PLAYER_SETUP_COMPLETED_STATUS:
         break;
-      case YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS:
+      case PLAYER_SETUP_MODIFIED_STATUS:
         registerPendingPlayer(element);
         break;
       default: {
         // set a data attribute to indicate that this player is being setup
-        element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_STARTED_STATUS;
+        element.dataset.launchextSetup = PLAYER_SETUP_STARTED_STATUS;
 
         // ensure that the IFrame has an `id` attribute
         var elementId = element.id;
         if (!elementId) {
           // set the `id` attribute to the current timestamp and index
-          elementId = YOUTUBE_NAME_PREFIX + '_' + new Date().valueOf() + '_' + i;
+          elementId = IFRAME_ID_PREFIX + '_' + new Date().valueOf() + '_' + i;
           element.id = elementId;
         }
 
@@ -906,15 +932,15 @@ var registerYoutubePlayers = function(settings) {
          * parameters, and also our own `usewithlaunchext` parameter.
          */
         var requiredParametersToAdd = [
-          LAUNCHEXT_INIT_PARAMETER + '=' + (new Date().getTime()),
+          IFRAME_URL_INIT_PARAMETER + '=' + (new Date().getTime()),
         ];
-        if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
+        if (elementSrc.indexOf(IFRAME_URL_ENABLE_JSAPI_PARAMETER) < 0) {
           // `enablejsapi` is absent in the IFrame's src URL, add it
           requiredParametersToAdd.push(
-            ENABLE_JSAPI_PARAMETER + '=' + ENABLE_JSAPI_VALUE
+            IFRAME_URL_ENABLE_JSAPI_PARAMETER + '=' + IFRAME_URL_ENABLE_JSAPI_VALUE
           );
         }
-        if (elementSrc.indexOf(ORIGIN_PARAMETER) < 0) {
+        if (elementSrc.indexOf(IFRAME_URL_ORIGIN_PARAMETER) < 0) {
           // `origin` is absent in the IFrame's src URL, add it
           var originProtocol = document.location.protocol;
           var originHostname = document.location.hostname;
@@ -923,7 +949,7 @@ var registerYoutubePlayers = function(settings) {
           if (originPort) {
             originValue += ':' + originPort;
           }
-          requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
+          requiredParametersToAdd.push(IFRAME_URL_ORIGIN_PARAMETER + '=' + originValue);
         }
         requiredParametersToAdd = requiredParametersToAdd.join('&');
         var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
@@ -942,7 +968,7 @@ var registerYoutubePlayers = function(settings) {
         // observe changes to this element via its parentNode
         observer.observe(element.parentNode, {childList: true});
 
-        element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS;
+        element.dataset.launchextSetup = PLAYER_SETUP_MODIFIED_STATUS;
         registerPendingPlayer(element);
 
         break;

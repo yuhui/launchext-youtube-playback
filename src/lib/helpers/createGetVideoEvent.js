@@ -22,18 +22,19 @@
  * This synthetic event *MUST* be bound to the calling YouTube IFrame DOM element.
  *
  * @param {String} eventType The Event Type that has been triggered.
- * @param {Object} nativeEvent The native YouTube event object.
+ * @param {Object} nativeEvent The native video event object.
  * @param {Object} stateData Data about the current state of the YouTube player.
  * See `getYoutubeStateData()`.
+ * @param {String} videoPlatform Name of the video player's platform.
  *
- * @return {Event} Event object that is specific to the YouTube player's state.
+ * @return {Event} Event object that is specific to the video player's state.
  *
- * @this {DOMElement} The YouTube IFrame DOM element that caused the event.
+ * @this {DOMElement} The video IFrame DOM element that caused the event.
  *
  * @throws Will throw an error if eventType is not a string.
  * @throws Will throw an error if stateData is not an object.
  */
-module.exports = function(eventType, nativeEvent, stateData) {
+module.exports = function(eventType, nativeEvent, stateData, videoPlatform) {
   var toString = Object.prototype.toString;
   if (toString.call(eventType) !== '[object String]') {
     throw new Error('"eventType" input is not a string');
@@ -42,11 +43,12 @@ module.exports = function(eventType, nativeEvent, stateData) {
     throw new Error('"stateData" input is not an object');
   }
 
-  return {
+  var event = {
     element: this,
     target: this,
     nativeEvent: nativeEvent,
     state: eventType,
-    youtube: stateData,
   };
+  event[videoPlatform] = stateData;
+  return event;
 };

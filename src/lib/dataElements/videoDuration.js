@@ -26,6 +26,6 @@
  */
 module.exports = function(settings, event) {
   if (event && event.youtube) {
-    return event.youtube.duration;
+    return event.youtube.videoDuration;
   }
 };
