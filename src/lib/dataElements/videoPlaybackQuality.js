@@ -27,6 +27,6 @@
  */
 module.exports = function(settings, event) {
   if (event && event.youtube && event.state === 'playback quality changed') {
-    return event.youtube.playbackQuality;
+    return event.youtube.videoPlaybackQuality;
   }
 };

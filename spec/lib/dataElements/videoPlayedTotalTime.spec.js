@@ -38,9 +38,9 @@ describe('videoPlayedTotalTime data element delegate', () => {
     );
 
     it(
-      'should be undefined when "playTotalTime" property is missing',
+      'should be undefined when "videoPlayedTotalTime" property is missing',
       () => {
-        delete this.event.youtube.playTotalTime;
+        delete this.event.youtube.videoPlayedTotalTime;
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }

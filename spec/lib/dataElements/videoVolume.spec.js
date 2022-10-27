@@ -38,9 +38,9 @@ describe('videoVolume data element delegate', () => {
     );
 
     it(
-      'should be undefined when "volume" property is missing',
+      'should be undefined when "videoVolume" property is missing',
       () => {
-        delete this.event.youtube.volume;
+        delete this.event.youtube.videoVolume;
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }

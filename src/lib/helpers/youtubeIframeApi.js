@@ -20,9 +20,9 @@ var window = require('@adobe/reactor-window');
 var document = require('@adobe/reactor-document');
 var loadScript = require('@adobe/reactor-load-script');
 
-var createGetYoutubeEvent = require('./createGetYoutubeEvent');
+var compileMilestones = require('./compileMilestones');
+var createGetVideoEvent = require('./createGetVideoEvent');
 var flooredVideoTime = require('./flooredVideoTime');
-var videoTimeFromFraction = require('./videoTimeFromFraction');
 
 var logger = turbine.logger;
 
@@ -77,12 +77,18 @@ var VIDEO_EVENT_TYPES = [
   VIDEO_UNSTARTED,
 ];
 
-// set of Event Types when video had been playing but is stopped temporarily
+// set of Event Types when video had stopped playing
 var VIDEO_STOPPED_EVENT_TYPES = [
   VIDEO_BUFFERING,
   VIDEO_CUED,
   VIDEO_PAUSED,
+  VIDEO_ENDED,
 ];
+
+// set of Event Types when the player has been stopped
+var PLAYER_STOPPED_EVENT_TYPES = VIDEO_STOPPED_EVENT_TYPES.concat([
+  PLAYER_REMOVED,
+]);
 
 // constants related to YouTube error codes
 var ERROR_CODES = {
@@ -95,45 +101,27 @@ var ERROR_CODES = {
     'embedded players (error 150)'
 };
 
-// lookup of YouTube playback events to Event Types
-var PLAYBACK_EVENTS = {
-  API_CHANGE: API_CHANGED,
-  ERROR: PLAYER_ERROR,
-  READY: PLAYER_READY,
-  PLAYBACK_QUALITY_CHANGE: PLAYBACK_QUALITY_CHANGED,
-  PLAYBACK_RATE_CHANGE: PLAYBACK_RATE_CHANGED,
-  STATE_CHANGE: PLAYER_STATE_CHANGE,
-};
-
 // constants related to setting up the YouTube IFrame API
-var YOUTUBE_NAME_PREFIX = 'youTubePlayback';
+var IFRAME_ID_PREFIX = 'youTubePlayback';
+var IFRAME_SELECTOR = 'iframe[src*=youtube]';
+var IFRAME_URL_ENABLE_JSAPI_PARAMETER = 'enablejsapi';
+var IFRAME_URL_ENABLE_JSAPI_VALUE = '1';
+var IFRAME_URL_INIT_PARAMETER = 'launchextinit';
+var IFRAME_URL_ORIGIN_PARAMETER = 'origin';
+var PLAYER_SETUP_STARTED_STATUS = 'started';
+var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
+var PLAYER_SETUP_COMPLETED_STATUS = 'completed';
+var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API = 5;
+var VIDEO_PLATFORM = 'youtube';
+var VIDEO_TYPE_LIVE = 'live';
+var VIDEO_TYPE_VOD = 'video-on-demand';
 var YOUTUBE_IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
 var YOUTUBE_PLAYING_STATE = 1;
-var ENABLE_JSAPI_PARAMETER = 'enablejsapi';
-var ENABLE_JSAPI_VALUE = '1';
-var ORIGIN_PARAMETER = 'origin';
-var LAUNCHEXT_INIT_PARAMETER = 'launchextinit';
-var YOUTUBE_IFRAME_SELECTOR = 'iframe[src*=youtube]';
-var YOUTUBE_PLAYER_SETUP_STARTED_STATUS = 'started';
-var YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS = 'modified';
-var YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS = 'completed';
-var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_YOUTUBE_IFRAME_API = 5;
 
 // constants related to video milestone tracking
 var VIDEO_MILESTONE_PERCENT_UNIT = 'percent';
 var VIDEO_MILESTONE_SECONDS_UNIT = 'seconds';
 var VIDEO_MILESTONE_UNITS = [VIDEO_MILESTONE_PERCENT_UNIT, VIDEO_MILESTONE_SECONDS_UNIT];
-// not ES6
-var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {};
-VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_PERCENT_UNIT] = '%';
-VIDEO_MILESTONE_UNIT_ABBREVIATIONS[VIDEO_MILESTONE_SECONDS_UNIT] = 's';
-// ES6: placeholder to be used when updating the code base to ES6
-/*
-var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {
-  [VIDEO_MILESTONE_PERCENT_UNIT]: '%',
-  [VIDEO_MILESTONE_SECONDS_UNIT]: 's',
-};
-*/
 
 // constants related to this Extension's settings
 var EXTENSION_SETTINGS = turbine.getExtensionSettings();
@@ -174,28 +162,22 @@ var playerRegistry = {};
  *
  * @return {Object} Data about the current state of the YouTube player.
  */
-var getYoutubeStateData = function(player) {
-  var currentTime = player.getCurrentTime();
-  var duration = player.launchExt.duration;
-  var isLiveEvent = player.launchExt.isLiveEvent;
-  if (isLiveEvent) {
-    duration = player.getDuration();
-  }
-
-  var videoType = isLiveEvent ? 'live' : 'video-on-demand';
+var getVideoStateData = function(player) {
+  var videoType = player.launchExt.isLiveEvent ? VIDEO_TYPE_LIVE : VIDEO_TYPE_VOD;
 
   var stateData = {
     player: player,
-    currentTime: currentTime,
-    duration: duration,
-    muted: player.isMuted(),
-    playbackRate: player.getPlaybackRate(),
+    videoCurrentTime: player.launchExt.videoCurrentTime,
+    videoDuration: player.launchExt.videoDuration,
     videoId: player.launchExt.videoId,
-    videoLoadedFraction: player.getVideoLoadedFraction(),
+    videoLoadedFraction: player.launchExt.videoLoadedFraction,
+    videoMuted: player.isMuted(),
+    videoPlaybackQuality: player.launchExt.videoPlaybackQuality,
+    videoPlaybackRate: player.launchExt.videoPlaybackRate,
     videoTitle: player.launchExt.videoTitle,
     videoType: videoType,
     videoUrl: player.launchExt.videoUrl,
-    volume: player.getVolume(),
+    videoVolume: player.launchExt.videoVolume,
   };
 
   return stateData;
@@ -206,25 +188,24 @@ var getYoutubeStateData = function(player) {
  * Handle an Event Type.
  *
  * @param {String} eventType The Event Type that has been triggered.
+ * @param {Object} player The YouTube player object.
  * @param {Object} nativeEvent The native YouTube event object.
  * @param {Object} eventTriggers Array of triggers for this Event Type, or Object of milestones.
- * @param {Object} options (optional) Any options for this Event Type, e.g. player object,
+ * @param {Object} options (optional) Any options for this Event Type, e.g. error message,
  * milestone labels, etc.
  */
-var processEventType = function(eventType, nativeEvent, eventTriggers, options) {
+var processEventType = function(eventType, player, nativeEvent, eventTriggers, options) {
   if (!eventTriggers || Object.keys(eventTriggers) === 0) {
     // don't continue if there are no triggers for this Event Type
     return;
   }
 
-  var player = (options && options.player) || nativeEvent.target;
-  var element = player.getIframe();
-
-  var stateData = getYoutubeStateData(player);
+  var stateData = getVideoStateData(player);
 
   // perform additional tasks based on the Event Type
+  var element = player.getIframe();
   var elementId = element.id;
-  var logInfoMessage = 'Player ID ' + elementId + ': ';
+  var logInfoMessage = 'Player ID ' + elementId + ': ' + eventType;
 
   switch (eventType) {
     case API_CHANGED:
@@ -232,30 +213,10 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
       if (moduleNames && moduleNames.length > 0) {
         stateData.moduleNames = moduleNames.join(',');
       }
-
-      logInfoMessage += 'Module with API methods changed';
-      break;
-    case PLAYBACK_QUALITY_CHANGED:
-      stateData.playbackQuality = nativeEvent.data;
-
-      logInfoMessage += 'Playback quality changed';
-      break;
-    case PLAYBACK_RATE_CHANGED:
-      logInfoMessage += 'Playback rate changed';
       break;
     case PLAYER_ERROR:
-      stateData.errorCode = nativeEvent.data;
-      stateData.errorMessage = ERROR_CODES[nativeEvent.data];
-
-      logInfoMessage += 'Player error';
-      break;
-    case PLAYER_READY:
-      logInfoMessage += 'Player ready';
-      break;
-    case PLAYER_REMOVED:
-      stateData.playTotalTime = player.launchExt.playTotalTime;
-
-      logInfoMessage += 'Player removed';
+      stateData.errorCode = options.error.code;
+      stateData.errorMessage = options.error.message;
       break;
     case VIDEO_BUFFERING:
     case VIDEO_CUED:
@@ -266,34 +227,29 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
     case VIDEO_RESUMED:
     case VIDEO_STARTED:
     case VIDEO_UNSTARTED:
-      logInfoMessage += 'Player state changed: ' + eventType;
-
       /**
-       * update the following:
-       * 1. currentTime to be the time when the Event Type got detected
+       * update videoCurrentTime to be the time when the Event Type got detected
        * because some milliseconds could have passed already.
-       * 2. playTotalTime -- but only with events where the video has stopped playing.
        */
       switch (eventType) {
         case VIDEO_ENDED:
-          stateData.currentTime = player.launchExt.duration;
-          stateData.playTotalTime = player.launchExt.playTotalTime;
+          stateData.videoCurrentTime = player.launchExt.videoDuration;
           break;
         case VIDEO_PAUSED:
-          stateData.playTotalTime = player.launchExt.playTotalTime;
+          stateData.videoCurrentTime = player.launchExt.playStopTime;
           break;
         case VIDEO_PLAYING:
         case VIDEO_RESUMED:
-          stateData.currentTime = player.launchExt.playStartTime;
+          stateData.videoCurrentTime = player.launchExt.playStartTime;
           break;
         case VIDEO_REPLAYED:
         case VIDEO_STARTED:
           var isLiveEvent = player.launchExt.isLiveEvent;
-          stateData.currentTime = isLiveEvent
+          stateData.videoCurrentTime = isLiveEvent
             ? player.launchExt.videoStartTime
             : 0.0;
-          if (isLiveEvent && stateData.duration < stateData.currentTime) {
-            stateData.duration = stateData.currentTime;
+          if (isLiveEvent && stateData.videoDuration < stateData.videoCurrentTime) {
+            stateData.videoDuration = stateData.videoCurrentTime;
           }
           break;
       }
@@ -301,33 +257,47 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
     case VIDEO_MILESTONE:
       if (player.launchExt && player.launchExt.playStopTime) {
         /**
-         * replace currentTime with the one from the heartbeat
+         * replace videoCurrentTime with the one from the heartbeat
          * because the playhead could have changed since the milestone event was triggered
          */
-        stateData.currentTime = player.launchExt.playStopTime;
+        stateData.videoCurrentTime = player.launchExt.playStopTime;
       }
       stateData.videoMilestone = options.label;
-      logInfoMessage += 'Milestone reached';
       break;
   }
 
-  stateData.currentTime = Math.floor(stateData.currentTime);
-  stateData.duration = Math.floor(stateData.duration);
-  if (stateData.playTotalTime) {
-    stateData.playTotalTime = Math.floor(stateData.playTotalTime);
-    stateData.playSegmentTime = Math.floor(
-      player.launchExt.playTotalTime - player.launchExt.playPreviousTotalTime
-    );
-    player.launchExt.playPreviousTotalTime = stateData.playTotalTime;
+  stateData.videoCurrentTime = Math.floor(stateData.videoCurrentTime);
+  stateData.videoDuration = Math.floor(stateData.videoDuration);
+
+  // set playTotalTime with events where the video has stopped playing
+  if (PLAYER_STOPPED_EVENT_TYPES.indexOf(eventType) > -1) {
+    player.launchExt.playTime = player.launchExt.playStopTime - player.launchExt.playStartTime;
+
+    /**
+     * if the video was already paused before the player got removed,
+     * then there is no playTime,
+     * otherwise playTotalTime would be double-adding the played time wrongly
+     */
+    var videoHasEnded = player.launchExt.hasEnded;
+    var videoHasPaused = player.launchExt.hasPaused;
+    if (eventType === PLAYER_REMOVED && (videoHasPaused || videoHasEnded)) {
+      player.launchExt.playTime = 0;
+    }
+
+    player.launchExt.playTotalTime += player.launchExt.playTime;
+    player.launchExt.playPreviousTotalTime = player.launchExt.playTotalTime;
+
+    stateData.videoPlayedTotalTime = Math.floor(player.launchExt.playTotalTime);
+    stateData.videoPlayedSegmentTime = Math.round(player.launchExt.playTime);
   }
 
   logger.info(logInfoMessage);
 
   // handle each Rule trigger for this Event Type
-  var getYoutubeEvent = createGetYoutubeEvent.bind(element);
+  var getVideoEvent = createGetVideoEvent.bind(element);
   eventTriggers.forEach(function(trigger) {
     trigger(
-      getYoutubeEvent(eventType, nativeEvent, stateData)
+      getVideoEvent(eventType, nativeEvent, stateData, VIDEO_PLATFORM)
     );
   });
 };
@@ -336,20 +306,18 @@ var processEventType = function(eventType, nativeEvent, eventTriggers, options) 
  * Handle a YouTube playback event.
  *
  * @param {Object} playbackEventType Event Type based on the YouTube player's playback event.
+ * @param {Object} player The YouTube player object.
  * @param {Object} nativeEvent The native YouTube event object.
- * @param {Object} options (optional) Any options for this playback event, e.g. player object.
  */
-var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
+var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
   // get the Event Type for this playback event
   if (!playbackEventType) {
     return;
   }
 
-  var player = (options && options.player) || nativeEvent.target;
-
   // don't continue if this player hasn't been setup by this extension
   var element = player.getIframe();
-  var elementIsSetup = element.dataset.launchextSetup === YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+  var elementIsSetup = element.dataset.launchextSetup === PLAYER_SETUP_COMPLETED_STATUS;
   if (!elementIsSetup) {
     return;
   }
@@ -357,59 +325,55 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
   var eventType = playbackEventType;
   var previousEventType = player.launchExt.previousEventType;
   var triggers = player.launchExt.triggers;
+  var options = {};
 
-  if (eventType === PLAYER_STATE_CHANGE) {
-    // get the actual video playing Event Type
-    var playbackState = nativeEvent.data;
-    switch (playbackState) {
-      case window.YT.PlayerState.BUFFERING:
-        eventType = VIDEO_BUFFERING;
-        break;
-      case window.YT.PlayerState.CUED:
-        eventType = VIDEO_CUED;
-        break;
-      case window.YT.PlayerState.ENDED:
-        eventType = VIDEO_ENDED;
-        break;
-      case window.YT.PlayerState.PAUSED:
-        eventType = VIDEO_PAUSED;
-        break;
-      case window.YT.PlayerState.PLAYING:
-        var triggerOnVideoStart = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_STARTED);
-        var triggerOnVideoReplay = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_REPLAYED);
-        var triggerOnVideoResume = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_RESUMED);
+  player.launchExt.videoCurrentTime = player.getCurrentTime();
+  player.launchExt.videoLoadedFraction = player.getVideoLoadedFraction();
+  player.launchExt.videoVolume = player.getVolume();
 
-        var videoHasNotStarted = !player.launchExt.hasStarted;
-        var videoHasReplayed = player.launchExt.hasReplayed;
-        var videoHasStopped = VIDEO_STOPPED_EVENT_TYPES.indexOf(previousEventType) > -1;
-
-        eventType = VIDEO_PLAYING;
-        if (videoHasNotStarted) {
-          if (triggerOnVideoStart) {
-            eventType = VIDEO_STARTED;
-          }
-          if (player.launchExt.isLiveEvent) {
-            player.launchExt.videoStartTime = Math.floor(player.getCurrentTime());
-          }
-        } else if (triggerOnVideoReplay && videoHasReplayed) {
-          eventType = VIDEO_REPLAYED;
-        } else if (triggerOnVideoResume && videoHasStopped) {
-          eventType = VIDEO_RESUMED;
-        }
-        break;
-      case window.YT.PlayerState.UNSTARTED:
-        eventType = VIDEO_UNSTARTED;
-        break;
-    }
-  }
-
-  // ALWAYS start or stop the player's heartbeat based on the Event Type
-  switch (eventType) {
+  switch (playbackEventType) {
+    case PLAYBACK_QUALITY_CHANGED:
+      player.launchExt.videoPlaybackQuality = nativeEvent.data;
+      break;
+    case PLAYBACK_RATE_CHANGED:
+      player.launchExt.videoPlaybackRate = player.getPlaybackRate();
+      break;
+    case PLAYER_ERROR:
+      options.error = {
+        code: nativeEvent.data,
+        message: ERROR_CODES[nativeEvent.data],
+      };
+      break;
     case VIDEO_PLAYING:
-    case VIDEO_REPLAYED:
-    case VIDEO_RESUMED:
-    case VIDEO_STARTED:
       startHeartbeat(player, nativeEvent);
+
+      /**
+       * update eventType for VIDEO_PLAYING
+       * because it could be set with another extension-specific event actually
+       *
+       * IMPORTANT! this must be run BEFORE the eventType has been processed
+       */
+      var triggerOnVideoStart = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_STARTED);
+      var triggerOnVideoReplay = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_REPLAYED);
+      var triggerOnVideoResume = !!Object.getOwnPropertyDescriptor(triggers, VIDEO_RESUMED);
+
+      var videoHasNotStarted = !player.launchExt.hasStarted;
+      var videoHasReplayed = player.launchExt.hasReplayed;
+      var videoHasPaused = player.launchExt.hasPaused;
+
+      if (videoHasNotStarted) {
+        if (triggerOnVideoStart) {
+          eventType = VIDEO_STARTED;
+        }
+        if (player.launchExt.isLiveEvent) {
+          player.launchExt.videoStartTime = Math.floor(player.launchExt.videoCurrentTime);
+        }
+      } else if (triggerOnVideoReplay && videoHasReplayed) {
+        eventType = VIDEO_REPLAYED;
+      } else if (triggerOnVideoResume && videoHasPaused) {
+        eventType = VIDEO_RESUMED;
+      }
+
       break;
     case PLAYER_REMOVED:
     case VIDEO_BUFFERING:
@@ -431,7 +395,16 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
   }
 
   var eventTriggers = triggers[eventType];
-  processEventType(eventType, nativeEvent, eventTriggers, options);
+  processEventType(eventType, player, nativeEvent, eventTriggers, options);
+
+  /**
+   * for video playing Event Types:
+   * update the previous Event Type with this Event Type
+   * to use with the next time a video playing event gets triggered
+   */
+  if (VIDEO_EVENT_TYPES.indexOf(eventType) > -1) {
+    player.launchExt.previousEventType = eventType;
+  }
 
   /**
    * update video playing states
@@ -441,6 +414,11 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
     case VIDEO_ENDED:
       player.launchExt.hasEnded = true;
       break;
+    case VIDEO_BUFFERING:
+    case VIDEO_CUED:
+    case VIDEO_PAUSED:
+      player.launchExt.hasPaused = true;
+      break;
     case VIDEO_PLAYING:
     case VIDEO_REPLAYED:
     case VIDEO_RESUMED:
@@ -448,9 +426,9 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
       if (player.launchExt.hasEnded) {
         /**
          * when a video is replayed, YouTube changes states in this order:
-         * 1. YT.PlayerState.PLAYING
-         * 2. YT.PlayerState.BUFFERING
-         * 3. YT.PlayerState.PLAYING
+         * 1. YT.PlayerState.PLAYING (VIDEO_PLAYING)
+         * 2. YT.PlayerState.BUFFERING (VIDEO_BUFFERING)
+         * 3. YT.PlayerState.PLAYING (VIDEO_PLAYING)
          * so remember that a replay has occurred,
          * then the second YT.PlayerState.PLAYING will trigger the VIDEO_REPLAYED Event Type
          */
@@ -463,109 +441,34 @@ var processPlaybackEvent = function(playbackEventType, nativeEvent, options) {
         player.launchExt.hasReplayed = false;
       } else if (!player.launchExt.hasStarted) {
         /**
-         * the video has started for the very first time
+         * the video has not started yet
          * (player.launchExt.hasStarted is set to "true" a few lines down)
          */
-        compileMilestones(player);
+        if (
+          player.launchExt.triggers
+          && Object.getOwnPropertyDescriptor(player.launchExt.triggers, VIDEO_MILESTONE)
+        ) {
+          var milestones = compileMilestones(
+            player.launchExt.triggers[VIDEO_MILESTONE],
+            player.launchExt.videoDuration,
+            player.launchExt.videoStartTime,
+            player.launchExt.isLiveEvent
+          );
+
+          delete player.launchExt.triggers[VIDEO_MILESTONE];
+          if (milestones) {
+            player.launchExt.triggers[VIDEO_MILESTONE] = milestones;
+          }
+        }
       }
 
-      // if the video is playing, then it has started and hasn't ended
+      // if the video is playing, then it has started and hasn't ended nor paused
       player.launchExt.hasStarted = true;
       player.launchExt.hasEnded = false;
+      player.launchExt.hasPaused = false;
 
       break;
   }
-
-  if (VIDEO_EVENT_TYPES.indexOf(eventType) > -1) {
-    player.launchExt.previousEventType = eventType;
-  }
-};
-
-/**
- * Change
- *
- * player.launchExt.triggers[VIDEO_MILESTONE] = [
- *   {
- *     milestone: {
- *       amount: <number>,
- *       type: <string "fixed", "every">,
- *       unit: <string "percent", "seconds">,
- *     },
- *     trigger: trigger,
- *   },
- * ]
- *
- * into
- *
- * player.launchExt.triggers[VIDEO_MILESTONE] = {
- *   "fixed" : {
- *     <string seconds> : {
- *       <string amount + unit> : [ trigger, trigger ],
- *     },
- *   },
- * }
- *
- * @param {Object} player The YouTube player object.
- */
-var compileMilestones = function(player) {
-  if (
-    !player.launchExt
-    || !player.launchExt.triggers
-    || !Object.getOwnPropertyDescriptor(player.launchExt.triggers, VIDEO_MILESTONE)
-  ) {
-    return;
-  }
-
-  var milestoneTriggersArr = player.launchExt.triggers[VIDEO_MILESTONE];
-  if (!Array.isArray(milestoneTriggersArr)) {
-    delete player.launchExt.triggers[VIDEO_MILESTONE];
-    return;
-  }
-
-  var duration = player.launchExt.duration;
-  var isLiveEvent = player.launchExt.isLiveEvent;
-  var videoStartTime = player.launchExt.videoStartTime;
-
-  var milestoneTriggersObj = {};
-
-  milestoneTriggersArr.forEach(function(milestoneTrigger) {
-    var trigger = milestoneTrigger.trigger;
-    var amount = milestoneTrigger.milestone.amount;
-    var type = milestoneTrigger.milestone.type;
-    var unit = milestoneTrigger.milestone.unit;
-
-    if (unit === VIDEO_MILESTONE_PERCENT_UNIT && isLiveEvent) {
-      /**
-       * "live" video broadcasts don't have a duration
-       * so percentage-based milestones can't be detected
-       */
-      return;
-    }
-
-    var seconds = amount;
-    var label = amount + VIDEO_MILESTONE_UNIT_ABBREVIATIONS[unit];
-
-    if (unit === VIDEO_MILESTONE_PERCENT_UNIT) {
-      // convert percentage amount to seconds
-      var percentage = amount / 100;
-      seconds = videoTimeFromFraction(duration, percentage);
-    }
-
-    if (isLiveEvent) {
-      // update the milestones to be offset from videoStartTime
-      seconds += videoStartTime;
-    }
-
-    milestoneTriggersObj[type] = milestoneTriggersObj[type] || {};
-    milestoneTriggersObj[type][seconds] = milestoneTriggersObj[type][seconds] || {};
-    milestoneTriggersObj[type][seconds][label] = (
-      milestoneTriggersObj[type][seconds][label] || []
-    );
-
-    milestoneTriggersObj[type][seconds][label].push(trigger);
-  });
-
-  player.launchExt.triggers[VIDEO_MILESTONE] = milestoneTriggersObj;
 };
 
 /**
@@ -597,7 +500,8 @@ var findMilestone = function(player, nativeEvent, currentTime) {
     var options = {
       label: label,
     };
-    processEventType(VIDEO_MILESTONE, nativeEvent, triggers, options);
+
+    processEventType(VIDEO_MILESTONE, player, nativeEvent, triggers, options);
   });
 };
 
@@ -617,10 +521,10 @@ var startHeartbeat = function(player, nativeEvent) {
     return;
   }
 
-  var currentTime = player.getCurrentTime();
-  player.launchExt.playStartTime = currentTime;
-  player.launchExt.playStopTime = currentTime;
-  player.launchExt.playTime = 0;
+  var videoCurrentTime = player.getCurrentTime();
+  player.launchExt.playStartTime = videoCurrentTime;
+  player.launchExt.playStopTime = videoCurrentTime;
+  //player.launchExt.playTime = 0;
 
   player.launchExt.heartbeatInterval.id = setInterval(function() {
     if (player.getPlayerState() !== YOUTUBE_PLAYING_STATE) {
@@ -629,7 +533,7 @@ var startHeartbeat = function(player, nativeEvent) {
       return;
     }
 
-    var currentTime = player.getCurrentTime();
+    var videoCurrentTime = player.getCurrentTime();
 
     /**
      * update the player's stop time using the current time
@@ -637,16 +541,9 @@ var startHeartbeat = function(player, nativeEvent) {
      * getCurrentTime() _at that moment_ will be wherever the playhead is
      * which can be bad if the user had skipped forward/backward!
      */
-    player.launchExt.playStopTime = currentTime;
+    player.launchExt.playStopTime = videoCurrentTime;
 
-    // record how long the video has been playing since the last time it started playing
-    var playStartTime = player.launchExt.playStartTime;
-    var playStopTime = player.launchExt.playStopTime;
-    player.launchExt.playTime = playStopTime >= playStartTime
-      ? (playStopTime - playStartTime)
-      : 0;
-
-    findMilestone(player, nativeEvent, currentTime);
+    findMilestone(player, nativeEvent, videoCurrentTime);
 
   }, player.launchExt.heartbeatInterval.time);
 };
@@ -663,44 +560,62 @@ var stopHeartbeat = function(player) {
 
   clearInterval(player.launchExt.heartbeatInterval.id);
   player.launchExt.heartbeatInterval.id = null;
-  player.launchExt.playTotalTime += player.launchExt.playTime;
 };
 
 /**
  * Callback function when the player has loaded (or unloaded) a module with
  * exposed API methods.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var apiChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.API_CHANGE, event);
+  var player = event.target;
+  processPlaybackEvent(API_CHANGED, player, event);
 };
 
 /**
  * Callback function when the video playback quality changes.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var playbackQualityChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.PLAYBACK_QUALITY_CHANGE, event);
+  var player = event.target;
+  processPlaybackEvent(PLAYBACK_QUALITY_CHANGED, player, event);
 };
 
 /**
  * Callback function when the video playback rate changes.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var playbackRateChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.PLAYBACK_RATE_CHANGE, event);
+  var player = event.target;
+  processPlaybackEvent(PLAYBACK_RATE_CHANGED, player, event);
 };
 
 /**
  * Callback function when an error occurs in the player.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 // eslint-disable-next-line no-unused-vars
 var playerError = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.ERROR, event);
+  var player = event.target;
+  processPlaybackEvent(PLAYER_ERROR, player, event);
 };
 
 /**
  * Callback function when the player has finished loading and is ready to begin receiving API calls.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
  */
 var playerReady = function(event) {
   // set a data attribute to indicate that this player has been setup
@@ -710,7 +625,7 @@ var playerReady = function(event) {
     // this player wasn't setup by this extension
     return;
   }
-  element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS;
+  element.dataset.launchextSetup = PLAYER_SETUP_COMPLETED_STATUS;
 
   // update static metadata
   player.launchExt = player.launchExt || {};
@@ -722,13 +637,13 @@ var playerReady = function(event) {
   // create the YouTube video URL from the video ID
   player.launchExt.videoUrl = 'https://www.youtube.com/watch?v=' + videoData.video_id;
 
-  var duration = player.getDuration();
-  player.launchExt.duration = duration;
+  var videoDuration = player.getDuration();
+  player.launchExt.videoDuration = videoDuration;
 
-  var isLiveEvent = duration === 0;
+  var isLiveEvent = videoDuration === 0;
   player.launchExt.isLiveEvent = isLiveEvent;
 
-  processPlaybackEvent(PLAYBACK_EVENTS.READY, event);
+  processPlaybackEvent(PLAYER_READY, player, event);
 };
 
 /**
@@ -742,19 +657,48 @@ var playerReady = function(event) {
  * to be passed in for subsequent functions to utilise.
  *
  * @see registerYoutubePlayers()
+ *
+ * @param {Object} event The native browser event object.
+ * @param {Object} player The YouTube player object.
  */
 var playerRemoved = function(event, player) {
-  var options = {
-    player: player,
-  };
-  processPlaybackEvent(PLAYER_REMOVED, event, options);
+  processPlaybackEvent(PLAYER_REMOVED, player, event);
 };
 
 /**
  * Callback function when the player's state changes.
+ *
+ * @param {Object} event The native YouTube event object.
+ * @param {Object} event.target The YouTube player object.
+ * @param {Object} event.data The YouTube player's state.
  */
 var playerStateChanged = function(event) {
-  processPlaybackEvent(PLAYBACK_EVENTS.STATE_CHANGE, event);
+  // get the actual video playing Event Type
+  var playbackState = event.data;
+  var eventType;
+  switch (playbackState) {
+    case window.YT.PlayerState.BUFFERING:
+      eventType = VIDEO_BUFFERING;
+      break;
+    case window.YT.PlayerState.CUED:
+      eventType = VIDEO_CUED;
+      break;
+    case window.YT.PlayerState.ENDED:
+      eventType = VIDEO_ENDED;
+      break;
+    case window.YT.PlayerState.PAUSED:
+      eventType = VIDEO_PAUSED;
+      break;
+    case window.YT.PlayerState.PLAYING:
+      eventType = VIDEO_PLAYING;
+      break;
+    case window.YT.PlayerState.UNSTARTED:
+      eventType = VIDEO_UNSTARTED;
+      break;
+  }
+
+  var player = event.target;
+  processPlaybackEvent(eventType, player, event);
 };
 
 /**
@@ -844,8 +788,8 @@ var setupYoutubePlayer = function(element) {
 
   // add additional properties for this player
   player.launchExt = {
-    duration: null,
     hasEnded: false,
+    hasPaused: false,
     hasReplayed: false,
     hasStarted: false,
     heartbeatInterval: {
@@ -856,16 +800,23 @@ var setupYoutubePlayer = function(element) {
     playedMilestones: {},
     playPreviousTotalTime: 0,
     playSegmentTime: 0,
-    playStartTime: null,
-    playStopTime: null,
-    playTime: null,
+    playStartTime: 0,
+    playStopTime: 0,
+    playTime: 0,
     playTotalTime: 0,
     previousEventType: null,
+    previousUpdateTime: 0,
     triggers: triggers,
+    videoCurrentTime: 0,
+    videoDuration: null,
     videoId: null,
+    videoLoadedFraction: 0,
+    videoPlaybackRate: 1,
     videoStartTime: 0,
     videoTitle: null,
+    videoUpdateTime: 0,
     videoUrl: null,
+    videoVolume: 100,
   };
 
   playerRegistry[elementId] = player;
@@ -904,7 +855,7 @@ var setupPendingPlayers = function(attempt) {
 
   if (!youtubeIframeApiIsReady()) {
     // try again
-    if (attempt > MAXIMUM_ATTEMPTS_TO_WAIT_FOR_YOUTUBE_IFRAME_API) {
+    if (attempt > MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API) {
       logger.error('Unexpected error! YouTube IFrame API has not been initialised');
     } else {
       var timeout = Math.pow(2, attempt - 1) * 1000;
@@ -955,7 +906,7 @@ var registerYoutubePlayers = function(settings) {
   var elementsSelectorSetting = settings.elementsSelector || '';
   var iframeSelector = elementSpecificitySetting === 'specific' && elementsSelectorSetting
     ? elementsSelectorSetting
-    : YOUTUBE_IFRAME_SELECTOR;
+    : IFRAME_SELECTOR;
   var loadYoutubeIframeApiSetting = settings.loadYoutubeIframeApi || 'yes';
 
   var elements = document.querySelectorAll(iframeSelector);
@@ -972,20 +923,20 @@ var registerYoutubePlayers = function(settings) {
   elements.forEach(function(element, i) {
     // setup only those players that have NOT been setup by this extension
     switch (element.dataset.launchextSetup) {
-      case YOUTUBE_PLAYER_SETUP_COMPLETED_STATUS:
+      case PLAYER_SETUP_COMPLETED_STATUS:
         break;
-      case YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS:
+      case PLAYER_SETUP_MODIFIED_STATUS:
         registerPendingPlayer(element);
         break;
       default: {
         // set a data attribute to indicate that this player is being setup
-        element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_STARTED_STATUS;
+        element.dataset.launchextSetup = PLAYER_SETUP_STARTED_STATUS;
 
         // ensure that the IFrame has an `id` attribute
         var elementId = element.id;
         if (!elementId) {
           // set the `id` attribute to the current timestamp and index
-          elementId = YOUTUBE_NAME_PREFIX + '_' + new Date().valueOf() + '_' + i;
+          elementId = IFRAME_ID_PREFIX + '_' + new Date().valueOf() + '_' + i;
           element.id = elementId;
         }
 
@@ -996,15 +947,15 @@ var registerYoutubePlayers = function(settings) {
          * parameters, and also our own `usewithlaunchext` parameter.
          */
         var requiredParametersToAdd = [
-          LAUNCHEXT_INIT_PARAMETER + '=' + (new Date().getTime()),
+          IFRAME_URL_INIT_PARAMETER + '=' + (new Date().getTime()),
         ];
-        if (elementSrc.indexOf(ENABLE_JSAPI_PARAMETER) < 0) {
+        if (elementSrc.indexOf(IFRAME_URL_ENABLE_JSAPI_PARAMETER) < 0) {
           // `enablejsapi` is absent in the IFrame's src URL, add it
           requiredParametersToAdd.push(
-            ENABLE_JSAPI_PARAMETER + '=' + ENABLE_JSAPI_VALUE
+            IFRAME_URL_ENABLE_JSAPI_PARAMETER + '=' + IFRAME_URL_ENABLE_JSAPI_VALUE
           );
         }
-        if (elementSrc.indexOf(ORIGIN_PARAMETER) < 0) {
+        if (elementSrc.indexOf(IFRAME_URL_ORIGIN_PARAMETER) < 0) {
           // `origin` is absent in the IFrame's src URL, add it
           var originProtocol = document.location.protocol;
           var originHostname = document.location.hostname;
@@ -1013,7 +964,7 @@ var registerYoutubePlayers = function(settings) {
           if (originPort) {
             originValue += ':' + originPort;
           }
-          requiredParametersToAdd.push(ORIGIN_PARAMETER + '=' + originValue);
+          requiredParametersToAdd.push(IFRAME_URL_ORIGIN_PARAMETER + '=' + originValue);
         }
         requiredParametersToAdd = requiredParametersToAdd.join('&');
         var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
@@ -1032,7 +983,7 @@ var registerYoutubePlayers = function(settings) {
         // observe changes to this element via its parentNode
         observer.observe(element.parentNode, {childList: true});
 
-        element.dataset.launchextSetup = YOUTUBE_PLAYER_SETUP_MODIFIED_STATUS;
+        element.dataset.launchextSetup = PLAYER_SETUP_MODIFIED_STATUS;
         registerPendingPlayer(element);
 
         break;

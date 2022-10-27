@@ -26,6 +26,6 @@
  */
 module.exports = function(settings, event) {
   if (event && event.youtube) {
-    return event.youtube.volume;
+    return event.youtube.videoVolume;
   }
 };

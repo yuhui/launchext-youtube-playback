@@ -38,9 +38,9 @@ describe('videoPlaybackQuality data element delegate', () => {
     );
 
     it(
-      'should be undefined when "playbackQuality" property is missing',
+      'should be undefined when "videoPlaybackQuality" property is missing',
       () => {
-        delete this.event.youtube.playbackQuality;
+        delete this.event.youtube.videoPlaybackQuality;
         const result = dataElementDelegate(this.settings, this.event);
         expect(result).toBeUndefined();
       }
