@@ -1,5 +1,12 @@
+2.4.0 (released 25 October 2022)
+----------------------------------
+
+- Improved calculation of played segment and total times.
+- Refactored code to move video milestone compilation into its own module.
+- Renamed variables to be video platform-agnostic.
+
 2.3.0 (released 13 September 2022)
----------------------------------
+----------------------------------
 
 - Improved enabling of YouTube players by removing dependency on onYouTubeIframeAPIReady(), in favour of using exponential backoff to check for valid YT object up to 5 times (about up to 30 seconds).
 - Fixed `coral-select` value.
