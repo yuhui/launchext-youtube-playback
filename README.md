@@ -1,6 +1,6 @@
-# YouTube Playback Extension for Adobe Experience Platform Launch
+# YouTube Playback Extension for Adobe Experience Platform Data Collection Tags
 
-This is an extension for Adobe Experience Platform Launch to track YouTube video playback.
+This is an extension for Adobe Experience Platform Data Collection Tags to track YouTube video playback.
 
 It performs the following functions:
 
@@ -9,7 +9,7 @@ It performs the following functions:
 
 It also allows a selector to be used to select specific YouTube IFrame elements to track their playback.
 
-[Adobe Exchange Program app listing](https://exchange.adobe.com/apps/ec/104160/youtube-playback-tracking)
+[Adobe Exchange Program app listing](https://exchange.adobe.com/apps/ec/104160)
 
 ## Disclaimer
 
