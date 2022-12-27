@@ -23,7 +23,7 @@ describe('enableVideoPlaybackTracking action delegate', () => {
   global.turbine = global.turbine || {
     logger: jasmine.createSpyObj('', ['debug', 'info', 'warn', 'alert', 'error']),
   };
-  
+
   const getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
   const youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
 
