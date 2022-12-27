@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8">
     <title>YouTube Playback Extension Configuration</title>
-    <link rel="stylesheet" href="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/css/coral.min.css">
+    <link rel="stylesheet" href="../dist/css/coral.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
-    <script src="https://unpkg.com/@adobe/coral-spectrum@4.5.0/dist/js/coral.min.js" data-coral-icons-external="js"></script>
+    <script src="../dist/js/coral.min.js"></script>
   </head>
   <body class="coral--light coral-Body--S u-coral-margin">
     <div id="no-extension-configuration-needed">
@@ -313,7 +313,7 @@
       const dataButtons = document.querySelectorAll('button[icon="data"]');
       dataButtons.forEach((button) => {
         button.addEventListener('click', (event) => {
-          const inputGroup = this.closest('div.coral-InputGroup');
+          const inputGroup = event.target.closest('div.coral-InputGroup');
           const inputElement = inputGroup.querySelector('input');
           window.extensionBridge.openDataElementSelector().then((dataElement) => {
             inputElement.value = dataElement;
