@@ -1,5 +1,10 @@
+2.5.0 (released 5 January 2023)
+-------------------------------
+- Added a flag when enabling a video player with the YouTube IFrame API.
+- Bundled Adobe Coral for faster loading of styles.
+
 2.4.0 (released 25 October 2022)
-----------------------------------
+--------------------------------
 
 - Improved calculation of played segment and total times.
 - Refactored code to move video milestone compilation into its own module.
