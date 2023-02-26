@@ -6,12 +6,12 @@
   "license": "GPL-3.0-or-later",
   "main": "main.js",
   "devDependencies": {
-    "@adobe/coral-spectrum": "^4.15.9",
-    "@adobe/reactor-packager": "^4.2.0",
+    "@adobe/coral-spectrum": "^4.15.11",
+    "@adobe/reactor-packager": "^4.3.0",
     "@adobe/reactor-releaser": "^3.0.4",
     "@adobe/reactor-sandbox": "^12.4.0",
-    "@adobe/reactor-uploader": "^5.0.9",
-    "eslint": "^8.30.0",
+    "@adobe/reactor-uploader": "^5.0.10",
+    "eslint": "^8.35.0",
     "jasmine": "^4.5.0",
     "proxyquire": "^2.1.3"
   },
