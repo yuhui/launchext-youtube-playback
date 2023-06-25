@@ -469,10 +469,9 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
  * Check if a video milestone for the specified YouTube player has been reached.
  *
  * @param {Object} player The YouTube player object.
- * @param {Object} nativeEvent The native YouTube event object.
  * @param {Number} currentTime The video's current time when checking for a milestone.
  */
-var findMilestone = function(player, nativeEvent, currentTime) {
+var findMilestone = function(player, currentTime) {
   if (
     !player.launchExt
     || !player.launchExt.triggers
@@ -488,6 +487,13 @@ var findMilestone = function(player, nativeEvent, currentTime) {
     return;
   }
 
+  /**
+   * Create a new "native" event for the milestone.
+   */
+  var milestoneEvent = {
+    target: player,
+  };
+
   var currentMilestonesLabels = Object.keys(currentMilestones);
   currentMilestonesLabels.forEach(function(label) {
     var triggers = currentMilestones[label];
@@ -495,7 +501,7 @@ var findMilestone = function(player, nativeEvent, currentTime) {
       label: label,
     };
 
-    processEventType(VIDEO_MILESTONE, player, nativeEvent, triggers, options);
+    processEventType(VIDEO_MILESTONE, player, milestoneEvent, triggers, options);
   });
 };
 
@@ -504,9 +510,8 @@ var findMilestone = function(player, nativeEvent, currentTime) {
  * With every heartbeat, check if a milestone has been reached. If so, process it.
  *
  * @param {Object} player The YouTube player object.
- * @param {Object} nativeEvent The native YouTube event object.
  */
-var startHeartbeat = function(player, nativeEvent) {
+var startHeartbeat = function(player) {
   if (!player || !player.launchExt) {
     return;
   }
@@ -537,7 +542,7 @@ var startHeartbeat = function(player, nativeEvent) {
      */
     player.launchExt.playStopTime = videoCurrentTime;
 
-    findMilestone(player, nativeEvent, videoCurrentTime);
+    findMilestone(player, videoCurrentTime);
 
   }, player.launchExt.heartbeatInterval.time);
 };
