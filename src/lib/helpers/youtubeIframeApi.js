@@ -88,8 +88,6 @@ var VIDEO_PLAYING_EVENT_TYPES = [
 
 // set of Event Types when video had stopped playing
 var VIDEO_STOPPED_EVENT_TYPES = [
-  VIDEO_BUFFERING,
-  VIDEO_CUED,
   VIDEO_PAUSED,
   VIDEO_ENDED,
 ];
