@@ -70,18 +70,33 @@ var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {
  * @throws Will throw an error if isLiveEvent is not a boolean.
  */
 module.exports = function(milestoneTriggersArr, videoDuration, videoStartTime, isLiveEvent) {
-  if (!Array.isArray(milestoneTriggersArr)) {
-    throw new Error('"milestoneTriggersArr" input is not an array');
-  }
   var toString = Object.prototype.toString;
+  if (!milestoneTriggersArr) {
+    throw '"milestoneTriggersArr" argument not specified';
+  }
+  if (!Array.isArray(milestoneTriggersArr)) {
+    throw '"milestoneTriggersArr" argument is not an array';
+  }
+  if (milestoneTriggersArr.length === 0) {
+    throw '"milestoneTriggersArr" array is empty';
+  }
+  if (!videoDuration) {
+    throw '"videoDuration" argument not specified';
+  }
   if (toString.call(videoDuration) !== '[object Number]') {
-    throw new Error('"videoDuration" input is not a number');
+    throw '"videoDuration" argument is not a number';
+  }
+  if (!videoStartTime && videoStartTime !== 0) {
+    throw '"videoStartTime" argument not specified';
   }
   if (toString.call(videoStartTime) !== '[object Number]') {
-    throw new Error('"videoStartTime" input is not a number');
+    throw '"videoStartTime" argument is not a number';
+  }
+  if (!isLiveEvent && isLiveEvent !== false) {
+    throw '"isLiveEvent" argument not specified';
   }
   if (toString.call(isLiveEvent) !== '[object Boolean]') {
-    throw new Error('"isLiveEvent" input is not a boolean');
+    throw '"isLiveEvent" argument is not a boolean';
   }
 
   var milestoneTriggersObj = {};

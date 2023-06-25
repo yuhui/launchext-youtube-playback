@@ -21,21 +21,38 @@
  * callback.
  * This synthetic event *MUST* be bound to the calling YouTube IFrame DOM element.
  *
- * @param {Object} nativeEvent The native video event object.
+ * @param {Object or Event} nativeEvent The native video event object.
  * @param {Object} stateData Data about the current state of the YouTube player.
- * See `getYoutubeStateData()`.
+ * See `getVideoStateData` helper module.
  * @param {String} videoPlatform Name of the video player's platform.
  *
  * @return {Event} Event object that is specific to the video player's state.
  *
  * @this {DOMElement} The video IFrame DOM element that caused the event.
  *
+ * @throws Will throw an error if nativeEvent is not a string.
  * @throws Will throw an error if stateData is not an object.
+ * @throws Will throw an error if videoPlatform is not a string.
  */
 module.exports = function(nativeEvent, stateData, videoPlatform) {
   var toString = Object.prototype.toString;
+  if (!nativeEvent) {
+    throw '"nativeEvent" argument not specified';
+  }
+  if (!/^\[object .*(Event|Object)\]$/.test(toString.call(nativeEvent))) {
+    throw '"nativeEvent" argument is not an object or browser event';
+  }
+  if (!stateData) {
+    throw '"stateData" argument not specified';
+  }
   if (toString.call(stateData) !== '[object Object]') {
-    throw new Error('"stateData" input is not an object');
+    throw '"stateData" argument is not an object';
+  }
+  if (!videoPlatform) {
+    throw '"videoPlatform" argument not specified';
+  }
+  if (toString.call(videoPlatform) !== '[object String]') {
+    throw '"videoPlatform" argument is not a string';
   }
 
   var event = {
@@ -44,5 +61,6 @@ module.exports = function(nativeEvent, stateData, videoPlatform) {
     nativeEvent: nativeEvent,
   };
   event[videoPlatform] = stateData;
+
   return event;
 };

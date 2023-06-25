@@ -995,10 +995,16 @@ var registerPlayers = function(settings) {
 };
 
 if (USE_LEGACY_SETTINGS === 'yes') {
-  logger.deprecation(
-    // eslint-disable-next-line max-len
-    'ALERT! YouTube video playback tracking has been setup with legacy settings. Replace the settings in the extension configuration with the Rule action, "Enable video playback tracking".'
-  );
+  /**
+   * log an error that legacy extension configuration settings will not be supported any more in
+   * an upcoming version
+   */
+  if (turbine.environment.stage !== 'production') {
+    console.log(
+      // eslint-disable-next-line max-len
+      '🚀 [YouTube Playback] ALERT! YouTube video playback tracking has been setup with legacy settings. These settings will be removed in a future version of the extension. Replace the settings in the extension configuration with the Rule action, "Enable video playback tracking" to prevent any disruption in tracking your YouTube playback events.'
+    );
+  }
 
   switch (WINDOW_EVENT) {
     case 'immediately':
