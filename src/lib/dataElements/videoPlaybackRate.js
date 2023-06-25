@@ -16,16 +16,21 @@
 
 'use strict';
 
+var getVideoData = require('../helpers/getVideoData');
+
+var VIDEO_DATA_NAME = 'videoPlaybackRate';
+
 /**
  * Video Playback Rate data element.
  * This data element returns the playback rate of the currently playing video.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.
- * @returns {float}
+ * @param {Object} event.youtube State data of the YouTube player.
+ *
+ * @returns {Number} The video's playback rate.
  */
 module.exports = function(settings, event) {
-  if (event && event.youtube) {
-    return event.youtube.videoPlaybackRate;
-  }
+  var videoData = getVideoData(VIDEO_DATA_NAME, event);
+  return videoData;
 };

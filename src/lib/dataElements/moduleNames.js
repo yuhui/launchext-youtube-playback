@@ -16,16 +16,21 @@
 
 'use strict';
 
+var getVideoData = require('../helpers/getVideoData');
+
+var VIDEO_DATA_NAME = 'moduleNames';
+
 /**
  * Module Names data element.
  * This data element returns a comma-separated list of module names that have been loaded.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.
- * @returns {string}
+ * @param {Object} event.youtube State data of the YouTube player.
+ *
+ * @returns {String} Comma-separated list of module names.
  */
 module.exports = function(settings, event) {
-  if (event && event.youtube) {
-    return event.youtube.moduleNames;
-  }
+  var videoData = getVideoData(VIDEO_DATA_NAME, event);
+  return videoData;
 };

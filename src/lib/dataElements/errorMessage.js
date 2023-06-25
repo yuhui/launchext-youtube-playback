@@ -16,16 +16,21 @@
 
 'use strict';
 
+var getVideoData = require('../helpers/getVideoData');
+
+var VIDEO_DATA_NAME = 'errorMessage';
+
 /**
  * Error Message data element.
  * This data element returns a message about the error that occurred.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.
- * @returns {string}
+ * @param {Object} event.youtube State data of the YouTube player.
+ *
+ * @returns {String} Message about the error.
  */
 module.exports = function(settings, event) {
-  if (event && event.youtube && event.state === 'player error') {
-    return event.youtube.errorMessage;
-  }
+  var videoData = getVideoData(VIDEO_DATA_NAME, event);
+  return videoData;
 };

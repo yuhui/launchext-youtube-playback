@@ -16,16 +16,21 @@
 
 'use strict';
 
+var getVideoData = require('../helpers/getVideoData');
+
+var VIDEO_DATA_NAME = 'videoMuted';
+
 /**
  * Video Muted data element.
  * This data element returns whether the video is muted or unmuted.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.
- * @returns {boolean}
+ * @param {Object} event.youtube State data of the YouTube player.
+ *
+ * @returns {Boolean} `true` if the video is muted, `false` otherwise.
  */
 module.exports = function(settings, event) {
-  if (event && event.youtube) {
-    return event.youtube.videoMuted;
-  }
+  var videoData = getVideoData(VIDEO_DATA_NAME, event);
+  return videoData;
 };

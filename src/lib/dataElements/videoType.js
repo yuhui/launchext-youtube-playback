@@ -16,16 +16,21 @@
 
 'use strict';
 
+var getVideoData = require('../helpers/getVideoData');
+
+var VIDEO_DATA_NAME = 'videoType';
+
 /**
  * Video Type data element.
  * This data element returns the YouTube type of the currently loaded/playing video.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.
- * @returns {float}
+ * @param {Object} event.youtube State data of the YouTube player.
+ *
+ * @returns {String} Type of the video.
  */
 module.exports = function(settings, event) {
-  if (event && event.youtube) {
-    return event.youtube.videoType;
-  }
+  var videoData = getVideoData(VIDEO_DATA_NAME, event);
+  return videoData;
 };
