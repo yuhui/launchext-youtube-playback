@@ -279,7 +279,7 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
   var getVideoEvent = createGetVideoEvent.bind(element);
   eventTriggers.forEach(function(trigger) {
     trigger(
-      getVideoEvent(eventType, nativeEvent, stateData, VIDEO_PLATFORM)
+      getVideoEvent(nativeEvent, stateData, VIDEO_PLATFORM)
     );
   });
 };
