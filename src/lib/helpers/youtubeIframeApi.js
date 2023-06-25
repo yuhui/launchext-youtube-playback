@@ -110,6 +110,7 @@ var IFRAME_URL_ORIGIN_PARAMETER = 'origin';
 var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
 var PLAYER_SETUP_UPDATING_STATUS = 'updating';
 var PLAYER_SETUP_COMPLETED_STATUS = 'completed';
+var PLAYER_SETUP_READY_STATUS = 'ready';
 var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API = 5;
 var VIDEO_PLATFORM = 'youtube';
 var YOUTUBE_IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
@@ -314,7 +315,7 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
   // don't continue if this player hasn't been setup by this extension
   var element = player.getIframe();
-  var elementIsSetup = element.dataset.launchextSetup === PLAYER_SETUP_COMPLETED_STATUS;
+  var elementIsSetup = element.dataset.launchextSetup === PLAYER_SETUP_READY_STATUS;
   if (!elementIsSetup) {
     return;
   }
@@ -622,7 +623,6 @@ var playerReady = function(event) {
     // this player wasn't setup by this extension
     return;
   }
-  element.dataset.launchextSetup = PLAYER_SETUP_COMPLETED_STATUS;
 
   // update static metadata
   player.launchExt = player.launchExt || {};
@@ -639,6 +639,8 @@ var playerReady = function(event) {
 
   var isLiveEvent = videoDuration === 0;
   player.launchExt.isLiveEvent = isLiveEvent;
+
+  element.dataset.launchextSetup = PLAYER_SETUP_READY_STATUS;
 
   processPlaybackEvent(PLAYER_READY, player, event);
 };
@@ -871,6 +873,8 @@ var setupPlayer = function(element) {
   observer.observe(element.parentNode, { childList: true });
 
   playerRegistry[elementId] = player;
+
+  element.dataset.launchextSetup = PLAYER_SETUP_COMPLETED_STATUS;
 };
 
 /**
