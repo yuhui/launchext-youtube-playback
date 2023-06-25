@@ -1011,7 +1011,7 @@ var observer = new MutationObserver(function(mutationsList) {
      */
     mutation.removedNodes.forEach(function(removedNode) {
       var removedIframeNode = removedNode.nodeName.toLowerCase() === 'iframe';
-      var removedPlayer = removedNode.id in playerRegistry;
+      var removedPlayer = removedNode.id && removedNode.id in playerRegistry;
       if (removedIframeNode && removedPlayer) {
         var removeEvent = new Event('remove');
 
