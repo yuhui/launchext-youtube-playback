@@ -250,26 +250,27 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
   stateData.videoCurrentTime = Math.floor(stateData.videoCurrentTime);
   stateData.videoDuration = Math.floor(stateData.videoDuration);
 
-  // set playTotalTime with events where the video has stopped playing
+  // set playSegmentTime and playTotalTime with events where the video has stopped playing
   if (PLAYER_STOPPED_EVENT_TYPES.indexOf(eventType) > -1) {
-    player.launchExt.playTime = player.launchExt.playStopTime - player.launchExt.playStartTime;
+    player.launchExt.playSegmentTime =
+      player.launchExt.playStopTime - player.launchExt.playStartTime;
 
     /**
      * if the video was already paused before the player got removed,
-     * then there is no playTime,
+     * then there is no playSegmentTime,
      * otherwise playTotalTime would be double-adding the played time wrongly
      */
     var videoHasEnded = player.launchExt.hasEnded;
     var videoHasPaused = player.launchExt.hasPaused;
     if (eventType === PLAYER_REMOVED && (videoHasPaused || videoHasEnded)) {
-      player.launchExt.playTime = 0;
+      player.launchExt.playSegmentTime = 0;
     }
 
-    player.launchExt.playTotalTime += player.launchExt.playTime;
+    player.launchExt.playTotalTime += player.launchExt.playSegmentTime;
     player.launchExt.playPreviousTotalTime = player.launchExt.playTotalTime;
 
     stateData.videoPlayedTotalTime = Math.floor(player.launchExt.playTotalTime);
-    stateData.videoPlayedSegmentTime = Math.round(player.launchExt.playTime);
+    stateData.videoPlayedSegmentTime = Math.round(player.launchExt.playSegmentTime);
   }
 
   logger.info(logInfoMessage);
@@ -517,7 +518,7 @@ var startHeartbeat = function(player, nativeEvent) {
   var videoCurrentTime = player.getCurrentTime();
   player.launchExt.playStartTime = videoCurrentTime;
   player.launchExt.playStopTime = videoCurrentTime;
-  //player.launchExt.playTime = 0;
+  //player.launchExt.playSegmentTime = 0;
 
   player.launchExt.heartbeatInterval.id = setInterval(function() {
     if (player.getPlayerState() !== YOUTUBE_PLAYING_STATE) {
@@ -839,7 +840,6 @@ var setupPlayer = function(element) {
     playSegmentTime: 0,
     playStartTime: 0,
     playStopTime: 0,
-    playTime: 0,
     playTotalTime: 0,
     previousEventType: null,
     previousUpdateTime: 0,
