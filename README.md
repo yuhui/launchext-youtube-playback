@@ -21,6 +21,6 @@ This extension has **not** been developed with any support, contribution or appr
 
 ## Copyright
 
-Copyright &copy; Yuhui 2020-2022. All rights reserved.
+Copyright &copy; Yuhui 2020-2023. All rights reserved.
 
 Licensed under the GNU General Public License (GPL) version 3.0.
