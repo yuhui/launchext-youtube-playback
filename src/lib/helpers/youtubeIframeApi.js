@@ -1097,17 +1097,21 @@ module.exports = {
     // so use an array to store the eventType(s)
     var eventTypes = [];
     if (eventType === VIDEO_PLAYING) {
+      var trackStarted = settings.trackStarted === 'yes';
+      var trackReplayed = settings.trackReplayed === 'yes';
+      var trackResumed = settings.trackResumed === 'yes';
+      var doTrackPlaying = settings.doNotTrack !== 'yes';
       // change eventType to match the user-selected play event type
-      if (settings.trackStarted === 'yes') {
+      if (trackStarted) {
         eventTypes.push(VIDEO_STARTED);
       }
-      if (settings.trackReplayed === 'yes') {
+      if (trackReplayed) {
         eventTypes.push(VIDEO_REPLAYED);
       }
-      if (settings.trackResumed === 'yes') {
+      if (trackResumed) {
         eventTypes.push(VIDEO_RESUMED);
       }
-      if (settings.doNotTrack !== 'yes') {
+      if ((!trackStarted && !trackReplayed && !trackResumed) || doTrackPlaying) {
         eventTypes.push(VIDEO_PLAYING);
       }
     } else {
