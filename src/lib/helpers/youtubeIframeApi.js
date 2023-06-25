@@ -23,6 +23,7 @@ var loadScript = require('@adobe/reactor-load-script');
 var compileMilestones = require('./compileMilestones');
 var createGetVideoEvent = require('./createGetVideoEvent');
 var flooredVideoTime = require('./flooredVideoTime');
+var registerPlayerElement = require('./registerPlayerElement');
 
 var logger = turbine.logger;
 
@@ -102,20 +103,15 @@ var ERROR_CODES = {
 };
 
 // constants related to setting up the YouTube IFrame API
-var IFRAME_ID_PREFIX = 'youTubePlayback';
 var IFRAME_SELECTOR = 'iframe[src*=youtube]';
 var IFRAME_URL_ENABLE_JSAPI_PARAMETER = 'enablejsapi';
 var IFRAME_URL_ENABLE_JSAPI_VALUE = '1';
-var IFRAME_URL_INIT_PARAMETER = 'launchextinit';
 var IFRAME_URL_ORIGIN_PARAMETER = 'origin';
-var PLAYER_SETUP_STARTED_STATUS = 'started';
 var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
 var PLAYER_SETUP_UPDATING_STATUS = 'updating';
 var PLAYER_SETUP_COMPLETED_STATUS = 'completed';
 var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API = 5;
 var VIDEO_PLATFORM = 'youtube';
-var VIDEO_TYPE_LIVE = 'live';
-var VIDEO_TYPE_VOD = 'video-on-demand';
 var YOUTUBE_IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
 var YOUTUBE_PLAYING_STATE = 1;
 
@@ -863,6 +859,17 @@ var setupPlayer = function(element) {
     videoVolume: 100,
   };
 
+  /**
+   * Also, trigger when this element has been unloaded from the DOM.
+   * 1. Listen for the "remove" event.
+   * 2. Observe changes to this element via its parentNode.
+   */
+  element.addEventListener('remove', function(event) {
+    var player = playerRegistry[this.id];
+    playerRemoved(event, player);
+  });
+  observer.observe(element.parentNode, { childList: true });
+
   playerRegistry[elementId] = player;
 };
 
@@ -919,84 +926,41 @@ var registerPlayers = function(settings) {
   var numElements = elements.length;
   if (numElements === 0) {
     /**
-     * don't continue if there are no YouTube players
+     * don't continue if there are no player elements
      * since there's no point tracking what is not available
      */
     logger.debug('No YouTube players found for the selector "' + iframeSelector + '"');
     return;
   }
 
+  // create the `origin` value to add to the IFrame's src URL
+  var originProtocol = document.location.protocol;
+  var originHostname = document.location.hostname;
+  var originPort = document.location.port;
+  var originValue = originProtocol + '//' + originHostname;
+  if (originPort) {
+    originValue += ':' + originPort;
+  }
+
+  // compile the list of required parameters to add to the IFrame's src URL
+  var parametersToAdd = {};
+  parametersToAdd[IFRAME_URL_ENABLE_JSAPI_PARAMETER] = IFRAME_URL_ENABLE_JSAPI_VALUE;
+  parametersToAdd[IFRAME_URL_ORIGIN_PARAMETER] = originValue;
+
   elements.forEach(function(element, i) {
-    // setup only those players that have NOT been setup by this extension
-    switch (element.dataset.launchextSetup) {
-      case PLAYER_SETUP_STARTED_STATUS:
-      case PLAYER_SETUP_COMPLETED_STATUS:
-      case PLAYER_SETUP_UPDATING_STATUS:
-        break;
-      case PLAYER_SETUP_MODIFIED_STATUS:
-        registerPendingPlayer(element);
-        break;
-      default: {
-        // set a data attribute to indicate that this player is being setup
-        element.dataset.launchextSetup = PLAYER_SETUP_STARTED_STATUS;
-
-        // ensure that the IFrame has an `id` attribute
-        var elementId = element.id;
-        if (!elementId) {
-          // set the `id` attribute to the current timestamp and index
-          elementId = IFRAME_ID_PREFIX + '_' + new Date().valueOf() + '_' + i;
-          element.id = elementId;
-        }
-
-        var elementSrc = element.src;
-
-        /**
-         * ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
-         * parameters, and also our own `usewithlaunchext` parameter.
-         */
-        var requiredParametersToAdd = [
-          IFRAME_URL_INIT_PARAMETER + '=' + (new Date().getTime()),
-        ];
-        if (elementSrc.indexOf(IFRAME_URL_ENABLE_JSAPI_PARAMETER) < 0) {
-          // `enablejsapi` is absent in the IFrame's src URL, add it
-          requiredParametersToAdd.push(
-            IFRAME_URL_ENABLE_JSAPI_PARAMETER + '=' + IFRAME_URL_ENABLE_JSAPI_VALUE
-          );
-        }
-        if (elementSrc.indexOf(IFRAME_URL_ORIGIN_PARAMETER) < 0) {
-          // `origin` is absent in the IFrame's src URL, add it
-          var originProtocol = document.location.protocol;
-          var originHostname = document.location.hostname;
-          var originPort = document.location.port;
-          var originValue = originProtocol + '//' + originHostname;
-          if (originPort) {
-            originValue += ':' + originPort;
-          }
-          requiredParametersToAdd.push(IFRAME_URL_ORIGIN_PARAMETER + '=' + originValue);
-        }
-        requiredParametersToAdd = requiredParametersToAdd.join('&');
-        var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
-        element.src = elementSrc + separator + requiredParametersToAdd;
-
-        /**
-         * add a custom "remove" event listener
-         * this will cause the Extension-specific PLAYER_REMOVED event type to be sent
-         */
-        element.addEventListener('remove', function(event) {
-          var removedElement = event.target;
-          var player = playerRegistry[removedElement.id];
-          playerRemoved(event, player);
-        });
-
-        // observe changes to this element via its parentNode
-        observer.observe(element.parentNode, {childList: true});
-
-        element.dataset.launchextSetup = PLAYER_SETUP_MODIFIED_STATUS;
-        registerPendingPlayer(element);
-
-        break;
-      }
+    var playerElement;
+    try  {
+      playerElement = registerPlayerElement(element, i, parametersToAdd);
+    } catch (e) {
+      logger.error(e, element);
+      return;
     }
+
+    if (!playerElement) {
+      return;
+    }
+
+    registerPendingPlayer(playerElement);
   });
 
   if (pendingPlayersRegistryHasPlayers()) {
