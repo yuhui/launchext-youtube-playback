@@ -79,6 +79,13 @@ var VIDEO_EVENT_TYPES = [
   VIDEO_UNSTARTED,
 ];
 
+// set of Event Types when video had started playing
+var VIDEO_PLAYING_EVENT_TYPES = [
+  VIDEO_REPLAYED,
+  VIDEO_RESUMED,
+  VIDEO_STARTED,
+];
+
 // set of Event Types when video had stopped playing
 var VIDEO_STOPPED_EVENT_TYPES = [
   VIDEO_BUFFERING,
@@ -372,6 +379,18 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
   var eventTriggers = triggers[eventType];
   processEventType(eventType, player, nativeEvent, eventTriggers, options);
+  if (VIDEO_PLAYING_EVENT_TYPES.indexOf(eventType) > -1) {
+    /**
+     * A VIDEO_PLAYING event still needs to get triggered because that event could have been setup
+     * in another Rule.
+     * But we'll save a few CPU cycles by checking if there are any triggers for VIDEO_PLAYING
+     * *before* actually processingg VIDEO_PLAYING.
+     */
+    var videoPlayingEventTriggers = triggers[VIDEO_PLAYING];
+    if (videoPlayingEventTriggers.length > 0) {
+      processEventType(VIDEO_PLAYING, player, nativeEvent, videoPlayingEventTriggers, options);
+    }
+  }
 
   /**
    * for video playing Event Types:
