@@ -22,6 +22,7 @@ var loadScript = require('@adobe/reactor-load-script');
 
 var compileMilestones = require('./compileMilestones');
 var createGetVideoEvent = require('./createGetVideoEvent');
+var getVideoStateData = require('./getVideoStateData');
 var flooredVideoTime = require('./flooredVideoTime');
 var registerPlayerElement = require('./registerPlayerElement');
 
@@ -154,35 +155,6 @@ var eventRegistry = {};
 var playerRegistry = {};
 
 /**
- * Get data about the current YouTube player's state.
- *
- * @param {Object} player The YouTube player object.
- *
- * @return {Object} Data about the current state of the YouTube player.
- */
-var getVideoStateData = function(player) {
-  var videoType = player.launchExt.isLiveEvent ? VIDEO_TYPE_LIVE : VIDEO_TYPE_VOD;
-
-  var stateData = {
-    player: player,
-    videoCurrentTime: player.launchExt.videoCurrentTime,
-    videoDuration: player.launchExt.videoDuration,
-    videoId: player.launchExt.videoId,
-    videoLoadedFraction: player.launchExt.videoLoadedFraction,
-    videoMuted: player.isMuted(),
-    videoPlaybackQuality: player.launchExt.videoPlaybackQuality,
-    videoPlaybackRate: player.launchExt.videoPlaybackRate,
-    videoTitle: player.launchExt.videoTitle,
-    videoType: videoType,
-    videoUrl: player.launchExt.videoUrl,
-    videoVolume: player.launchExt.videoVolume,
-  };
-
-  return stateData;
-};
-
-
-/**
  * Handle an Event Type.
  *
  * @param {String} eventType The Event Type that has been triggered.
@@ -198,7 +170,13 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
     return;
   }
 
-  var stateData = getVideoStateData(player);
+  var stateData;
+  try {
+    stateData = getVideoStateData(player, eventType);
+  } catch (e) {
+    logger.error(e);
+    return;
+  }
 
   // perform additional tasks based on the Event Type
   var element = player.getIframe();
