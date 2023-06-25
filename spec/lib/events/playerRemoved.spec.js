@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Yuhui. All rights reserved.
+ * Copyright 2022-2023 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,33 @@
 'use strict';
 
 const proxyquire = require('proxyquire').noCallThru();
-const eventState = 'player removed';
 
-describe(`"${eventState}" event delegate`, () => {
+const mockYoutubeIframeApi = require('../../specHelpers/mockYoutubeIframeApi');
+
+const EVENT_STATE = 'player removed';
+
+describe(`"${EVENT_STATE}" event delegate`, () => {
+  const youtubeIframeApi = mockYoutubeIframeApi();
+
+  beforeAll(() => {
+    this.eventDelegate = proxyquire('../../../src/lib/events/playerRemoved', {
+      '../helpers/youtubeIframeApi': youtubeIframeApi,
+    });
+  });
+
+  beforeEach(() => {
+    this.settings = {};
+    this.trigger = jasmine.createSpy();
+
+    this.eventDelegate(this.settings, this.trigger);
+  });
+
   it(
     'sends the trigger to the youtubeIframeApi helper module once only',
     () => {
-      const getYoutubeIframeApiSpyObj = require('../../specHelpers/getYoutubeIframeApiSpyObj');
-      const youtubeIframeApiSpyObj = getYoutubeIframeApiSpyObj();
-
-      const eventDelegate = proxyquire('../../../src/lib/events/playerRemoved', {
-        '../helpers/youtubeIframeApi': youtubeIframeApiSpyObj,
-      });
-      const settings = {};
-      const trigger = jasmine.createSpy();
-
-      eventDelegate(settings, trigger);
-      const result = youtubeIframeApiSpyObj.registerEventTrigger;
+      const result = youtubeIframeApi.registerEventTrigger;
       expect(result).toHaveBeenCalledTimes(1);
-      expect(result).toHaveBeenCalledWith(eventState, settings, trigger);
+      expect(result).toHaveBeenCalledWith(EVENT_STATE, this.settings, this.trigger);
     }
   );
 });
