@@ -87,10 +87,19 @@ module.exports = function(milestoneTriggersArr, videoDuration, videoStartTime, i
   var milestoneTriggersObj = {};
 
   milestoneTriggersArr.forEach(function(milestoneTrigger) {
-    var trigger = milestoneTrigger.trigger;
     var amount = milestoneTrigger.milestone.amount;
     var type = milestoneTrigger.milestone.type;
     var unit = milestoneTrigger.milestone.unit;
+    var trigger = milestoneTrigger.trigger;
+
+    if (
+      toString.call(amount) !== '[object Number]'
+      || ['every', 'fixed'].indexOf(type) === -1
+      || [VIDEO_MILESTONE_PERCENT_UNIT, VIDEO_MILESTONE_SECONDS_UNIT].indexOf(unit) === -1
+      || !trigger
+    ) {
+      return;
+    }
 
     if (unit === VIDEO_MILESTONE_PERCENT_UNIT && isLiveEvent) {
       /**

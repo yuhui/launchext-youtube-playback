@@ -728,15 +728,16 @@ var loadYoutubeIframeApi = function() {
      * so setup the YouTube players immediately
      */
     setupPendingPlayers();
-  } else {
-    // Load the YouTube IFrame API script, then setup the YouTube players
-    loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
-      logger.info('YouTube IFrame API was loaded successfully');
-      setupPendingPlayers();
-    }, function() {
-      logger.error('YouTube IFrame API could not be loaded');
-    });
+    return;
   }
+
+  // Load the YouTube IFrame API script, then setup the YouTube players
+  loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
+    logger.info('YouTube IFrame API was loaded successfully');
+    setupPendingPlayers();
+  }, function() {
+    logger.error('YouTube IFrame API could not be loaded');
+  });
 };
 
 /**
@@ -751,6 +752,15 @@ var pendingPlayersRegistry = [];
  * @param {DOMElement} playerElement A YouTube IFrame DOM element.
  */
 var registerPendingPlayer = function(playerElement) {
+  if (youtubeIframeApiIsReady()) {
+    try {
+      setupPlayer(playerElement);
+    } catch (e) {
+      pendingPlayersRegistry.push(playerElement);
+    }
+    return;
+  }
+
   pendingPlayersRegistry.push(playerElement);
 };
 /**
@@ -896,12 +906,13 @@ var setupPendingPlayers = function(attempt) {
     // try again
     if (attempt > MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API) {
       logger.error('Unexpected error! YouTube IFrame API has not been initialised');
-    } else {
-      var timeout = Math.pow(2, attempt - 1) * 1000;
-      setTimeout(function() {
-        setupPendingPlayers(attempt + 1);
-      }, timeout);
+      return;
     }
+
+    var timeout = Math.pow(2, attempt - 1) * 1000;
+    setTimeout(function() {
+      setupPendingPlayers(attempt + 1);
+    }, timeout);
     return;
   }
 
@@ -924,7 +935,6 @@ var registerPlayers = function(settings) {
   var iframeSelector = elementSpecificitySetting === 'specific' && elementsSelectorSetting
     ? elementsSelectorSetting
     : IFRAME_SELECTOR;
-  var loadYoutubeIframeApiSetting = settings.loadYoutubeIframeApi || 'yes';
 
   var elements = document.querySelectorAll(iframeSelector);
   var numElements = elements.length;
@@ -968,15 +978,18 @@ var registerPlayers = function(settings) {
   });
 
   if (pendingPlayersRegistryHasPlayers()) {
-    if (loadYoutubeIframeApiSetting === 'yes') {
-      loadYoutubeIframeApi();
-      // the players will be processed when the YT object is ready
-    } else if (youtubeIframeApiIsLoaded()) {
-      setupPendingPlayers();
-    } else {
-      logger.debug(
-        'Need YouTube IFrame API to become ready before setting up players'
-      );
+    var loadYoutubeIframeApiSetting = settings.loadYoutubeIframeApi || 'yes';
+    switch (loadYoutubeIframeApiSetting) {
+      case 'yes':
+        loadYoutubeIframeApi();
+        // the players will be processed when the YT object is ready
+        break;
+      default:
+        logger.debug(
+          'Need YouTube IFrame API to become ready before setting up players'
+        );
+        setupPendingPlayers();
+        break;
     }
   }
 };
