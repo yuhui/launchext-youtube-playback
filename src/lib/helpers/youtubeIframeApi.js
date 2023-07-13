@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2022 Yuhui. All rights reserved.
+ * Copyright 2020-2023 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ var loadScript = require('@adobe/reactor-load-script');
 
 var compileMilestones = require('./compileMilestones');
 var createGetVideoEvent = require('./createGetVideoEvent');
+var getVideoStateData = require('./getVideoStateData');
 var flooredVideoTime = require('./flooredVideoTime');
+var registerPlayerElement = require('./registerPlayerElement');
 
 var logger = turbine.logger;
 
@@ -77,10 +79,15 @@ var VIDEO_EVENT_TYPES = [
   VIDEO_UNSTARTED,
 ];
 
+// set of Event Types when video had started playing
+var VIDEO_PLAYING_EVENT_TYPES = [
+  VIDEO_REPLAYED,
+  VIDEO_RESUMED,
+  VIDEO_STARTED,
+];
+
 // set of Event Types when video had stopped playing
 var VIDEO_STOPPED_EVENT_TYPES = [
-  VIDEO_BUFFERING,
-  VIDEO_CUED,
   VIDEO_PAUSED,
   VIDEO_ENDED,
 ];
@@ -102,20 +109,16 @@ var ERROR_CODES = {
 };
 
 // constants related to setting up the YouTube IFrame API
-var IFRAME_ID_PREFIX = 'youTubePlayback';
 var IFRAME_SELECTOR = 'iframe[src*=youtube]';
 var IFRAME_URL_ENABLE_JSAPI_PARAMETER = 'enablejsapi';
 var IFRAME_URL_ENABLE_JSAPI_VALUE = '1';
-var IFRAME_URL_INIT_PARAMETER = 'launchextinit';
 var IFRAME_URL_ORIGIN_PARAMETER = 'origin';
-var PLAYER_SETUP_STARTED_STATUS = 'started';
 var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
 var PLAYER_SETUP_UPDATING_STATUS = 'updating';
 var PLAYER_SETUP_COMPLETED_STATUS = 'completed';
+var PLAYER_SETUP_READY_STATUS = 'ready';
 var MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API = 5;
 var VIDEO_PLATFORM = 'youtube';
-var VIDEO_TYPE_LIVE = 'live';
-var VIDEO_TYPE_VOD = 'video-on-demand';
 var YOUTUBE_IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
 var YOUTUBE_PLAYING_STATE = 1;
 
@@ -157,35 +160,6 @@ var eventRegistry = {};
 var playerRegistry = {};
 
 /**
- * Get data about the current YouTube player's state.
- *
- * @param {Object} player The YouTube player object.
- *
- * @return {Object} Data about the current state of the YouTube player.
- */
-var getVideoStateData = function(player) {
-  var videoType = player.launchExt.isLiveEvent ? VIDEO_TYPE_LIVE : VIDEO_TYPE_VOD;
-
-  var stateData = {
-    player: player,
-    videoCurrentTime: player.launchExt.videoCurrentTime,
-    videoDuration: player.launchExt.videoDuration,
-    videoId: player.launchExt.videoId,
-    videoLoadedFraction: player.launchExt.videoLoadedFraction,
-    videoMuted: player.isMuted(),
-    videoPlaybackQuality: player.launchExt.videoPlaybackQuality,
-    videoPlaybackRate: player.launchExt.videoPlaybackRate,
-    videoTitle: player.launchExt.videoTitle,
-    videoType: videoType,
-    videoUrl: player.launchExt.videoUrl,
-    videoVolume: player.launchExt.videoVolume,
-  };
-
-  return stateData;
-};
-
-
-/**
  * Handle an Event Type.
  *
  * @param {String} eventType The Event Type that has been triggered.
@@ -201,7 +175,13 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
     return;
   }
 
-  var stateData = getVideoStateData(player);
+  var stateData;
+  try {
+    stateData = getVideoStateData(player, eventType);
+  } catch (e) {
+    logger.error(e);
+    return;
+  }
 
   // perform additional tasks based on the Event Type
   var element = player.getIframe();
@@ -270,26 +250,27 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
   stateData.videoCurrentTime = Math.floor(stateData.videoCurrentTime);
   stateData.videoDuration = Math.floor(stateData.videoDuration);
 
-  // set playTotalTime with events where the video has stopped playing
+  // set playSegmentTime and playTotalTime with events where the video has stopped playing
   if (PLAYER_STOPPED_EVENT_TYPES.indexOf(eventType) > -1) {
-    player.launchExt.playTime = player.launchExt.playStopTime - player.launchExt.playStartTime;
+    player.launchExt.playSegmentTime =
+      player.launchExt.playStopTime - player.launchExt.playStartTime;
 
     /**
      * if the video was already paused before the player got removed,
-     * then there is no playTime,
+     * then there is no playSegmentTime,
      * otherwise playTotalTime would be double-adding the played time wrongly
      */
     var videoHasEnded = player.launchExt.hasEnded;
     var videoHasPaused = player.launchExt.hasPaused;
     if (eventType === PLAYER_REMOVED && (videoHasPaused || videoHasEnded)) {
-      player.launchExt.playTime = 0;
+      player.launchExt.playSegmentTime = 0;
     }
 
-    player.launchExt.playTotalTime += player.launchExt.playTime;
+    player.launchExt.playTotalTime += player.launchExt.playSegmentTime;
     player.launchExt.playPreviousTotalTime = player.launchExt.playTotalTime;
 
     stateData.videoPlayedTotalTime = Math.floor(player.launchExt.playTotalTime);
-    stateData.videoPlayedSegmentTime = Math.round(player.launchExt.playTime);
+    stateData.videoPlayedSegmentTime = Math.round(player.launchExt.playSegmentTime);
   }
 
   logger.info(logInfoMessage);
@@ -298,7 +279,7 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
   var getVideoEvent = createGetVideoEvent.bind(element);
   eventTriggers.forEach(function(trigger) {
     trigger(
-      getVideoEvent(eventType, nativeEvent, stateData, VIDEO_PLATFORM)
+      getVideoEvent(nativeEvent, stateData, VIDEO_PLATFORM)
     );
   });
 };
@@ -318,7 +299,7 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
   // don't continue if this player hasn't been setup by this extension
   var element = player.getIframe();
-  var elementIsSetup = element.dataset.launchextSetup === PLAYER_SETUP_COMPLETED_STATUS;
+  var elementIsSetup = element.dataset.launchextSetup === PLAYER_SETUP_READY_STATUS;
   if (!elementIsSetup) {
     return;
   }
@@ -397,6 +378,18 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
   var eventTriggers = triggers[eventType];
   processEventType(eventType, player, nativeEvent, eventTriggers, options);
+  if (VIDEO_PLAYING_EVENT_TYPES.indexOf(eventType) > -1) {
+    /**
+     * A VIDEO_PLAYING event still needs to get triggered because that event could have been setup
+     * in another Rule.
+     * But we'll save a few CPU cycles by checking if there are any triggers for VIDEO_PLAYING
+     * *before* actually processingg VIDEO_PLAYING.
+     */
+    var videoPlayingEventTriggers = triggers[VIDEO_PLAYING];
+    if (videoPlayingEventTriggers.length > 0) {
+      processEventType(VIDEO_PLAYING, player, nativeEvent, videoPlayingEventTriggers, options);
+    }
+  }
 
   /**
    * for video playing Event Types:
@@ -476,10 +469,9 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
  * Check if a video milestone for the specified YouTube player has been reached.
  *
  * @param {Object} player The YouTube player object.
- * @param {Object} nativeEvent The native YouTube event object.
  * @param {Number} currentTime The video's current time when checking for a milestone.
  */
-var findMilestone = function(player, nativeEvent, currentTime) {
+var findMilestone = function(player, currentTime) {
   if (
     !player.launchExt
     || !player.launchExt.triggers
@@ -495,6 +487,13 @@ var findMilestone = function(player, nativeEvent, currentTime) {
     return;
   }
 
+  /**
+   * Create a new "native" event for the milestone.
+   */
+  var milestoneEvent = {
+    target: player,
+  };
+
   var currentMilestonesLabels = Object.keys(currentMilestones);
   currentMilestonesLabels.forEach(function(label) {
     var triggers = currentMilestones[label];
@@ -502,7 +501,7 @@ var findMilestone = function(player, nativeEvent, currentTime) {
       label: label,
     };
 
-    processEventType(VIDEO_MILESTONE, player, nativeEvent, triggers, options);
+    processEventType(VIDEO_MILESTONE, player, milestoneEvent, triggers, options);
   });
 };
 
@@ -511,9 +510,8 @@ var findMilestone = function(player, nativeEvent, currentTime) {
  * With every heartbeat, check if a milestone has been reached. If so, process it.
  *
  * @param {Object} player The YouTube player object.
- * @param {Object} nativeEvent The native YouTube event object.
  */
-var startHeartbeat = function(player, nativeEvent) {
+var startHeartbeat = function(player) {
   if (!player || !player.launchExt) {
     return;
   }
@@ -525,7 +523,7 @@ var startHeartbeat = function(player, nativeEvent) {
   var videoCurrentTime = player.getCurrentTime();
   player.launchExt.playStartTime = videoCurrentTime;
   player.launchExt.playStopTime = videoCurrentTime;
-  //player.launchExt.playTime = 0;
+  //player.launchExt.playSegmentTime = 0;
 
   player.launchExt.heartbeatInterval.id = setInterval(function() {
     if (player.getPlayerState() !== YOUTUBE_PLAYING_STATE) {
@@ -544,7 +542,7 @@ var startHeartbeat = function(player, nativeEvent) {
      */
     player.launchExt.playStopTime = videoCurrentTime;
 
-    findMilestone(player, nativeEvent, videoCurrentTime);
+    findMilestone(player, videoCurrentTime);
 
   }, player.launchExt.heartbeatInterval.time);
 };
@@ -626,7 +624,6 @@ var playerReady = function(event) {
     // this player wasn't setup by this extension
     return;
   }
-  element.dataset.launchextSetup = PLAYER_SETUP_COMPLETED_STATUS;
 
   // update static metadata
   player.launchExt = player.launchExt || {};
@@ -643,6 +640,8 @@ var playerReady = function(event) {
 
   var isLiveEvent = videoDuration === 0;
   player.launchExt.isLiveEvent = isLiveEvent;
+
+  element.dataset.launchextSetup = PLAYER_SETUP_READY_STATUS;
 
   processPlaybackEvent(PLAYER_READY, player, event);
 };
@@ -729,15 +728,16 @@ var loadYoutubeIframeApi = function() {
      * so setup the YouTube players immediately
      */
     setupPendingPlayers();
-  } else {
-    // Load the YouTube IFrame API script, then setup the YouTube players
-    loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
-      logger.info('YouTube IFrame API was loaded successfully');
-      setupPendingPlayers();
-    }, function() {
-      logger.error('YouTube IFrame API could not be loaded');
-    });
+    return;
   }
+
+  // Load the YouTube IFrame API script, then setup the YouTube players
+  loadScript(YOUTUBE_IFRAME_API_URL).then(function() {
+    logger.info('YouTube IFrame API was loaded successfully');
+    setupPendingPlayers();
+  }, function() {
+    logger.error('YouTube IFrame API could not be loaded');
+  });
 };
 
 /**
@@ -752,6 +752,15 @@ var pendingPlayersRegistry = [];
  * @param {DOMElement} playerElement A YouTube IFrame DOM element.
  */
 var registerPendingPlayer = function(playerElement) {
+  if (youtubeIframeApiIsReady()) {
+    try {
+      setupPlayer(playerElement);
+    } catch (e) {
+      pendingPlayersRegistry.push(playerElement);
+    }
+    return;
+  }
+
   pendingPlayersRegistry.push(playerElement);
 };
 /**
@@ -846,7 +855,6 @@ var setupPlayer = function(element) {
     playSegmentTime: 0,
     playStartTime: 0,
     playStopTime: 0,
-    playTime: 0,
     playTotalTime: 0,
     previousEventType: null,
     previousUpdateTime: 0,
@@ -863,7 +871,20 @@ var setupPlayer = function(element) {
     videoVolume: 100,
   };
 
+  /**
+   * Also, trigger when this element has been unloaded from the DOM.
+   * 1. Listen for the "remove" event.
+   * 2. Observe changes to this element via its parentNode.
+   */
+  element.addEventListener('remove', function(event) {
+    var player = playerRegistry[this.id];
+    playerRemoved(event, player);
+  });
+  observer.observe(element.parentNode, { childList: true });
+
   playerRegistry[elementId] = player;
+
+  element.dataset.launchextSetup = PLAYER_SETUP_COMPLETED_STATUS;
 };
 
 /**
@@ -885,12 +906,13 @@ var setupPendingPlayers = function(attempt) {
     // try again
     if (attempt > MAXIMUM_ATTEMPTS_TO_WAIT_FOR_VIDEO_PLATFORM_API) {
       logger.error('Unexpected error! YouTube IFrame API has not been initialised');
-    } else {
-      var timeout = Math.pow(2, attempt - 1) * 1000;
-      setTimeout(function() {
-        setupPendingPlayers(attempt + 1);
-      }, timeout);
+      return;
     }
+
+    var timeout = Math.pow(2, attempt - 1) * 1000;
+    setTimeout(function() {
+      setupPendingPlayers(attempt + 1);
+    }, timeout);
     return;
   }
 
@@ -913,111 +935,76 @@ var registerPlayers = function(settings) {
   var iframeSelector = elementSpecificitySetting === 'specific' && elementsSelectorSetting
     ? elementsSelectorSetting
     : IFRAME_SELECTOR;
-  var loadYoutubeIframeApiSetting = settings.loadYoutubeIframeApi || 'yes';
 
   var elements = document.querySelectorAll(iframeSelector);
   var numElements = elements.length;
   if (numElements === 0) {
     /**
-     * don't continue if there are no YouTube players
+     * don't continue if there are no player elements
      * since there's no point tracking what is not available
      */
     logger.debug('No YouTube players found for the selector "' + iframeSelector + '"');
     return;
   }
 
+  // create the `origin` value to add to the IFrame's src URL
+  var originProtocol = document.location.protocol;
+  var originHostname = document.location.hostname;
+  var originPort = document.location.port;
+  var originValue = originProtocol + '//' + originHostname;
+  if (originPort) {
+    originValue += ':' + originPort;
+  }
+
+  // compile the list of required parameters to add to the IFrame's src URL
+  var parametersToAdd = {};
+  parametersToAdd[IFRAME_URL_ENABLE_JSAPI_PARAMETER] = IFRAME_URL_ENABLE_JSAPI_VALUE;
+  parametersToAdd[IFRAME_URL_ORIGIN_PARAMETER] = originValue;
+
   elements.forEach(function(element, i) {
-    // setup only those players that have NOT been setup by this extension
-    switch (element.dataset.launchextSetup) {
-      case PLAYER_SETUP_STARTED_STATUS:
-      case PLAYER_SETUP_COMPLETED_STATUS:
-      case PLAYER_SETUP_UPDATING_STATUS:
-        break;
-      case PLAYER_SETUP_MODIFIED_STATUS:
-        registerPendingPlayer(element);
-        break;
-      default: {
-        // set a data attribute to indicate that this player is being setup
-        element.dataset.launchextSetup = PLAYER_SETUP_STARTED_STATUS;
-
-        // ensure that the IFrame has an `id` attribute
-        var elementId = element.id;
-        if (!elementId) {
-          // set the `id` attribute to the current timestamp and index
-          elementId = IFRAME_ID_PREFIX + '_' + new Date().valueOf() + '_' + i;
-          element.id = elementId;
-        }
-
-        var elementSrc = element.src;
-
-        /**
-         * ensure that the IFrame's `src` attribute contains the `enablejsapi` and `origin`
-         * parameters, and also our own `usewithlaunchext` parameter.
-         */
-        var requiredParametersToAdd = [
-          IFRAME_URL_INIT_PARAMETER + '=' + (new Date().getTime()),
-        ];
-        if (elementSrc.indexOf(IFRAME_URL_ENABLE_JSAPI_PARAMETER) < 0) {
-          // `enablejsapi` is absent in the IFrame's src URL, add it
-          requiredParametersToAdd.push(
-            IFRAME_URL_ENABLE_JSAPI_PARAMETER + '=' + IFRAME_URL_ENABLE_JSAPI_VALUE
-          );
-        }
-        if (elementSrc.indexOf(IFRAME_URL_ORIGIN_PARAMETER) < 0) {
-          // `origin` is absent in the IFrame's src URL, add it
-          var originProtocol = document.location.protocol;
-          var originHostname = document.location.hostname;
-          var originPort = document.location.port;
-          var originValue = originProtocol + '//' + originHostname;
-          if (originPort) {
-            originValue += ':' + originPort;
-          }
-          requiredParametersToAdd.push(IFRAME_URL_ORIGIN_PARAMETER + '=' + originValue);
-        }
-        requiredParametersToAdd = requiredParametersToAdd.join('&');
-        var separator = elementSrc.indexOf('?') < 0 ? '?' : '&';
-        element.src = elementSrc + separator + requiredParametersToAdd;
-
-        /**
-         * add a custom "remove" event listener
-         * this will cause the Extension-specific PLAYER_REMOVED event type to be sent
-         */
-        element.addEventListener('remove', function(event) {
-          var removedElement = event.target;
-          var player = playerRegistry[removedElement.id];
-          playerRemoved(event, player);
-        });
-
-        // observe changes to this element via its parentNode
-        observer.observe(element.parentNode, {childList: true});
-
-        element.dataset.launchextSetup = PLAYER_SETUP_MODIFIED_STATUS;
-        registerPendingPlayer(element);
-
-        break;
-      }
+    var playerElement;
+    try  {
+      playerElement = registerPlayerElement(element, i, parametersToAdd);
+    } catch (e) {
+      logger.error(e, element);
+      return;
     }
+
+    if (!playerElement) {
+      return;
+    }
+
+    registerPendingPlayer(playerElement);
   });
 
   if (pendingPlayersRegistryHasPlayers()) {
-    if (loadYoutubeIframeApiSetting === 'yes') {
-      loadYoutubeIframeApi();
-      // the players will be processed when the YT object is ready
-    } else if (youtubeIframeApiIsLoaded()) {
-      setupPendingPlayers();
-    } else {
-      logger.debug(
-        'Need YouTube IFrame API to become ready before setting up players'
-      );
+    var loadYoutubeIframeApiSetting = settings.loadYoutubeIframeApi || 'yes';
+    switch (loadYoutubeIframeApiSetting) {
+      case 'yes':
+        loadYoutubeIframeApi();
+        // the players will be processed when the YT object is ready
+        break;
+      default:
+        logger.debug(
+          'Need YouTube IFrame API to become ready before setting up players'
+        );
+        setupPendingPlayers();
+        break;
     }
   }
 };
 
 if (USE_LEGACY_SETTINGS === 'yes') {
-  logger.deprecation(
-    // eslint-disable-next-line max-len
-    'ALERT! YouTube video playback tracking has been setup with legacy settings. Replace the settings in the extension configuration with the Rule action, "Enable video playback tracking".'
-  );
+  /**
+   * log an error that legacy extension configuration settings will not be supported any more in
+   * an upcoming version
+   */
+  if (turbine.environment.stage !== 'production') {
+    console.log(
+      // eslint-disable-next-line max-len
+      '🚀 [YouTube Playback] ALERT! YouTube video playback tracking has been setup with legacy settings. These settings will be removed in a future version of the extension. Replace the settings in the extension configuration with the Rule action, "Enable video playback tracking" to prevent any disruption in tracking your YouTube playback events.'
+    );
+  }
 
   switch (WINDOW_EVENT) {
     case 'immediately':
@@ -1043,7 +1030,7 @@ var observer = new MutationObserver(function(mutationsList) {
      */
     mutation.removedNodes.forEach(function(removedNode) {
       var removedIframeNode = removedNode.nodeName.toLowerCase() === 'iframe';
-      var removedPlayer = removedNode.id in playerRegistry;
+      var removedPlayer = removedNode.id && removedNode.id in playerRegistry;
       if (removedIframeNode && removedPlayer) {
         var removeEvent = new Event('remove');
 
@@ -1132,17 +1119,21 @@ module.exports = {
     // so use an array to store the eventType(s)
     var eventTypes = [];
     if (eventType === VIDEO_PLAYING) {
+      var trackStarted = settings.trackStarted === 'yes';
+      var trackReplayed = settings.trackReplayed === 'yes';
+      var trackResumed = settings.trackResumed === 'yes';
+      var doTrackPlaying = settings.doNotTrack !== 'yes';
       // change eventType to match the user-selected play event type
-      if (settings.trackStarted === 'yes') {
+      if (trackStarted) {
         eventTypes.push(VIDEO_STARTED);
       }
-      if (settings.trackReplayed === 'yes') {
+      if (trackReplayed) {
         eventTypes.push(VIDEO_REPLAYED);
       }
-      if (settings.trackResumed === 'yes') {
+      if (trackResumed) {
         eventTypes.push(VIDEO_RESUMED);
       }
-      if (settings.doNotTrack !== 'yes') {
+      if ((!trackStarted && !trackReplayed && !trackResumed) || doTrackPlaying) {
         eventTypes.push(VIDEO_PLAYING);
       }
     } else {

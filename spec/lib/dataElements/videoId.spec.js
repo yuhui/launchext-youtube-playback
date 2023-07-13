@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2022 Yuhui. All rights reserved.
+ * Copyright 2021-2023 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,45 +16,34 @@
 
 'use strict';
 
-describe('videoId data element delegate', () => {
-  const dataElementDelegate = require('../../../src/lib/dataElements/videoId');
-  const getBaseEvent = require('../../specHelpers/getBaseEvent');
+const proxyquire = require('proxyquire').noCallThru();
+
+const mockEvent = require('../../specHelpers/mockEvent');
+const mockGetVideoData = jasmine.createSpy();
+
+const DATA_ELEMENT_NAME = 'videoId';
+
+describe(`${DATA_ELEMENT_NAME} data element delegate`, () => {
+  beforeAll(() => {
+    this.dataElementDelegate = proxyquire(`../../../src/lib/dataElements/${DATA_ELEMENT_NAME}`, {
+      '../helpers/getVideoData': mockGetVideoData,
+    });
+  });
 
   beforeEach(() => {
-    this.event = getBaseEvent();
-
-    // this data element does not have any custom settings
     this.settings = {};
+    this.event = mockEvent(DATA_ELEMENT_NAME);
+
+    this.dataElementDelegate(this.settings, this.event);
   });
 
-  describe('with invalid "event" argument', () => {
-    it(
-      'should be undefined when "youtube" property is missing',
-      () => {
-        delete this.event.youtube;
-        const result = dataElementDelegate(this.settings, this.event);
-        expect(result).toBeUndefined();
-      }
-    );
+  it(
+    'calls `getVideoData()` once only',
+    () => {
+      const result = mockGetVideoData;
 
-    it(
-      'should be undefined when "videoId" property is missing',
-      () => {
-        delete this.event.youtube.videoId;
-        const result = dataElementDelegate(this.settings, this.event);
-        expect(result).toBeUndefined();
-      }
-    );
-  });
-
-  describe('with valid "event" argument', () => {
-    it(
-      'should be a string',
-      () => {
-        const result = dataElementDelegate(this.settings, this.event);
-        expect(result).toBeInstanceOf(String);
-      }
-    );
-  });
-
+      expect(result).toHaveBeenCalledTimes(1);
+      expect(result).toHaveBeenCalledWith(DATA_ELEMENT_NAME, this.event);
+    }
+  );
 });

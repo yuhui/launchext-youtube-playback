@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2022 Yuhui. All rights reserved.
+ * Copyright 2021-2023 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,21 @@
 
 'use strict';
 
+var getVideoData = require('../helpers/getVideoData');
+
+var VIDEO_DATA_NAME = 'videoMilestone';
+
 /**
  * Video Milestone data element.
- * This data element returns the milestone that has been played.
+ * This data element returns the milestone in seconds that the video has been played.
  *
  * @param {Object} settings The data element settings object.
  * @param {Object} event The event that triggered the evaluation of the data element.
- * @returns {integer}
+ * @param {Object} event.youtube State data of the YouTube player.
+ *
+ * @returns {Number} Milestone in seconds.
  */
 module.exports = function(settings, event) {
-  if (event && event.youtube) {
-    return event.youtube.videoMilestone;
-  }
+  var videoData = getVideoData(VIDEO_DATA_NAME, event);
+  return videoData;
 };
