@@ -292,6 +292,21 @@ var processEventType = function(eventType, player, nativeEvent, eventTriggers, o
       getVideoEvent(nativeEvent, stateData, VIDEO_PLATFORM)
     );
   });
+
+  if (options.additionalTriggers) {
+    var additionalTriggers = options.additionalTriggers;
+    additionalTriggers.forEach(function(additionalEventTriggers) {
+      var addedStateData = additionalEventTriggers.stateData;
+      var addedTriggers = additionalEventTriggers.triggers;
+
+      var updatedStateData = Object.assign({}, stateData, addedStateData);
+      addedTriggers.forEach(function(trigger) {
+        trigger(
+          getVideoEvent(nativeEvent, updatedStateData, VIDEO_PLATFORM)
+        );
+      });
+    });
+  }
 };
 
 /**
@@ -387,19 +402,18 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
   }
 
   var eventTriggers = triggers[eventType];
-  processEventType(eventType, player, nativeEvent, eventTriggers, options);
   if (VIDEO_PLAYING_EVENT_TYPES.indexOf(eventType) > -1) {
     /**
      * A VIDEO_PLAYING event still needs to get triggered because that event could have been setup
      * in another Rule.
-     * But we'll save a few CPU cycles by checking if there are any triggers for VIDEO_PLAYING
-     * *before* actually processingg VIDEO_PLAYING.
+     * Check for such triggers at triggers._additionalTriggers and add them to options.
      */
-    var videoPlayingEventTriggers = triggers[VIDEO_PLAYING];
-    if (videoPlayingEventTriggers.length > 0) {
-      processEventType(VIDEO_PLAYING, player, nativeEvent, videoPlayingEventTriggers, options);
+    var additionalTriggers = triggers._additionalTriggers[eventType];
+    if (additionalTriggers && additionalTriggers.length > 0) {
+      options.additionalTriggers = additionalTriggers;
     }
   }
+  processEventType(eventType, player, nativeEvent, eventTriggers, options);
 
   /**
    * for video playing Event Types:
@@ -847,6 +861,39 @@ var setupPlayer = function(element) {
       triggers[eventType] = triggers[eventType].concat(eventTriggers);
     });
   });
+
+  /**
+   * Special case for VIDEO_STARTED, VIDEO_RESUMED and VIDEO_REPLAYED events:
+   * A VIDEO_PLAYING event still needs to get triggered because that event could have been setup
+   * in another Rule.
+   * Copy any triggers that are used with a VIDEO_PLAYING event *but not with any of the
+   * special events* to triggers._additionalTriggers.
+   */
+  var videoPlayingTriggers = triggers[VIDEO_PLAYING].filter(function(trigger) {
+    var isVideoCreatedReplayedResumedTrigger = VIDEO_PLAYING_EVENT_TYPES.some(function(eventType) {
+      var eventTypeTriggers = triggers[eventType];
+      return eventTypeTriggers && eventTypeTriggers.indexOf(trigger) > -1;
+    });
+    return !isVideoCreatedReplayedResumedTrigger;
+  });
+
+  if (videoPlayingTriggers.length > 0) {
+    VIDEO_PLAYING_EVENT_TYPES.forEach(function(eventType) {
+      /**
+       * there may not be any triggers for a special event, so make sure to test for the
+       * existence of that special event's triggers first.
+       */
+      if (!triggers[eventType]) {
+        return;
+      }
+
+      triggers._additionalTriggers[eventType] = triggers._additionalTriggers[eventType] || [];
+      triggers._additionalTriggers[eventType].push({
+        stateData: { playerState: VIDEO_PLAYING },
+        triggers: videoPlayingTriggers,
+      });
+    });
+  }
 
   var elementId = element.id;
 
