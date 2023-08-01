@@ -106,11 +106,27 @@ module.exports = {
       "modulePath": "sandbox/logEventInfo.js",
       "settings": {}
     }]
+  }, {
+    "id": "RL1689862995256",
+    "name": "Video Playing",
+    "events": [{
+      "modulePath": "youtube-playback/src/lib/events/videoPlaying.js",
+      "settings": {
+        "trackStarted": "no",
+        "trackResumed": "no",
+        "trackReplayed": "no",
+        "doNotTrack": "no"
+      }
+    }],
+    "actions": [{
+      "modulePath": "sandbox/logEventInfo.js",
+      "settings": {}
+    }]
   }],
   "property": {
     "name": "Sandbox property",
     "settings": {
-      "id": 'PR12345',
+      "id": "PR12345",
       "domains": ["adobe.com", "example.com"],
       "linkDelay": 100,
       "trackingCookieName": "sat_track",
@@ -125,9 +141,9 @@ module.exports = {
     "stage": "development"
   },
   "buildInfo": {
-    "turbineVersion": "27.2.1",
-    "turbineBuildDate": "2022-08-31T15:47:20.656Z",
-    "buildDate": "2022-08-31T15:47:20.656Z",
+    "turbineVersion": "27.5.0",
+    "turbineBuildDate": "2023-07-20T14:23:37.738Z",
+    "buildDate": "2023-07-20T14:23:37.738Z",
     "environment": "development"
   }
 }
