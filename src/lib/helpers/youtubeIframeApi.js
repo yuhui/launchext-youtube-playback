@@ -352,7 +352,7 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
       };
       break;
     case VIDEO_PLAYING:
-      startHeartbeat(player, nativeEvent);
+      startHeartbeat(player);
 
       /**
        * update eventType for VIDEO_PLAYING
