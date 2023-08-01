@@ -165,9 +165,11 @@ var playerRegistry = {};
  * @param {String} eventType The Event Type that has been triggered.
  * @param {Object} player The YouTube player object.
  * @param {Object} nativeEvent The native YouTube event object.
- * @param {Object} eventTriggers Array of triggers for this Event Type, or Object of milestones.
- * @param {Object} options (optional) Any options for this Event Type, e.g. error message,
- * milestone labels, etc.
+ * @param {Array} eventTriggers Array of triggers for this Event Type.
+ * @param {Object} options (optional) Any options for this Event Type.
+ * @param {Object} options.error (optional) Options related to YouTube error reporting.
+ * @param {Number} options.error.code YouTube error code.
+ * @param {String} options.error.message YouTube error message.
  */
 var processEventType = function(eventType, player, nativeEvent, eventTriggers, options) {
   if (!eventTriggers || Object.keys(eventTriggers) === 0) {
