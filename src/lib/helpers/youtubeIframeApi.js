@@ -869,7 +869,8 @@ var setupPlayer = function(element) {
    * Copy any triggers that are used with a VIDEO_PLAYING event *but not with any of the
    * special events* to triggers._additionalTriggers.
    */
-  var videoPlayingTriggers = triggers[VIDEO_PLAYING].filter(function(trigger) {
+  var allVideoPlayingTriggers = triggers[VIDEO_PLAYING] || [];
+  var videoPlayingTriggers = allVideoPlayingTriggers.filter(function(trigger) {
     var isVideoCreatedReplayedResumedTrigger = VIDEO_PLAYING_EVENT_TYPES.some(function(eventType) {
       var eventTypeTriggers = triggers[eventType];
       return eventTypeTriggers && eventTypeTriggers.indexOf(trigger) > -1;
