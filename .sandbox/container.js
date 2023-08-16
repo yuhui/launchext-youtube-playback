@@ -106,22 +106,6 @@ module.exports = {
       "modulePath": "sandbox/logEventInfo.js",
       "settings": {}
     }]
-  }, {
-    "id": "RL1689862995256",
-    "name": "Video Playing",
-    "events": [{
-      "modulePath": "youtube-playback/src/lib/events/videoPlaying.js",
-      "settings": {
-        "trackStarted": "no",
-        "trackResumed": "no",
-        "trackReplayed": "no",
-        "doNotTrack": "no"
-      }
-    }],
-    "actions": [{
-      "modulePath": "sandbox/logEventInfo.js",
-      "settings": {}
-    }]
   }],
   "property": {
     "name": "Sandbox property",
@@ -142,8 +126,8 @@ module.exports = {
   },
   "buildInfo": {
     "turbineVersion": "27.5.0",
-    "turbineBuildDate": "2023-07-20T14:23:37.738Z",
-    "buildDate": "2023-07-20T14:23:37.738Z",
+    "turbineBuildDate": "2023-08-03T10:13:22.571Z",
+    "buildDate": "2023-08-03T10:13:22.571Z",
     "environment": "development"
   }
 }
