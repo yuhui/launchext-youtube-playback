@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.2 - 2023-08-16
+
+### Fixed
+
+- Resolved another error that occurred with "Video Playing" event.
+
 ## 2.6.1 - 2023-08-02
 
 ### Fixed
