@@ -64,6 +64,19 @@
       "viewPath": "events/apiChanged.html"
     },
     {
+      "displayName": "Autoplay Blocked",
+      "name": "autoplay-blocked",
+      "categoryName": "Player",
+      "schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "libPath": "src/lib/events/autoplayBlocked.js",
+      "viewPath": "events/autoplayBlocked.html"
+    },
+    {
       "displayName": "Player Error",
       "name": "player-error",
       "categoryName": "Player",

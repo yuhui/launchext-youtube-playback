@@ -20,6 +20,7 @@ const mockEvent = require('../../specHelpers/mockEvent');
 const mockTurbine = require('../../specHelpers/mockTurbine');
 
 const PLAYER_STATES = [
+  'autoplay blocked',
   'module with exposed API changed',
   'playback quality changed',
   'playback rate changed',

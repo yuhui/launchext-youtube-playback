@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>YouTube Autoplay Blocked Event</title>
+    <link rel="stylesheet" href="../dist/css/coral.min.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    <script src="../dist/js/coral.min.js"></script>
+  </head>
+  <body class="coral--light coral-Body--S u-coral-margin">
+    <h3 class="coral-Heading--M">No configuration necessary</h3>
+
+    <section class="coral-Well">
+      <h4 class="coral-Heading--S coral-Heading--light">How this Event works</h4>
+      <p>
+        This Event is triggered when the browser blocks autoplay or scripted video playback
+        features, collectively referred to as "autoplay".
+      </p>
+      <p>
+        The following Data Elements are available for use with your Rule's Conditions and Actions.
+      </p>
+      <table is="coral-table" variant="quiet">
+        <colgroup>
+          <col is="coral-table-column" sortable="" sortabledirection="ascending">
+          <col is="coral-table-column" sortable="" sortabledirection="ascending">
+          <col is="coral-table-column">
+        </colgroup>
+        <thead is="coral-table-head">
+          <tr is="coral-table-row">
+            <th is="coral-table-headercell">Data Element</th>
+            <th is="coral-table-headercell">Data type</th>
+            <th is="coral-table-headercell">Value</th>
+          </tr>
+        </thead>
+        <tbody is="coral-table-body">
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Player State
+            </td>
+            <td is="coral-table-cell">
+              String
+            </td>
+            <td is="coral-table-cell">
+              Fixed value: <code class="coral-Code--S">player ready</code>
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video ID
+            </td>
+            <td is="coral-table-cell">
+              String
+            </td>
+            <td is="coral-table-cell">
+              YouTube ID of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Loaded Fraction
+            </td>
+            <td is="coral-table-cell">
+              Floating point number
+            </td>
+            <td is="coral-table-cell">
+              Fraction of the video between <code class="coral-Code--S">0</code> and
+              <code class="coral-Code--S">1</code> that the player shows as buffered.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Muted
+            </td>
+            <td is="coral-table-cell">
+              Boolean
+            </td>
+            <td is="coral-table-cell">
+              Whether the video is muted (<code class="coral-Code--S">true</code>) or unmuted
+              (<code class="coral-Code--S">false</code>).
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Playback Rate
+            </td>
+            <td is="coral-table-cell">
+              Floating point number
+            </td>
+            <td is="coral-table-cell">
+              Playback rate of the currently playing video.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Title
+            </td>
+            <td is="coral-table-cell">
+              String
+            </td>
+            <td is="coral-table-cell">
+              YouTube title of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Type
+            </td>
+            <td is="coral-table-cell">
+              String
+            </td>
+            <td is="coral-table-cell">
+              YouTube type of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video URL
+            </td>
+            <td is="coral-table-cell">
+              String
+            </td>
+            <td is="coral-table-cell">
+              YouTube URL of the currently loaded/playing video.
+            </td>
+          </tr>
+          <tr is="coral-table-row">
+            <td is="coral-table-cell" role="rowheader">
+              Video Volume
+            </td>
+            <td is="coral-table-cell">
+              Integer
+            </td>
+            <td is="coral-table-cell">
+              The player's current volume between <code class="coral-Code--S">0</code> and
+              <code class="coral-Code--S">100</code>.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr class="coral-Divider--S">
+
+    <footer class="coral--lightest coral-Body--XS">
+      <div id="donations">
+        <p>
+          Donate: <a class="coral-Link" href="https://paypal.me/yuhuibc" target="_blank">PayPal</a>
+        </p>
+      </div>
+      <div id="support">
+        <p>
+          Support Information
+        </p>
+        <ul class="coral-List">
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/issues" target="_blank">
+              Open a ticket
+            </a>
+          </li>
+          <li class="coral-List-item">
+            <a class="coral-Link" href="https://github.com/yuhui/launchext-youtube-playback/blob/master/CHANGELOG.md" target="_blank">
+              Read change log
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <p>
+        Copyright &copy; 2024 Yuhui. All rights reserved.
+      </p>
+      <p>
+        <a class="coral-Link" href="https://yuhui.sg/terms-of-service.html" target="_blank">Terms of Service</a> |
+        <a class="coral-Link" href="https://yuhui.sg/privacy-policy.html" target="_blank">Privacy Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/cookie-policy.html" target="_blank">Cookie Policy</a> |
+        <a class="coral-Link" href="https://yuhui.sg/acceptable-use-policy.html" target="_blank">Acceptable Use Policy</a>
+      </p>
+    </footer>
+
+    <script src="https://assets.adobedtm.com/activation/reactor/extensionbridge/extensionbridge.min.js"></script>
+    <script src="../scripts/common.js"></script>
+    <script>
+      window.extensionBridge.register({
+        init: (info) => {
+          if (info.settings) {}
+        },
+
+        getSettings: () => {
+          return {};
+        },
+
+        validate: () => {
+          return true;
+        }
+      });
+    </script>
+  </body>
+</html>

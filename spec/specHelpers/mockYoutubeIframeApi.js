@@ -29,6 +29,7 @@ module.exports = () => {
     ],
     {
       apiChanged: 'module with exposed API changed',
+      autoplayBlocked: 'autoplay blocked',
       playbackQualityChanged: 'playback quality changed',
       playbackRateChanged: 'playback rate changed',
       playerError: 'player error',

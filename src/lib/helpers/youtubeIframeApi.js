@@ -30,6 +30,7 @@ var logger = turbine.logger;
 
 // constants related to Event Types used in this extension
 var API_CHANGED = 'module with exposed API changed';
+var AUTOPLAY_BLOCKED = 'autoplay blocked';
 var PLAYBACK_QUALITY_CHANGED = 'playback quality changed';
 var PLAYBACK_RATE_CHANGED = 'playback rate changed';
 var PLAYER_ERROR = 'player error';
@@ -48,6 +49,7 @@ var VIDEO_STARTED = 'video started'; // no Extension trigger
 var VIDEO_UNSTARTED = 'video unstarted';
 var ALL_EVENT_TYPES = [
   API_CHANGED,
+  AUTOPLAY_BLOCKED,
   PLAYBACK_QUALITY_CHANGED,
   PLAYBACK_RATE_CHANGED,
   PLAYER_ERROR,
@@ -601,6 +603,18 @@ var apiChanged = function(event) {
 };
 
 /**
+ * Callback function when the browser blocks autoplay or scripted video playback features.
+ *
+ * @param {Object} event The YouTube event object.
+ * @param {Object} event.target The YouTube player object.
+ */
+// eslint-disable-next-line no-unused-vars
+var autoplayBlocked = function(event) {
+  var player = event.target;
+  processPlaybackEvent(AUTOPLAY_BLOCKED, player, event);
+};
+
+/**
  * Callback function when the video playback quality changes.
  *
  * @param {Object} event The YouTube event object.
@@ -901,6 +915,7 @@ var setupPlayer = function(element) {
   var player = new window.YT.Player(elementId, {
     events: {
       onApiChange: apiChanged,
+      onAutoplayBlocked: autoplayBlocked,
       onError: playerError,
       onPlaybackQualityChange: playbackQualityChanged,
       onPlaybackRateChange: playbackRateChanged,
@@ -1134,6 +1149,7 @@ module.exports = {
    * Event Types (exposed from constants)
    */
   apiChanged: API_CHANGED,
+  autoplayBlocked: AUTOPLAY_BLOCKED,
   playbackQualityChanged: PLAYBACK_QUALITY_CHANGED,
   playbackRateChanged: PLAYBACK_RATE_CHANGED,
   playerError: PLAYER_ERROR,
