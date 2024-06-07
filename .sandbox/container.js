@@ -47,14 +47,14 @@ module.exports = {
     "actions": [{
       "modulePath": "youtube-playback/src/lib/actions/enableVideoPlaybackTracking.js",
       "settings": {
-        "elementSpecificity": "any",
-        "elementsSelector": "",
+        "elementSpecificity": "specific",
+        "elementsSelector": "iframe",
         "loadYoutubeIframeApi": "yes"
       }
     }]
   }, {
     "id": "RL1608090868708",
-    "name": "Player Ready, Player Removed, Video Playing, Video Paused, Video Ended, Video Unstarted, Playback Quality Changed",
+    "name": "Player Ready, Player Removed, Video Playing, Video Paused, Video Ended, Video Unstarted, Playback Quality Changed, Autoplay Blocked",
     "events": [{
       "modulePath": "youtube-playback/src/lib/events/playerReady.js",
       "settings": {}
@@ -80,6 +80,9 @@ module.exports = {
       "settings": {}
     }, {
       "modulePath": "youtube-playback/src/lib/events/playbackQualityChanged.js",
+      "settings": {}
+    }, {
+      "modulePath": "youtube-playback/src/lib/events/autoplayBlocked.js",
       "settings": {}
     }],
     "actions": [{
@@ -126,8 +129,8 @@ module.exports = {
   },
   "buildInfo": {
     "turbineVersion": "27.5.0",
-    "turbineBuildDate": "2023-08-03T10:13:22.571Z",
-    "buildDate": "2023-08-03T10:13:22.571Z",
+    "turbineBuildDate": "2024-04-19T16:07:00.614Z",
+    "buildDate": "2024-04-19T16:07:00.614Z",
     "environment": "development"
   }
 }
