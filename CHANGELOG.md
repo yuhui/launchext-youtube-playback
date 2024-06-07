@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.7.0 - 2024-06-05
+
+### Changed
+
+- Refactor code for registering IFRAME elements.
+
+### Fixed
+
+- Verify that IFRAME elements have `src` attribute containing `"youtube"`.
+
+### Added
+
+- Add "Autoplay Blocked" event type to track when autoplay has been blocked.
+
 ## 2.6.2 - 2023-08-16
 
 ### Fixed
