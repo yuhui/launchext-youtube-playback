@@ -111,7 +111,9 @@ var ERROR_CODES = {
 };
 
 // constants related to setting up the YouTube IFrame API
-var IFRAME_SELECTOR = 'iframe[src*=youtube]';
+var IFRAME_ID_PREFIX = 'youTubePlayback';
+var IFRAME_URL_PATTERN = 'youtube';
+var IFRAME_SELECTOR = 'iframe[src*=' + IFRAME_URL_PATTERN + ']';
 var IFRAME_URL_ENABLE_JSAPI_PARAMETER = 'enablejsapi';
 var IFRAME_URL_ENABLE_JSAPI_VALUE = '1';
 var IFRAME_URL_ORIGIN_PARAMETER = 'origin';
@@ -970,6 +972,8 @@ var setupPlayer = function(element) {
   playerRegistry[elementId] = player;
 
   element.dataset.launchextSetup = PLAYER_SETUP_COMPLETED_STATUS;
+
+  logger.info('Enabled video playback tracking for player ID ' + elementId);
 };
 
 /**
@@ -1049,7 +1053,17 @@ var registerPlayers = function(settings) {
   elements.forEach(function(element, i) {
     var playerElement;
     try  {
-      playerElement = registerPlayerElement(element, i, parametersToAdd);
+      playerElement = registerPlayerElement(
+        element,
+        i,
+        IFRAME_ID_PREFIX,
+        IFRAME_URL_PATTERN,
+        parametersToAdd
+      );
+
+      if (playerElement) {
+        logger.debug('Found YouTube player with ID ' + playerElement.id);
+      }
     } catch (e) {
       logger.error(e, element);
       return;

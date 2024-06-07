@@ -16,8 +16,6 @@
 
 'use strict';
 
-var IFRAME_ID_PREFIX = 'youTubePlayback';
-
 var PLAYER_SETUP_STARTED_STATUS = 'started';
 var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
 
@@ -26,29 +24,23 @@ var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
  *
  * @param {DOMElement} element Player element to register.
  * @param {Number} index Index of the player element in the DOM.
+ * @param {String} idPrefix Prefix to use when creating an ID for the player element.
+ * @param {String} srcUrlPattern Regular expression pattern (as a string) to match in the element's
+ *    `src` attribute.
  * @param {Object} parametersToAdd (optional) List of parameters to add to the video URL.
  *
  * @return {DOMElement} Player element that has been registered successfully.
  *
- * @throws Will throw an error if element is not an IFRAME DOM element.
- * @throws Will throw an error if element.src does not contain "youtube".
  * @throws Will throw an error if index is not a number.
+ * @throws Will throw an error if idPrefix is not a string.
+ * @throws Will throw an error if srcUrlPattern is not a string.
  * @throws Will throw an error if parametersToAdd is specified but is not an object.
  */
-module.exports = function(element, index, parametersToAdd) {
+module.exports = function(element, index, idPrefix, srcUrlPattern, parametersToAdd) {
   var toString = Object.prototype.toString;
 
   if (!element) {
     throw '"element" argument not specified';
-  }
-  if (element.nodeName.toUpperCase() !== 'IFRAME') {
-    throw '"element" argument is not an IFRAME';
-  }
-  if (!element.src) {
-    throw '"element" argument is missing "src" property';
-  }
-  if (element.src.indexOf('youtube') === -1) {
-    throw '"element" argument is not a YouTube IFRAME';
   }
   if (!index && index !== 0) {
     throw '"index" argument not specified';
@@ -56,9 +48,40 @@ module.exports = function(element, index, parametersToAdd) {
   if (toString.call(index) !== '[object Number]') {
     throw '"index" argument is not a number';
   }
+  if (!idPrefix) {
+    throw '"idPrefix" argument not specified';
+  }
+  if (toString.call(idPrefix) !== '[object String]') {
+    throw '"idPrefix" argument is not a string';
+  }
+  if (!srcUrlPattern) {
+    throw '"srcUrlPattern" argument not specified';
+  }
+  if (toString.call(srcUrlPattern) !== '[object String]') {
+    throw '"srcUrlPattern" argument is not a string';
+  }
   var hasParametersToAdd = !!parametersToAdd;
   if (hasParametersToAdd && toString.call(parametersToAdd) !== '[object Object]') {
     throw '"parametersToAdd" argument is not an object';
+  }
+
+  var elementSrc = element.src;
+  /**
+   * Check for valid IFRAME `src` attribute in element.
+   * If the `src` is invalid, then this might not be a player element.
+   */
+  if (element.nodeName.toUpperCase() !== 'IFRAME') {
+    // element is not an IFRAME
+    return;
+  }
+  if (!elementSrc) {
+    // element is missing a `src` attribute
+    return;
+  }
+  var srcUrlPatternRegExp = new RegExp(srcUrlPattern);
+  if (!srcUrlPatternRegExp.test(elementSrc)) {
+    // element's `src` attribute does not contain the expected pattern
+    return;
   }
 
   var launchExtSetup = element.dataset.launchextSetup;
@@ -78,11 +101,10 @@ module.exports = function(element, index, parametersToAdd) {
   var elementId = element.id;
   if (!elementId) {
     // set the `id` attribute to the current timestamp and index
-    elementId = IFRAME_ID_PREFIX + '_' + new Date().valueOf() + '_' + index;
+    elementId = idPrefix + '_' + new Date().valueOf() + '_' + index;
     element.id = elementId;
   }
 
-  var elementSrc = element.src;
   var elementSrcParts = elementSrc.split('?');
   var elementSrcHasParameters = elementSrcParts.length > 1;
   var elementSrcParameters = elementSrcHasParameters ? elementSrcParts[1] : '';
