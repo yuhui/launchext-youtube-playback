@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Yuhui. All rights reserved.
+ * Copyright 2023-2024 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,29 +19,39 @@
 /**
  * Return a `element` object for use with helper unit testing.
  */
-module.exports = function(includeId, includeParameters) {
+module.exports = ({
+  nodeName = 'IFRAME',
+  includeId = false,
+  includeSrc = true,
+  srcUrl = 'https://www.youtube.com/embed/abc123_x-',
+  parameters = [],
+  attribute = {},
+  launchextSetup = null,
+} = {}) => {
   const element = {
-    dataset: {},
-    nodeName: 'IFRAME',
-    src: 'https://www.youtube.com/embed/abc123_x-'
+    dataset: {
+      launchextSetup,
+    },
+    nodeName,
   };
 
   if (includeId) {
     element.id = 'foobar';
   }
-  if (includeParameters) {
-    const parametersToAdd = [];
-    if (!includeParameters.includes('param1')) {
-      parametersToAdd.push('param1=1');
+
+  if (includeSrc) {
+    let src = srcUrl;
+    if (parameters.length > 0) {
+      const parametersToAdd = parameters.map((parameter) => {
+        const { name, value } = parameter;
+        return `${name}=${value}`;
+      }).join('&');
+      src = `${srcUrl}${srcUrl.includes('?') ? '&' : '?'}${parametersToAdd}`;
     }
-    if (!includeParameters.includes('param2')) {
-      parametersToAdd.push('param2=https://www.mockmock.com');
-    }
-    if (parametersToAdd.length > 0) {
-      element.src =
-        `${element.src}${element.src.includes('?') ? '&' : '?'}${parametersToAdd.join('&')}`;
-    }
+    element.src = src;
   }
+
+  element.getAttribute = () => attribute.name ? attribute.value : null;
 
   return element;
 };
