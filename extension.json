@@ -297,6 +297,15 @@
             "type": "string",
             "enum": [ "", "no", "yes" ],
             "default": "yes"
+          },
+          "parametersExclusion": {
+            "description": "List of YouTube URL parameters to exclude during URL decoration",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0,
+            "uniqueItems": true
           }
         }
       },

@@ -75,6 +75,36 @@
           </coral-checkboxgroup>
         </div>
       </div>
+
+      <coral-accordion>
+        <coral-accordion-item id="advanced-accordion" selected="selected">
+          <coral-accordion-item-label>Advanced</coral-accordion-item-label>
+          <div id="prevent-origin-decoration-container" class="coral-FormGroup-item">
+            <coral-switch name="preventOriginDecoration" value="yes">
+              <b>DO NOT</b> add the <code class="coral-Code--S">origin</code> parameter to the
+              YouTube URL.
+            </coral-switch>
+            <p>
+              YouTube recommends including the <code class="coral-Code--S">origin</code> parameter
+              in the YouTube URL to protect against malicious third-party JavaScript being injected
+              into your page. So, by default, when this Action runs, it responsibly decorates your
+              YouTube URL with the <code class="coral-Code--S">origin</code> parameter.
+            </p>
+            <p>
+              But in some cases, especially when your developers have already added the
+              <code class="coral-Code--S">enablejsapi=1</code> parameter to the URL without the
+              <code class="coral-Code--S">origin</code> parameter, then decorating the URL further
+              with the <code class="coral-Code--S">origin</code> parameter may prevent playback
+              tracking from being enabled properly.
+            </p>
+            <p>
+              If you are affected by this problem, select this checkbox to prevent this Action from
+              decorating your YouTube URL with the <code class="coral-Code--S">origin</code>
+              parameter. This should allow your video playback to be tracked properly.
+            </p>
+          </div>
+        </coral-accordion-item>
+      </coral-accordion>
     </form>
 
     <section class="coral-Well">
@@ -138,17 +168,29 @@
 
       window.extensionBridge.register({
         init: (info) => {
-          if (info.settings) {
-            const hasOwnProperty = Object.prototype.hasOwnProperty;
+          const { settings } = info;
+          if (settings) {
+            const {
+              loadYoutubeIframeApi,
+              parametersExclusion,
+            } = settings;
 
             // this setting was added in v1.3.0
-            if (!hasOwnProperty.call(info.settings, 'loadYoutubeIframeApi')) {
+            if (!loadYoutubeIframeApi) {
               info.settings.loadYoutubeIframeApi = 'yes';
             }
             if (info.settings.loadYoutubeIframeApi === 'no') {
               // rewrite this value to be a valid checkbox input value for "false" checked state
               info.settings.loadYoutubeIframeApi = '';
             }
+
+            // this setting was added in v2.8.0
+            if (!parametersExclusion || parametersExclusion.length === 0) {
+              info.settings.preventOriginDecoration = '';
+            } else if (info.settings.parametersExclusion.includes('origin')) {
+              info.settings.preventOriginDecoration = 'yes';
+            }
+            delete info.settings.parametersExclusion;
 
             setFormValues(FORM_ID, info.settings);
 
@@ -163,15 +205,26 @@
 
         getSettings: () => {
           const formValues = getFormValues(FORM_ID);
+          const {
+            elementSpecificity,
+            loadYoutubeIframeApi,
+            preventOriginDecoration,
+          } = formValues;
 
-          if (formValues.elementSpecificity === 'any') {
+          if (elementSpecificity === 'any') {
             formValues.elementsSelector = '';
           }
 
-          if (formValues.loadYoutubeIframeApi === '') {
+          if (loadYoutubeIframeApi === '') {
             // rewrite this value so as not to deal with empty strings
             formValues.loadYoutubeIframeApi = 'no';
           }
+
+          formValues.parametersExclusion = [];
+          if (preventOriginDecoration === 'yes') {
+            formValues.parametersExclusion.push('origin');
+          }
+          delete formValues.preventOriginDecoration;
 
           return formValues;
         },
@@ -185,7 +238,12 @@
           const errorTextFieldSelector = `${textFieldSelector}[name="fieldName"]`;
 
           const formValues = getFormValues(FORM_ID);
-          const { elementSpecificity, elementsSelector, loadYoutubeIframeApi } = formValues;
+          const {
+            elementSpecificity,
+            elementsSelector,
+            loadYoutubeIframeApi,
+            preventOriginDecoration,
+          } = formValues;
 
           const elementSpecificityIsValid = (
             ['any', 'specific'].includes(elementSpecificity)
@@ -204,9 +262,12 @@
 
           const loadYoutubeIframeApiIsValid = ['', 'yes'].includes(loadYoutubeIframeApi);
 
+          const preventOriginDecorationIsValid = ['', 'yes'].includes(preventOriginDecoration);
+
           return elementSpecificityIsValid
             && elementsSelectorIsValid
-            && loadYoutubeIframeApiIsValid;
+            && loadYoutubeIframeApiIsValid
+            && preventOriginDecorationIsValid;
         }
       });
 
