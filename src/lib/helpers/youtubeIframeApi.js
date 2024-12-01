@@ -114,6 +114,8 @@ var ERROR_CODES = {
 var IFRAME_ID_PREFIX = 'youTubePlayback';
 var IFRAME_URL_PATTERN = 'youtube';
 var IFRAME_SELECTOR = 'iframe[src*=' + IFRAME_URL_PATTERN + ']';
+var IFRAME_ATTRIBUTE_ENABLE_JSAPI_NAME = 'enablejsapi';
+var IFRAME_ATTRIBUTE_ENABLE_JSAPI_VALUE = 'true';
 var IFRAME_URL_ENABLE_JSAPI_PARAMETER = 'enablejsapi';
 var IFRAME_URL_ENABLE_JSAPI_VALUE = '1';
 var IFRAME_URL_ORIGIN_PARAMETER = 'origin';
@@ -1029,6 +1031,7 @@ var registerPlayers = function(settings) {
   var iframeSelector = elementSpecificitySetting === 'specific' && elementsSelectorSetting
     ? elementsSelectorSetting
     : IFRAME_SELECTOR;
+  var parametersExclusionSetting = settings.parametersExclusion || [];
 
   var elements = document.querySelectorAll(iframeSelector);
   var numElements = elements.length;
@@ -1041,19 +1044,33 @@ var registerPlayers = function(settings) {
     return;
   }
 
-  // create the `origin` value to add to the IFrame's src URL
-  var originProtocol = document.location.protocol;
-  var originHostname = document.location.hostname;
-  var originPort = document.location.port;
-  var originValue = originProtocol + '//' + originHostname;
-  if (originPort) {
-    originValue += ':' + originPort;
-  }
-
   // compile the list of required parameters to add to the IFrame's src URL
-  var parametersToAdd = {};
-  parametersToAdd[IFRAME_URL_ENABLE_JSAPI_PARAMETER] = IFRAME_URL_ENABLE_JSAPI_VALUE;
-  parametersToAdd[IFRAME_URL_ORIGIN_PARAMETER] = originValue;
+  var parametersToAdd = [];
+  parametersToAdd.push({
+    name: IFRAME_URL_ENABLE_JSAPI_PARAMETER,
+    value: IFRAME_URL_ENABLE_JSAPI_VALUE,
+    attribute: {
+      name: IFRAME_ATTRIBUTE_ENABLE_JSAPI_NAME,
+      value: IFRAME_ATTRIBUTE_ENABLE_JSAPI_VALUE,
+    },
+  });
+
+  if (parametersExclusionSetting.indexOf(IFRAME_URL_ORIGIN_PARAMETER) === -1) {
+    // create the `origin` value to add to the IFrame's src URL
+    var originProtocol = document.location.protocol;
+    var originHostname = document.location.hostname;
+    var originPort = document.location.port;
+    var originValue = originProtocol + '//' + originHostname;
+    if (originPort) {
+      originValue += ':' + originPort;
+    }
+
+    parametersToAdd.push({
+      name: IFRAME_URL_ORIGIN_PARAMETER,
+      value: originValue,
+      attribute: {},
+    });
+  }
 
   elements.forEach(function(element, i) {
     var playerElement;
