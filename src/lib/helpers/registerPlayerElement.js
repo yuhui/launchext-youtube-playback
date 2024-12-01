@@ -33,7 +33,15 @@ var PLAYER_SETUP_FINISHED_STATUSES = [
  * @param {String} idPrefix Prefix to use when creating an ID for the player element.
  * @param {String} srcUrlPattern Regular expression pattern (as a string) to match in the element's
  *    `src` attribute.
- * @param {Object} parametersToAdd (optional) List of parameters to add to the video URL.
+ * @param {Array} parametersToAdd (optional) List of parameters to add to the video URL. Each item
+ *    has the structure: {
+ *      name: <parameter>,
+ *      value: <parameter value>,
+ *      attribute: {
+ *        name: <attribute>,
+ *        value: <attribute value>
+ *      }
+ *    }. All values must be strings.
  *
  * @return {DOMElement} Player element that has been registered successfully.
  *
@@ -67,11 +75,10 @@ module.exports = function(element, index, idPrefix, srcUrlPattern, parametersToA
     throw '"srcUrlPattern" argument is not a string';
   }
   var hasParametersToAdd = !!parametersToAdd;
-  if (hasParametersToAdd && toString.call(parametersToAdd) !== '[object Object]') {
-    throw '"parametersToAdd" argument is not an object';
+  if (hasParametersToAdd && toString.call(parametersToAdd) !== '[object Array]') {
+    throw '"parametersToAdd" argument is not an array';
   }
 
-  var elementSrc = element.src;
   /**
    * Check for valid IFRAME `src` attribute in element.
    * If the `src` is invalid, then this might not be a player element.
@@ -80,6 +87,7 @@ module.exports = function(element, index, idPrefix, srcUrlPattern, parametersToA
     // element is not an IFRAME
     return;
   }
+  var elementSrc = element.src;
   if (!elementSrc) {
     // element is missing a `src` attribute
     return;
@@ -114,15 +122,38 @@ module.exports = function(element, index, idPrefix, srcUrlPattern, parametersToA
   var elementSrcParts = elementSrc.split('?');
   var elementSrcHasParameters = elementSrcParts.length > 1;
   var elementSrcParameters = elementSrcHasParameters ? elementSrcParts[1] : '';
+  var elementSrcParameterParts = elementSrcParameters.split('&');
+  var elementSrcParametersList = elementSrcParameterParts.reduce(function (obj, parameterAndValue) {
+    var parameterAndValueSplit = parameterAndValue.split('=');
+    obj[parameterAndValueSplit[0]] = parameterAndValueSplit[1];
+    return obj;
+  }, {});
 
   // add any required parameters to the `src` attribute
   if (hasParametersToAdd) {
     var requiredParametersToAdd = [];
 
-    Object.keys(parametersToAdd).forEach(function(parameter) {
-      if (elementSrcParameters.indexOf(parameter) < 0) {
-        var parameterValue = parametersToAdd[parameter];
-        requiredParametersToAdd.push(parameter + '=' + parameterValue);
+    parametersToAdd.forEach(function(parameterToAdd) {
+      var parameterName = parameterToAdd.name;
+      var parameterValue = parameterToAdd.value;
+
+      // check if the `src` attribute has the parameter and expected value already
+      var elementHasParameter = Object.keys(elementSrcParametersList).indexOf(parameterName) > -1
+        && elementSrcParametersList[parameterName] === parameterValue;
+
+      var elementHasAttribute = false;
+      if (parameterToAdd.attribute && Object.keys(parameterToAdd.attribute).length > -1) {
+        // check if there is an attribute with the expected value already
+        var attributeName = parameterToAdd.attribute.name;
+        var attributeValue = parameterToAdd.attribute.value;
+
+        var elementAttributeValue = element.getAttribute(attributeName);
+
+        elementHasAttribute = elementAttributeValue && elementAttributeValue === attributeValue;
+      }
+
+      if (!elementHasParameter && !elementHasAttribute) {
+        requiredParametersToAdd.push(parameterName + '=' + parameterValue);
       }
     });
 
