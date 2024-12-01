@@ -48,8 +48,25 @@ module.exports = {
       "modulePath": "youtube-playback/src/lib/actions/enableVideoPlaybackTracking.js",
       "settings": {
         "elementSpecificity": "specific",
-        "elementsSelector": "iframe",
-        "loadYoutubeIframeApi": "yes"
+        "elementsSelector": "iframe:not(.no-decorate)",
+        "loadYoutubeIframeApi": "yes",
+        "parametersExclusion": []
+      }
+    }]
+  }, {
+    "id": "RL1732802954979",
+    "name": "Page Top",
+    "events": [{
+      "modulePath": "sandbox/pageTop.js",
+      "settings": {}
+    }],
+    "actions": [{
+      "modulePath": "youtube-playback/src/lib/actions/enableVideoPlaybackTracking.js",
+      "settings": {
+        "elementSpecificity": "specific",
+        "elementsSelector": "iframe.no-decorate",
+        "loadYoutubeIframeApi": "yes",
+        "parametersExclusion": ["origin"]
       }
     }]
   }, {
@@ -129,8 +146,8 @@ module.exports = {
   },
   "buildInfo": {
     "turbineVersion": "27.5.0",
-    "turbineBuildDate": "2024-04-19T16:07:00.614Z",
-    "buildDate": "2024-04-19T16:07:00.614Z",
+    "turbineBuildDate": "2024-11-28T14:09:54.668Z",
+    "buildDate": "2024-11-28T14:09:54.668Z",
     "environment": "development"
   }
 }
