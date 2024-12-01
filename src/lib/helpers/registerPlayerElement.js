@@ -17,7 +17,13 @@
 'use strict';
 
 var PLAYER_SETUP_STARTED_STATUS = 'started';
+var PLAYER_SETUP_COMPLETED_STATUS = 'completed';
 var PLAYER_SETUP_MODIFIED_STATUS = 'modified';
+var PLAYER_SETUP_READY_STATUS = 'ready';
+var PLAYER_SETUP_FINISHED_STATUSES = [
+  PLAYER_SETUP_MODIFIED_STATUS,
+  PLAYER_SETUP_READY_STATUS,
+];
 
 /**
  * Registers a player element to work with the video API later.
@@ -85,13 +91,13 @@ module.exports = function(element, index, idPrefix, srcUrlPattern, parametersToA
   }
 
   var launchExtSetup = element.dataset.launchextSetup;
-  if (launchExtSetup === PLAYER_SETUP_MODIFIED_STATUS) {
-    // player element has been registered already
-    return element;
-  }
-  if (launchExtSetup) {
+  if (launchExtSetup === PLAYER_SETUP_COMPLETED_STATUS) {
     // player element has been registered and setup already
     return;
+  }
+  if (PLAYER_SETUP_FINISHED_STATUSES.indexOf(launchExtSetup) > -1) {
+    // player element has been registered already
+    return element;
   }
 
   // set a data attribute to indicate that this player is being setup
