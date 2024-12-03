@@ -48,7 +48,7 @@ var PLAYER_SETUP_FINISHED_STATUSES = [
  * @throws Will throw an error if index is not a number.
  * @throws Will throw an error if idPrefix is not a string.
  * @throws Will throw an error if srcUrlPattern is not a string.
- * @throws Will throw an error if parametersToAdd is specified but is not an object.
+ * @throws Will throw an error if parametersToAdd is specified but is not an array.
  */
 module.exports = function(element, index, idPrefix, srcUrlPattern, parametersToAdd) {
   var toString = Object.prototype.toString;
