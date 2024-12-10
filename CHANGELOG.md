@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.8.0 - 2024-12-06
+
+### Added
+
+- Add option in "Enable YouTube Video Playback Tracking" view to let the user prevent the `origin` parameter from being added to the IFRAME element's `src` attribute.
+- Detect changes to the IFRAME element's `src` attribute to trigger "Player Removed" event.
+- Check the IFRAME element's `enablejsapi` attribute to determine if the video has been enabled with the YouTube IFrame API.
+
 ## 2.7.0 - 2024-06-05
 
 ### Changed
@@ -65,7 +73,7 @@
 
 ### Changed
 
-- Improve enabling of YouTube players by removing dependency on onYouTubeIframeAPIReady(), in favour of using exponential backoff to check for valid YT object up to 5 times (about up to 30 seconds).
+- Improve enabling of YouTube players by removing dependency on onYouTubeIframeAPIReady(), in favour of using exponential backoff to check for valid `YT` object up to 5 times (about up to 30 seconds).
 - Update JavaScript code to conform with [Airbnb's style guide](https://github.com/airbnb/javascript).
 
 ### Fixed
