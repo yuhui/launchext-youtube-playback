@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Yuhui. All rights reserved.
+ * Copyright 2023-2025 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,15 +161,19 @@ describe('compileMilestones helper delegate', () => {
           this.milestoneTriggersArr, this.videoDuration, this.videoStartTime, this.isLiveEvent
         );
 
-        expect(result).toBeInstanceOf(Object);
+        expect(result).toBeInstanceOf(Array);
+        expect(result.length).toEqual(2);
+        const [ resultObj, resultArr ] = result;
+        expect(resultObj).toBeInstanceOf(Object);
+        expect(resultArr).toBeInstanceOf(Array);
 
-        const keys = Object.keys(result);
+        const keys = Object.keys(resultObj);
         expect(keys.length).toEqual(1);
 
         const [ key ] = keys;
         expect(key).toEqual('fixed');
 
-        const { fixed } = result;
+        const { fixed } = resultObj;
 
         const seconds = Object.keys(fixed);
         expect(seconds.length).toEqual(2);
@@ -206,6 +210,8 @@ describe('compileMilestones helper delegate', () => {
         expect(seconds2002ndMilestone).toBeInstanceOf(Array);
         expect(seconds2002ndMilestone.length).toEqual(1);
         expect(seconds2002ndMilestone[0]).toEqual(this.milestoneTriggersArr[2].trigger);
+
+        expect(resultArr).toEqual([100,200]);
       }
     );
 
@@ -218,15 +224,19 @@ describe('compileMilestones helper delegate', () => {
           this.milestoneTriggersArr, this.videoDuration, this.videoStartTime, this.isLiveEvent
         );
 
-        expect(result).toBeInstanceOf(Object);
+        expect(result).toBeInstanceOf(Array);
+        expect(result.length).toEqual(2);
+        const [ resultObj, resultArr ] = result;
+        expect(resultObj).toBeInstanceOf(Object);
+        expect(resultArr).toBeInstanceOf(Array);
 
-        const keys = Object.keys(result);
+        const keys = Object.keys(resultObj);
         expect(keys.length).toEqual(1);
 
         const [ key ] = keys;
         expect(key).toEqual('fixed');
 
-        const { fixed } = result;
+        const { fixed } = resultObj;
 
         const seconds = Object.keys(fixed);
         expect(seconds.length).toEqual(2);
@@ -257,6 +267,8 @@ describe('compileMilestones helper delegate', () => {
         expect(seconds7001stMilestone.length).toEqual(2);
         expect(seconds7001stMilestone[0]).toEqual(this.milestoneTriggersArr[0].trigger);
         expect(seconds7001stMilestone[1]).toEqual(this.milestoneTriggersArr[3].trigger);
+
+        expect(resultArr).toEqual([600,700]);
       }
     );
   });
