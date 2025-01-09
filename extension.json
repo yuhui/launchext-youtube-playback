@@ -2,7 +2,7 @@
   "displayName": "YouTube Playback",
   "name": "youtube-playback",
   "platform": "web",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "The most full-featured extension for tracking playback of all of your YouTube videos! Rich set of events and data elements for building your Rules. Supports dynamic loading of YouTube players. Control loading of YouTube's API.",
   "author": {
     "name": "Yuhui",
