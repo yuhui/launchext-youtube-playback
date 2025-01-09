@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2024 Yuhui. All rights reserved.
+ * Copyright 2020-2025 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -495,29 +495,100 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
       break;
   }
+
+  if (VIDEO_PLAYING_EVENT_TYPES.indexOf(eventType) > -1) {
+    setNextMilestone(player, player.launchExt.videoCurrentTime);
+  } else if (PLAYER_STOPPED_EVENT_TYPES.indexOf(eventType) > -1) {
+    // use PLAYER_STOPPED_EVENT_TYPES to detect PLAYER_REMOVED event too
+    unsetNextMilestone(player);
+  }
 };
 
 /**
+ * Remove any pre-set nextMilestone.
+ *
+ * @param {Object} player The YouTube player object.
+ */
+var unsetNextMilestone = function(player) {
+  player.launchExt.nextMilestone = null;
+}
+
+/**
+ * Set the time and index of the next milestone after the current time.
+ *
+ * @param {Object} player The YouTube player object.
+ * @param {Number} currentTime The video's current time when checking for a milestone.
+ *
+ * @return {Object} Time and index of the next milestone: { index: ..., time: ... }.
+ */
+var setNextMilestone = function(player, currentTime) {
+  if (
+    !player.launchExt
+    || !player.launchExt.milestoneSeconds
+  ) {
+    unsetNextMilestone(player);
+    return;
+  }
+
+  var milestoneSeconds = player.launchExt.milestoneSeconds;
+  var numMilestoneSeconds = milestoneSeconds.length;
+  var flooredCurrentTime = flooredVideoTime(currentTime);
+  var nextMilestone = null;
+  // ES3
+  var nextMilestoneIndex = 0;
+  while (
+    nextMilestoneIndex < numMilestoneSeconds
+    && milestoneSeconds[nextMilestoneIndex] < flooredCurrentTime
+  ) {
+    nextMilestoneIndex += 1;
+  }
+  if (nextMilestoneIndex < numMilestoneSeconds) {
+    nextMilestone = {
+      index: nextMilestoneIndex,
+      time: milestoneSeconds[nextMilestoneIndex],
+    };
+  }
+  // end ES3
+  // ES6: placeholder to be used when updating the code base to ES6
+  /*
+  const nextMilestoneIndex = milestoneSeconds.findIndex((milestone) => (
+    milestone >= flooredCurrentTime
+  ));
+  if (nextMilestoneIndex > -1) {
+    nextMilestone = {
+      index: nextMilestoneIndex,
+      time: milestoneSeconds[nextMilestoneIndex],
+    };
+  }
+  */
+
+  player.launchExt.nextMilestone = nextMilestone;
+}
+
+/**
  * Check if a video milestone for the specified YouTube player has been reached.
+ *
+ * At the end, call setNextMilestone(), then call itself recursively in case the next milestone
+ * has been passed too.
  *
  * @param {Object} player The YouTube player object.
  * @param {Number} currentTime The video's current time when checking for a milestone.
  */
 var findMilestone = function(player, currentTime) {
-  if (
-    !player.launchExt
-    || !player.launchExt.triggers
-    || !Object.getOwnPropertyDescriptor(player.launchExt.triggers, VIDEO_MILESTONE)
-  ) {
+  var nextMilestone = player.launchExt.nextMilestone;
+  var nextMilestoneTime = nextMilestone.time;
+  if (nextMilestone === null || nextMilestoneTime > currentTime) {
+    // test for null instead of falsiness, in case the next milestone is at 0.0 seconds
     return;
   }
 
+  /**
+   * If we can reach here, then it implies that player.launchExt.triggers exists,
+   * so no need to check for its existence.
+   */
+
   var fixedMilestoneTriggers = player.launchExt.triggers[VIDEO_MILESTONE].fixed;
-  var flooredCurrentTime = flooredVideoTime(currentTime);
-  var currentMilestones = fixedMilestoneTriggers[flooredCurrentTime];
-  if (!currentMilestones) {
-    return;
-  }
+  var milestoneLabelsAndTriggers = fixedMilestoneTriggers[nextMilestoneTime];
 
   /**
    * Create a new "native" event for the milestone.
@@ -526,9 +597,9 @@ var findMilestone = function(player, currentTime) {
     target: player,
   };
 
-  var currentMilestonesLabels = Object.keys(currentMilestones);
-  currentMilestonesLabels.forEach(function(label) {
-    var triggers = currentMilestones[label];
+  var milestonesLabels = Object.keys(milestoneLabelsAndTriggers);
+  milestonesLabels.forEach(function(label) {
+    var triggers = milestoneLabelsAndTriggers[label];
     var options = {
       milestone: {
         label: label,
@@ -537,6 +608,18 @@ var findMilestone = function(player, currentTime) {
 
     processEventType(VIDEO_MILESTONE, player, milestoneEvent, triggers, options);
   });
+
+  /**
+   * Video time is measured in multiples of 0.5 seconds.
+   * So find the next milestone that is more than 0.5 seconds after this milestone
+   */
+  setNextMilestone(player, nextMilestoneTime + 0.5);
+
+  /**
+   * Call findMilestone() again in case the currentTime is still greater than the subsequent
+   * milestone.
+   */
+  findMilestone(player, currentTime);
 };
 
 /**
@@ -941,6 +1024,8 @@ var setupPlayer = function(element) {
       time: 500, // milliseconds between heartbeats
     },
     isLiveEvent: false,
+    milestoneSeconds: [],
+    nextMilestone: null,
     playedMilestones: {},
     playPreviousTotalTime: 0,
     playSegmentTime: 0,
