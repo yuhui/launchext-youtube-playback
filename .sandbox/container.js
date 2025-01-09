@@ -12,21 +12,21 @@ module.exports = {
     }
   },
   "dataElements": {
-    "YouTube player state": {
+    "Player state": {
       "settings": {},
       "cleanText": false,
       "forceLowerCase": false,
       "modulePath": "youtube-playback/src/lib/dataElements/playerState.js",
       "storageDuration": ""
     },
-    "YouTube video current time": {
+    "Video current time": {
       "settings": {},
       "cleanText": false,
       "forceLowerCase": false,
       "modulePath": "youtube-playback/src/lib/dataElements/videoCurrentTime.js",
       "storageDuration": ""
     },
-    "YouTube video duration": {
+    "Video duration": {
       "settings": {},
       "cleanText": false,
       "forceLowerCase": false,
@@ -108,11 +108,11 @@ module.exports = {
     }]
   }, {
     "id": "RL1611236793890",
-    "name": "YouTube Milestone 25%, 50%, 75%, 90%, and 5, 10, 15 seconds",
+    "name": "Video Milestone every 10% and 5, 10, 15 seconds",
     "events": [{
       "modulePath": "youtube-playback/src/lib/events/videoMilestone.js",
       "settings": {
-        "fixedMilestoneAmounts": [25, 50, 75, 90],
+        "fixedMilestoneAmounts": [10, 20, 30, 40, 50, 60, 70, 80, 90],
         "fixedMilestoneUnit": "percent"
       }
     }, {
@@ -146,8 +146,8 @@ module.exports = {
   },
   "buildInfo": {
     "turbineVersion": "27.5.0",
-    "turbineBuildDate": "2024-11-28T14:09:54.668Z",
-    "buildDate": "2024-11-28T14:09:54.668Z",
+    "turbineBuildDate": "2025-01-07T15:12:26.522Z",
+    "buildDate": "2025-01-07T15:12:26.522Z",
     "environment": "development"
   }
 }
