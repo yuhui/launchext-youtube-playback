@@ -1021,7 +1021,7 @@ var setupPlayer = function(element) {
     hasStarted: false,
     heartbeatInterval: {
       id: null,
-      time: 500, // milliseconds between heartbeats
+      time: 250, // milliseconds between heartbeats
     },
     isLiveEvent: false,
     milestoneSeconds: [],
