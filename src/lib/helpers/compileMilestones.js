@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Yuhui. All rights reserved.
+ * Copyright 2022-2025 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ var VIDEO_MILESTONE_UNIT_ABBREVIATIONS = {
  * @param {Number} videoStartTime The time of the video start.
  * @param {Boolean} isLiveEvent true if the video is a "live" video broadcast, false otherwise.
  *
- * @return {Object} Milestones object that collects the triggers per milestone, or null if there
+ * @return {Array} [object of triggers per milestone, array of milestone seconds], or null if there
  * are no milestones.
  *
  * @throws Will throw an error if milestoneTriggersArr is not an array.
@@ -100,6 +100,11 @@ module.exports = function(milestoneTriggersArr, videoDuration, videoStartTime, i
   }
 
   var milestoneTriggersObj = {};
+  /**
+   * milestoneSecondsObj is used to deduplicate seconds.
+   * It will be transformed to an array later.
+   */
+  var milestoneSecondsObj = {};
 
   milestoneTriggersArr.forEach(function(milestoneTrigger) {
     var amount = milestoneTrigger.milestone.amount;
@@ -143,9 +148,38 @@ module.exports = function(milestoneTriggersArr, videoDuration, videoStartTime, i
     milestoneTriggersObj[type][seconds][label] = (
       milestoneTriggersObj[type][seconds][label] || []
     );
-
     milestoneTriggersObj[type][seconds][label].push(trigger);
+
+    milestoneSecondsObj[seconds] = true; // the value is not important
   });
 
-  return Object.keys(milestoneTriggersObj).length === 0 ? null : milestoneTriggersObj;
+  if (Object.keys(milestoneTriggersObj).length === 0) {
+    return null;
+  }
+
+  var milestoneSeconds = Object.keys(milestoneSecondsObj)
+    .sort(function(x, y) {
+      /**
+       * sort() uses strings by default, but sorting should be by the numbers themselves,
+       * so need to parse the values to floats before comparing
+       */
+      var floatX = parseFloat(x);
+      var floatY = parseFloat(y);
+      if (floatX < floatY) {
+        return -1;
+      } else if (floatX > floatY) {
+        return 1;
+      } else {
+        return 0;
+      }
+    })
+    .map(function(seconds) {
+      // sort() returns strings, so need to parse the values to floats again
+      return parseFloat(seconds);
+    });
+
+  return [
+    milestoneTriggersObj,
+    milestoneSeconds,
+  ];
 };

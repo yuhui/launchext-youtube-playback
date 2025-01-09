@@ -473,7 +473,7 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
           player.launchExt.triggers
           && Object.getOwnPropertyDescriptor(player.launchExt.triggers, VIDEO_MILESTONE)
         ) {
-          var milestones = compileMilestones(
+          var compiledMilestones = compileMilestones(
             player.launchExt.triggers[VIDEO_MILESTONE],
             player.launchExt.videoDuration,
             player.launchExt.videoStartTime,
@@ -481,8 +481,9 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
           );
 
           delete player.launchExt.triggers[VIDEO_MILESTONE];
-          if (milestones) {
-            player.launchExt.triggers[VIDEO_MILESTONE] = milestones;
+          if (compiledMilestones && compiledMilestones.length === 2) {
+            player.launchExt.triggers[VIDEO_MILESTONE] = compiledMilestones[0];
+            player.launchExt.milestoneSeconds = compiledMilestones[1];
           }
         }
       }
