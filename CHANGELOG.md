@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.9.0 - 2025-01-17
+
+### Changed
+
+- Reduce heartbeat time from 500ms to 250ms.
+
+### Added
+
+- Improve milestone tracking by setting the next milestone from the current time to lookup later, instead of detecting milestones during each time update.
+
 ## 2.8.0 - 2024-12-06
 
 ### Added
