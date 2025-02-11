@@ -1012,17 +1012,73 @@ var setupPlayer = function(element) {
 
   var elementId = element.id;
 
-  var player = new window.YT.Player(elementId, {
-    events: {
-      onApiChange: apiChanged,
-      onAutoplayBlocked: autoplayBlocked,
-      onError: playerError,
-      onPlaybackQualityChange: playbackQualityChanged,
-      onPlaybackRateChange: playbackRateChanged,
-      onReady: playerReady,
-      onStateChange: playerStateChanged,
-    },
-  });
+  /**
+   * If a YouTube video had been set already with YT.Player() (e.g. by another script), then
+   * running YT.Player() on it might *not* give the expected player result, i.e. the player might
+   * be missing some important methods like getVideoData().
+   *
+   * The YT object has an undocumented YT.get() method that returns a YT.Player()-created-
+   * player, if there was one. So try getting a player with YT.get(). If that returns
+   * undefined, then use the normal YT.Player() method.
+   */
+  var player = window.YT.get(elementId);
+  if (!player) {
+    player = new window.YT.Player(elementId);
+  }
+
+  /**
+   * Use event listeners to attach our custom events.
+   *
+   * The event listeners rely on global functions, so need to create new global functions
+   * that execute our custom functions.
+   *
+   * To minimise polluting the global namespace, prefix the global functions with "_launchExt".
+   * Dot-notation is not used because event listeners cannot handle objects and to avoid
+   * confusion about whether the global functions are in an object or really a method named with
+   * dots in the name.
+   */
+  if (typeof window._launchExtApiChange !== 'function') {
+    window._launchExtApiChange = function (event) {
+      apiChanged(event);
+    };
+  }
+  if (typeof window._launchExtAutoplayBlocked !== 'function') {
+    window._launchExtAutoplayBlocked = function (event) {
+      autoplayBlocked(event);
+    };
+  }
+  if (typeof window._launchExtPlayerError !== 'function') {
+    window._launchExtPlayerError = function (event) {
+      playerError(event);
+    };
+  }
+  if (typeof window._launchExtPlaybackQualityChanged !== 'function') {
+    window._launchExtPlaybackQualityChanged = function (event) {
+      playbackQualityChanged(event);
+    };
+  }
+  if (typeof window._launchExtPlaybackRateChanged !== 'function') {
+    window._launchExtPlaybackRateChanged = function (event) {
+      playbackRateChanged(event);
+    };
+  }
+  if (typeof window._launchExtPlayerReady !== 'function') {
+    window._launchExtPlayerReady = function (event) {
+      playerReady(event);
+    };
+  }
+  if (typeof window._launchExtPlayerStateChanged !== 'function') {
+    window._launchExtPlayerStateChanged = function (event) {
+      playerStateChanged(event);
+    };
+  }
+  player.addEventListener('onApiChange', '_launchExtApiChange');
+  player.addEventListener('onAutoplayBlocked', '_launchExtAutoplayBlocked');
+  player.addEventListener('onError', '_launchExtPlayerError');
+  player.addEventListener('onPlaybackQualityChange', '_launchExtPlaybackQualityChanged');
+  player.addEventListener('onPlaybackRateChange', '_launchExtPlaybackRateChanged');
+  player.addEventListener('onReady', '_launchExtPlayerReady');
+  player.addEventListener('onStateChange', '_launchExtPlayerStateChanged');
 
   // add additional properties for this player
   player.launchExt = {
