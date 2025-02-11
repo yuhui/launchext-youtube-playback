@@ -576,9 +576,13 @@ var setNextMilestone = function(player, currentTime) {
  */
 var findMilestone = function(player, currentTime) {
   var nextMilestone = player.launchExt.nextMilestone;
+  if (!nextMilestone) {
+    // no next milestone, so there's nothing to do
+    return;
+  }
   var nextMilestoneTime = nextMilestone.time;
-  if (nextMilestone === null || nextMilestoneTime > currentTime) {
-    // test for null instead of falsiness, in case the next milestone is at 0.0 seconds
+  if (nextMilestoneTime > currentTime) {
+    // next milestone has not passed yet, so there's nothing to do
     return;
   }
 
