@@ -329,11 +329,18 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
     return;
   }
 
-  // don't continue if this player hasn't been setup by this extension
   var element = player.getIframe();
-  var elementIsSetup = element.dataset.launchextSetup === PLAYER_SETUP_READY_STATUS;
-  if (!elementIsSetup) {
+
+  // don't continue if this player hasn't been setup by this extension
+  var elementSetupStatus = element.dataset.launchextSetup;
+  if (!elementSetupStatus) {
     return;
+  }
+
+  // if player has not been setup, then run playerReady() now
+  var elementIsSetup = elementSetupStatus === PLAYER_SETUP_READY_STATUS;
+  if (!elementIsSetup) {
+    playerReady(nativeEvent);
   }
 
   var eventType = playbackEventType;
