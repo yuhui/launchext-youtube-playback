@@ -28,6 +28,8 @@ var registerPlayerElement = require('./registerPlayerElement');
 
 var logger = turbine.logger;
 
+var __VERSION__ = '2.10.0';
+
 // constants related to Event Types used in this extension
 var API_CHANGED = 'module with exposed API changed';
 var AUTOPLAY_BLOCKED = 'autoplay blocked';
@@ -764,6 +766,8 @@ var playerReady = function(event) {
     // this player wasn't setup by this extension
     return;
   }
+
+  logger.info('setting up player ' + element.id);
 
   // update static metadata
   player.launchExt = player.launchExt || {};
