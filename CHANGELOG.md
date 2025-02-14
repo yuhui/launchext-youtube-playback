@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.10.0 - 2025-02-14
+
+### Changed
+
+- Check for a previously-created `player` object before creating a new one.
+- Use event listeners to attach functions to the `player` object.
+- Process "Player Ready" event if another event is being processed when the `onReady` listener had failed to run for this `player` object.
+
+### Fixed
+
+- Check that next milestone exists before getting its time.
+
 ## 2.9.0 - 2025-01-17
 
 ### Changed
