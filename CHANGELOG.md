@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.10.1 - 2025-02-28
+
+### Fixed
+
+- Do not process "Player Ready" event if the other event that is being processed is "Player Removed".
+
 ## 2.10.0 - 2025-02-14
 
 ### Changed
