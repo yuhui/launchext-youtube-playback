@@ -339,9 +339,14 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
     return;
   }
 
-  // if player has not been setup, then run playerReady() now
+  /**
+   * If player has not been setup, then run playerReady() now.
+   * EXCEPT when playbackEventType is PLAYER_REMOVED, since there's no point in
+   * readying the player when it's going to be removed.
+   */
   var elementIsSetup = elementSetupStatus === PLAYER_SETUP_READY_STATUS;
-  if (!elementIsSetup) {
+  var playerIsRemoved = playbackEventType === PLAYER_REMOVED;
+  if (!elementIsSetup && !playerIsRemoved) {
     playerReady(nativeEvent);
   }
 
