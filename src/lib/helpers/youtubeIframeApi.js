@@ -28,7 +28,7 @@ var registerPlayerElement = require('./registerPlayerElement');
 
 var logger = turbine.logger;
 
-var __VERSION__ = '2.10.0';
+var __VERSION__ = '2.10.1';
 
 // constants related to Event Types used in this extension
 var API_CHANGED = 'module with exposed API changed';
