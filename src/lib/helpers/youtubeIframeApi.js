@@ -90,6 +90,11 @@ var VIDEO_PLAYING_EVENT_TYPES = [
   VIDEO_STARTED,
 ];
 
+// set of Event Types when the player has been started
+var PLAYER_STARTED_EVENT_TYPES = VIDEO_PLAYING_EVENT_TYPES.concat([
+  VIDEO_PLAYING,
+]);
+
 // set of Event Types when video had stopped playing
 var VIDEO_STOPPED_EVENT_TYPES = [
   VIDEO_PAUSED,
@@ -510,7 +515,7 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
       break;
   }
 
-  if (VIDEO_PLAYING_EVENT_TYPES.indexOf(eventType) > -1) {
+  if (PLAYER_STARTED_EVENT_TYPES.indexOf(eventType) > -1) {
     setNextMilestone(player, player.launchExt.videoCurrentTime);
   } else if (PLAYER_STOPPED_EVENT_TYPES.indexOf(eventType) > -1) {
     // use PLAYER_STOPPED_EVENT_TYPES to detect PLAYER_REMOVED event too
