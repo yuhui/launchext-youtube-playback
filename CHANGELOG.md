@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.10.2 - 2025-03-14
+
+### Fixed
+
+- Check for next milestone with _all_ "Video Playing" events.
+
 ## 2.10.1 - 2025-02-28
 
 ### Fixed
