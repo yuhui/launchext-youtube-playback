@@ -807,7 +807,9 @@ var pendingPlayersRegistry = [];
 var registerPendingPlayer = function(playerElement) {
   if (youtubeIframeApiIsReady()) {
     try {
-      setupPlayer(playerElement);
+      window.YT.ready(function () {
+        setupPlayer(playerElement);
+      });
     } catch (e) {
       pendingPlayersRegistry.push(playerElement);
     }
@@ -1079,7 +1081,9 @@ var setupPendingPlayers = function(attempt) {
 
   while (pendingPlayersRegistry.length > 0) {
     var playerElement = pendingPlayersRegistry.shift();
-    setupPlayer(playerElement);
+    window.YT.ready(function () {
+      setupPlayer(playerElement);
+    });
   }
 };
 
