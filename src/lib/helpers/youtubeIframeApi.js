@@ -22,6 +22,7 @@ var loadScript = require('@adobe/reactor-load-script');
 
 var compileMilestones = require('./compileMilestones');
 var createGetVideoEvent = require('./createGetVideoEvent');
+var findMilestone = require('./findMilestone');
 var getVideoStateData = require('./getVideoStateData');
 var flooredVideoTime = require('./flooredVideoTime');
 var registerPlayerElement = require('./registerPlayerElement');
@@ -514,66 +515,6 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
 
       break;
   }
-
-/**
- * Check if a video milestone for the specified YouTube player has been reached.
- *
- * At the end, call setNextMilestone(), then call itself recursively in case the next milestone
- * has been passed too.
- *
- * @param {Object} player The YouTube player object.
- * @param {Number} currentTime The video's current time when checking for a milestone.
- */
-var findMilestone = function(player, currentTime) {
-  var nextMilestone = player.launchExt.nextMilestone;
-  if (!nextMilestone) {
-    // no next milestone, so there's nothing to do
-    return;
-  }
-  var nextMilestoneTime = nextMilestone.time;
-  if (nextMilestoneTime > currentTime) {
-    // next milestone has not passed yet, so there's nothing to do
-    return;
-  }
-
-  /**
-   * If we can reach here, then it implies that player.launchExt.triggers exists,
-   * so no need to check for its existence.
-   */
-
-  var fixedMilestoneTriggers = player.launchExt.triggers[VIDEO_MILESTONE].fixed;
-  var milestoneLabelsAndTriggers = fixedMilestoneTriggers[nextMilestoneTime];
-
-  /**
-   * Create a new "native" event for the milestone.
-   */
-  var milestoneEvent = {
-    target: player,
-  };
-
-  var milestonesLabels = Object.keys(milestoneLabelsAndTriggers);
-  milestonesLabels.forEach(function(label) {
-    var triggers = milestoneLabelsAndTriggers[label];
-    var options = {
-      milestone: {
-        label: label,
-      },
-    };
-
-    processEventType(VIDEO_MILESTONE, player, milestoneEvent, triggers, options);
-  });
-
-  /**
-   * Video time is measured in multiples of 0.5 seconds.
-   * So find the next milestone that is more than 0.5 seconds after this milestone
-   */
-  setNextMilestone(player, nextMilestoneTime + 0.5);
-
-  /**
-   * Call findMilestone() again in case the currentTime is still greater than the subsequent
-   * milestone.
-   */
-  findMilestone(player, currentTime);
 };
 
 /**
@@ -594,15 +535,10 @@ var startHeartbeat = function(player) {
   var videoCurrentTime = player.getCurrentTime();
   player.launchExt.playStartTime = videoCurrentTime;
   player.launchExt.playStopTime = videoCurrentTime;
+  player.launchExt.previousUpdateTime = videoCurrentTime;
   //player.launchExt.playSegmentTime = 0;
 
   player.launchExt.heartbeatInterval.id = setInterval(function() {
-    if (player.getPlayerState() !== YOUTUBE_PLAYING_STATE) {
-      // video is not being played
-      stopHeartbeat(player);
-      return;
-    }
-
     var videoCurrentTime = player.getCurrentTime();
 
     /**
@@ -613,8 +549,40 @@ var startHeartbeat = function(player) {
      */
     player.launchExt.playStopTime = videoCurrentTime;
 
-    findMilestone(player, videoCurrentTime);
+    findMilestone(player, function (foundMilestone) {
+      if (!foundMilestone) {
+        return;
+      }
 
+      /**
+       * Create a new "native" event for the milestone.
+       */
+      var milestoneEvent = {
+        target: player,
+      };
+
+      var fixedMilestoneTriggers = player.launchExt.triggers[VIDEO_MILESTONE].fixed;
+      var milestoneLabelsAndTriggers = fixedMilestoneTriggers[foundMilestone];
+      var milestonesLabels = Object.keys(milestoneLabelsAndTriggers);
+      milestonesLabels.forEach(function(label) {
+        var triggers = milestoneLabelsAndTriggers[label];
+        var options = {
+          milestone: {
+            label: label,
+          },
+        };
+
+        processEventType(VIDEO_MILESTONE, player, milestoneEvent, triggers, options);
+      });
+
+      player.launchExt.previousUpdateTime = videoCurrentTime;
+    });
+
+    if (player.getPlayerState() !== YOUTUBE_PLAYING_STATE) {
+      // video is not being played
+      stopHeartbeat(player);
+      return;
+    }
   }, player.launchExt.heartbeatInterval.time);
 };
 
