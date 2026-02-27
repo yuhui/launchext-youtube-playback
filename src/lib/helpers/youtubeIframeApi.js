@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2025 Yuhui. All rights reserved.
+ * Copyright 2020-2026 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@ var compileMilestones = require('./compileMilestones');
 var createGetVideoEvent = require('./createGetVideoEvent');
 var findMilestone = require('./findMilestone');
 var getVideoStateData = require('./getVideoStateData');
-var flooredVideoTime = require('./flooredVideoTime');
 var registerPlayerElement = require('./registerPlayerElement');
 
 var logger = turbine.logger;
 
-var __VERSION__ = '2.10.2';
+var __VERSION__ = '2.10.3';
 
 // constants related to Event Types used in this extension
 var API_CHANGED = 'module with exposed API changed';
