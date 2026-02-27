@@ -515,75 +515,6 @@ var processPlaybackEvent = function(playbackEventType, player, nativeEvent) {
       break;
   }
 
-  if (PLAYER_STARTED_EVENT_TYPES.indexOf(eventType) > -1) {
-    setNextMilestone(player, player.launchExt.videoCurrentTime);
-  } else if (PLAYER_STOPPED_EVENT_TYPES.indexOf(eventType) > -1) {
-    // use PLAYER_STOPPED_EVENT_TYPES to detect PLAYER_REMOVED event too
-    unsetNextMilestone(player);
-  }
-};
-
-/**
- * Remove any pre-set nextMilestone.
- *
- * @param {Object} player The YouTube player object.
- */
-var unsetNextMilestone = function(player) {
-  player.launchExt.nextMilestone = null;
-}
-
-/**
- * Set the time and index of the next milestone after the current time.
- *
- * @param {Object} player The YouTube player object.
- * @param {Number} currentTime The video's current time when checking for a milestone.
- *
- * @return {Object} Time and index of the next milestone: { index: ..., time: ... }.
- */
-var setNextMilestone = function(player, currentTime) {
-  if (
-    !player.launchExt
-    || !player.launchExt.milestoneSeconds
-  ) {
-    unsetNextMilestone(player);
-    return;
-  }
-
-  var milestoneSeconds = player.launchExt.milestoneSeconds;
-  var numMilestoneSeconds = milestoneSeconds.length;
-  var flooredCurrentTime = flooredVideoTime(currentTime);
-  var nextMilestone = null;
-  // ES3
-  var nextMilestoneIndex = 0;
-  while (
-    nextMilestoneIndex < numMilestoneSeconds
-    && milestoneSeconds[nextMilestoneIndex] < flooredCurrentTime
-  ) {
-    nextMilestoneIndex += 1;
-  }
-  if (nextMilestoneIndex < numMilestoneSeconds) {
-    nextMilestone = {
-      index: nextMilestoneIndex,
-      time: milestoneSeconds[nextMilestoneIndex],
-    };
-  }
-  // end ES3
-  // ES6: placeholder to be used when updating the code base to ES6
-  /*
-  const nextMilestoneIndex = milestoneSeconds.findIndex((milestone) => (
-    milestone >= flooredCurrentTime
-  ));
-  if (nextMilestoneIndex > -1) {
-    nextMilestone = {
-      index: nextMilestoneIndex,
-      time: milestoneSeconds[nextMilestoneIndex],
-    };
-  }
-  */
-
-  player.launchExt.nextMilestone = nextMilestone;
-}
-
 /**
  * Check if a video milestone for the specified YouTube player has been reached.
  *
@@ -1106,7 +1037,6 @@ var setupPlayer = function(element) {
     },
     isLiveEvent: false,
     milestoneSeconds: [],
-    nextMilestone: null,
     playedMilestones: {},
     playPreviousTotalTime: 0,
     playSegmentTime: 0,
