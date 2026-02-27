@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Yuhui. All rights reserved.
+ * Copyright 2023-2026 Yuhui. All rights reserved.
  *
  * Licensed under the GNU General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,27 @@ module.exports = {
   },
   launchExt: {
     isLiveEvent: false,
+    milestoneSeconds: [ 10, 20, 30 ],
     playStartTime: 3,
     playStopTime: 12,
     playSegmentTime: 9,
     playTotalTime: 53703,
+    previousUpdateTime: 6,
+    triggers: {
+      'video milestone': {
+        fixed: {
+          '10': {
+            'milestone 10s': [ jasmine.createSpy() ],
+          },
+          '20': {
+            'milestone 20s': [ jasmine.createSpy() ],
+          },
+          '30': {
+            'milestone 30s': [ jasmine.createSpy() ],
+          },
+        },
+      },
+    },
     videoCurrentTime: 12,
     videoDuration: 90210,
     videoId: 'abc123_x-',

@@ -208,74 +208,57 @@ describe('getVideoData helper delegate', () => {
       const expectedPlayerStates = VIDEO_DATA_NAMES[videoDataName];
       return expectedPlayerStates.length > 0;
     });
+
     videoDataNamesWithStates.forEach((videoDataName) => {
-      PLAYER_STATES.forEach((playerState) => {
-        const expectedPlayerStates = VIDEO_DATA_NAMES[videoDataName];
-        if (expectedPlayerStates.includes(playerState)) {
-          // don't test for an expected player state
-          return;
-        }
+      describe(`with video data name "${videoDataName}"`, () => {
+        PLAYER_STATES.forEach((playerState) => {
+          const expectedPlayerStates = VIDEO_DATA_NAMES[videoDataName];
 
-        describe('with invalid player state', () => {
-          beforeEach(() => {
-            this.event = mockEvent(videoDataName, playerState);
-          });
+          describe(`with player state "${playerState}"`, () => {
+            beforeEach(() => {
+              this.event = mockEvent(videoDataName, playerState);
+            });
 
-          it(
-            `logs an error message when "${videoDataName}" is used with "${playerState}"`,
-            () => {
-              const expectedPlayerStatesString = expectedPlayerStates.sort().join('", "');
+            if (expectedPlayerStates.includes(playerState)) {
+              describe('is valid player state', () => {
+                it('should return the expected values', () => {
+                  const result = this.helperDelegate(videoDataName, this.event);
 
-              const result = this.helperDelegate(videoDataName, this.event);
+                  expect(result).toEqual(this.event.youtube[videoDataName]);
+                });
 
-              expect(result).toBeUndefined();
+                if (videoDataName === 'videoCurrentTime') {
+                  it(
+                    `should return the expected values when videoCurrentTime is 0"`,
+                    () => {
+                      this.event.youtube.videoCurrentTime = 0;
 
-              const logError = global.turbine.logger.error;
-              expect(logError).toHaveBeenCalledWith(
-                `Trying to get "${videoDataName}" but video event `
-                + `"${this.event.youtube.playerState}" is not one of `
-                + `"${expectedPlayerStatesString}".`
-              );
+                      const result = this.helperDelegate(videoDataName, this.event);
+
+                      expect(result).toEqual(this.event.youtube[videoDataName]);
+                    }
+                  );
+                }
+              });
+            } else {
+              describe('is invalid player state', () => {
+                it('logs an error message', () => {
+                  const expectedPlayerStatesString = expectedPlayerStates.sort().join('", "');
+
+                  const result = this.helperDelegate(videoDataName, this.event);
+
+                  expect(result).toBeUndefined();
+
+                  const logError = global.turbine.logger.error;
+                  expect(logError).toHaveBeenCalledWith(
+                    `Trying to get "${videoDataName}" but video event `
+                    + `"${this.event.youtube.playerState}" is not one of `
+                    + `"${expectedPlayerStatesString}".`
+                  );
+                });
+              });
             }
-          );
-        });
-      });
-    });
-
-    videoDataNames.forEach((videoDataName) => {
-      PLAYER_STATES.forEach((playerState) => {
-        const expectedPlayerStates = VIDEO_DATA_NAMES[videoDataName];
-        if (expectedPlayerStates.length > 0 && !expectedPlayerStates.includes(playerState)) {
-          return;
-        }
-
-        describe('with valid player state', () => {
-          beforeEach(() => {
-            this.event = mockEvent(videoDataName, playerState);
           });
-
-          it(
-            // eslint-disable-next-line max-len
-            `should return the expected values when "${videoDataName}" is used with "${playerState}"`,
-            () => {
-              const result = this.helperDelegate(videoDataName, this.event);
-
-              expect(result).toEqual(this.event.youtube[videoDataName]);
-            }
-          );
-
-          if (videoDataName === 'videoCurrentTime') {
-            it(
-              `should return the expected values when videoCurrentTime is 0 with "${playerState}"`,
-              () => {
-                this.event.youtube.videoCurrentTime = 0;
-
-                const result = this.helperDelegate(videoDataName, this.event);
-  
-                expect(result).toEqual(this.event.youtube[videoDataName]);
-              }
-            );
-          }
         });
       });
     });
